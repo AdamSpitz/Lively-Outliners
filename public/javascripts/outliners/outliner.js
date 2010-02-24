@@ -656,14 +656,19 @@ RowMorph.subclass("SlotMorph", {
 
   morphMenu: function(evt) {
     var menu = new MenuMorph([], this);
+
+    menu.addItem(["copy", function(evt) {
+      var newSlot = this.slot().copyTo(new Mirror({}));
+      evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
+    }]);
+
     menu.addItem(["move", function(evt) {
-      var newMir = new Mirror({});
-      newMir.setContentsAt(this.slot().name(), this.slot().contents());
-      var newSlot = newMir.slotAt(this.slot().name());
+      var newSlot = this.slot().copyTo(new Mirror({}));
       this.slot().remove();
       evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
       this.outliner().updateEverything();
     }]);
+
     return menu;
   },
 });
