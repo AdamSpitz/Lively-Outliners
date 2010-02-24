@@ -93,7 +93,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.expander = new ExpanderMorph(this);
     this.titleLabel = createLabel("");
     this.titleTopicRef = new TopicRef(this.topic, true, "Title");
-    this.discussButton = createButton("Discuss", function() {this.topic.openDiscussionWindow();}.bind(this), 0);
+    this.evaluatorButton = createButton("E", function() {this.openEvaluator();}.bind(this), 0);
     this.dismissButton = new WindowControlMorph(new Rectangle(0, 0, 22, 22), 3, Color.primary.yellow);
     this.dismissButton.relayToModel(this, {HelpText: "-DismissHelp", Trigger: "=removeFromWorld"});
     this.create_header_row();
@@ -187,7 +187,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.was_already_unobtrusive = u;
     this.sPadding = this.fPadding = u ? 2 : 10;
     this.updateTitle();
-    this.headerRow.replaceThingiesWith(u ? [this.titleTopicRef.morph()] : [this.expander, this.titleLabel, this.discussButton, this.dismissButton]);
+    this.headerRow.replaceThingiesWith(u ? [this.titleTopicRef.morph()] : [this.expander, this.titleLabel, this.evaluatorButton, this.dismissButton]);
     this.rejiggerTheLayout();
   },
 
@@ -327,6 +327,10 @@ ColumnMorph.subclass("OutlinerMorph", {
   removeFromWorld: function() {
     this.topic.might_not_have_been_saved_since_being_hidden = true;
     this.startZoomingOuttaHere();
+  },
+
+  openEvaluator: function() {
+    this.addThingy(new EvaluatorMorph(this));
   },
 
   destinationForZoomingOuttaHere: function() { return WorldMorph.current().dock; },
@@ -688,5 +692,35 @@ RowMorph.subclass("SlotMorph", {
     }]);
 
     return menu;
+  },
+});
+
+ColumnMorph.subclass("EvaluatorMorph", {
+  initialize: function($super, outliner) {
+    $super();
+    this._outliner = outliner;
+    
+    this.textMorph = createTextField();
+    this.textMorph.suppressHandles = true;
+    this.addThingy(this.textMorph);
+    
+    this.buttonsPanel = new RowMorph().beInvisible();
+    this.buttonsPanel.addThingy(createButton("Do it",  function() {this.  doIt();}.bind(this)));
+    this.buttonsPanel.addThingy(createButton("Get it", function() {this. getIt();}.bind(this)));
+    this.buttonsPanel.addThingy(createButton("Close",  function() {this.remove();}.bind(this)));
+    this.addThingy(this.buttonsPanel);
+
+    this.setFill(Color.gray);
+    this.beUngrabbable();
+  },
+
+  doIt: function() {
+    return eval(this.textMorph.getText());
+  },
+
+  getIt: function() {
+    var result = this.doIt();
+    this.world().hands[0].grabMorphWithoutAskingPermission(this.world().outlinerFor(new Mirror(result)));
+    return result;
   },
 });
