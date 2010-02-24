@@ -1,0 +1,40 @@
+<head> <title>Sun Labs Lively Kernel Div Test</title> </head>
+<script>
+	function clear(id, what) {
+		document.getElementById(id).innerHTML=what||"(cleared)\n"
+	}
+</script>
+<body style="margin:0.px">
+<a href='javascript:clear("logdiv")'> clear </a>
+
+<table border width=100%>
+<tr><td>col 1</td><td>col 2</td></tr>
+<tr><td>stuff</td><td>
+	<svg id="canvas" width="800" height="600">
+	</svg>
+</td></tr></table>
+
+<defs></defs> <! -- needed by loader? -->
+<script src="JSON.js" ></script>
+<script src ="miniprototype.js" ></script>
+<script src ="defaultconfig.js"></script>
+
+<!-- localconfig.js is ignored if file not there -->
+<script src ="localconfig.js"></script>
+<script src ="Base.js"></script>
+<script src ="scene.js"></script>
+<script src ="Core.js"></script>
+<script src ="Text.js"></script>
+<script src ="Widgets.js"></script>
+<script src ="Network.js"></script>
+<script src ="Data.js"></script>
+<script src ="Storage.js"></script>
+<script src ="Tools.js"></script>
+<script src ="Examples.js"></script>
+<script src ="Main.js"></script>
+
+<pre id="logdiv">
+log
+</pre>
+</body>
+</html>

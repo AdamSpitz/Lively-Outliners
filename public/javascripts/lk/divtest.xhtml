@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+  
+<html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:lively="http://www.experimentalstuff.com/Lively"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <head>
+    <title>Sun Labs Lively Kernel Div Test</title>
+    <meta http-equiv="content-script-type" content="text/ecmascript"/>
+  </head>
+
+  <body style="margin: 0px">
+        
+    <script type="text/ecmascript">
+    <!-- Using CDATA section for escaping js code -->
+    //<![CDATA[
+    function clear(id, what) {document.getElementById(id).innerHTML=what || "(cleared)\n"}
+    //]]></script>
+
+    <a href="javascript:clear('logdiv')">clear</a>
+
+    <table style="border-width: 1px; border-style: solid; width: 100%">
+      <tr><td>col 1</td><td>col 2</td></tr>
+      <tr><td>stuff</td><td>
+      <svg xmlns="http://www.w3.org/2000/svg" id="canvas" width="100%" height="100%">
+      </svg>
+    </td></tr></table>
+
+    <pre id="logdiv">log</pre>
+    
+    <defs> <!-- needed by loader, on-demand scripts are added here -->
+      <script type="text/ecmascript" src="JSON.js"></script>
+      <script type="text/ecmascript" src="miniprototype.js"></script>
+      <script type="text/ecmascript" src="defaultconfig.js"></script>
+      <!-- localconfig.js is ignored if file not there -->
+      <script type="text/ecmascript" src="localconfig.js"></script>
+      <script type="text/ecmascript" src="Base.js"></script>
+      <script type="text/ecmascript" src="scene.js"></script>
+      <script type="text/ecmascript" src="Core.js"></script>
+      <script type="text/ecmascript" src="Text.js"></script>
+      <script type="text/ecmascript" src="Widgets.js"></script>
+      <script type="text/ecmascript" src="Network.js"></script>
+      <script type="text/ecmascript" src="Data.js"></script>
+      <script type="text/ecmascript" src="Storage.js"></script>
+      <script type="text/ecmascript" src="Tools.js"></script>
+      <script type="text/ecmascript" src="Examples.js"></script>
+      <script type="text/ecmascript" src="Main.js"></script>
+    </defs>
+  </body>
+</html>

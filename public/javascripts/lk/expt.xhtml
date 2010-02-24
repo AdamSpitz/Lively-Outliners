@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> <title>Sun Labs Lively Kernel</title> </head>
+
+<!-- Canvas element -->
+<!-- * NOTE: as of 3/09 Lively Kernel will only run on Canvas -->
+<!-- * in Webkit(Safari nightly) and MineField(Firefox nightly) -->
+<!-- * Note also that Minefield requires your localconfig.js to specify... -->
+<!--     Config.useTransformAPI = false; // -->
+<!--     Config.useGetTransformToElement = false; // -->
+
+<body style="margin:0px"> 
+ <canvas id="lively.canvas" width="1000" height="1000">
+ </canvas>
+<!-- <link rel="stylesheet" type="text/css" href="style.css"/> -->
+
+<svg id="canvas" width="100%" height="100%"    xmlns="http://www.w3.org/2000/svg"    xmlns:lively="http://www.experimentalstuff.com/Lively"    xmlns:xlink="http://www.w3.org/1999/xlink"    xmlns:xhtml="http://www.w3.org/1999/xhtml"    xml:space="preserve"    zoomAndPan="disable"><title>Lively Kernel canvas</title><defs><script type="text/ecmascript" xlink:href="JSON.js" /><script type="text/ecmascript" xlink:href="miniprototype.js" /><script type="text/ecmascript" xlink:href="defaultconfig.js"/><!-- localconfig.js is ignored if file not there... --><script type="text/ecmascript" xlink:href="localconfig.js"/>
+<script type="text/ecmascript" xlink:href="Base.js"/>
+<script type="text/ecmascript" xlink:href="EmuDom.js"/>
+<script type="text/ecmascript" xlink:href="scene.js"/>
+<script type="text/ecmascript" xlink:href="Core.js"/>
+<script>
+<![CDATA[
+
+/* -----------------------------------------------------
+ * The purpose of these changes is to replace SVG nodes
+ *  with dummy nodes so that code that depended on the SVG nodes
+ *  will still run, although without using the SVG graphics.
+ * -----------------------------------------------------
+ */
+
+NodeFactory.create =  function(name, attributes) {
+    var element = emudom.document.createElementNS(Namespace.SVG, name);
+    //return this.createNS(Namespace.SVG, name, attributes);  // doesn't work
+    return NodeFactory.extend(null, element, attributes);
+};
+
+WorldMorph.addMethods({
+    displayOnCanvas: function(canvas) {
+	// this.remove();
+	
+	//canvas.appendChild(this.rawNode);
+	// otherwise we may be 
+        var hand = this.addHand(new HandMorph(true));
+	WorldMorph.currentWorld = this; // this conflicts with mutliple worlds
+        this.onEnter(); 
+	
+	this.enterCount ++;
+    },
+
+    addHand: function(hand) {
+        if (this.hands.length > 0 && !this.hands.first())
+            this.hands.shift(); // FIXME: Quick bugfix. When deserializing the world the hands.first() is sometimes undefined
+        this.hands.push(hand);
+        hand.owner = this;
+        hand.registerForEvents(this);
+        hand.registerForEvents(hand);
+        hand.layoutChanged();
+	
+        Event.keyboardEvents.forEach(function(each) {
+            document.documentElement.addEventListener(each, hand, hand.handleOnCapture);
+        });
+	
+        //this.rawNode.parentNode.appendChild(hand.rawNode);
+	return hand;
+    }
+
+});
+
+lively.data.Wrapper.addMethods({
+    reference: function() {
+	if (!this.refcount) {
+	    if (!this.id()) {
+		this.setId(this.newId());
+	    }
+	    //this.dictionary().appendChild(this.rawNode);
+	    this.refcount = 1; 
+	    return;
+	}
+	this.refcount ++;
+    }
+ 
+
+});
+
+]]>
+</script>
+
+<script type="text/ecmascript" xlink:href="Text.js"/><script type="text/ecmascript" xlink:href="Widgets.js"/><script type="text/ecmascript" xlink:href="Network.js"/><script type="text/ecmascript" xlink:href="Data.js"/><script type="text/ecmascript" xlink:href="Storage.js"/><script type="text/ecmascript" xlink:href="Tools.js"/><script type="text/ecmascript" xlink:href="Examples.js"/><script type="text/ecmascript" xlink:href="CanvasExpt.js"/>
+<!-- Scratch.js is ignored if file not there... --><script type="text/ecmascript" xlink:href="Scratch.js"/>
+<script type="text/ecmascript" xlink:href="Main.js"/></defs></svg></body></html>
+

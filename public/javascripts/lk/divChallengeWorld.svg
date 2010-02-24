@@ -1,0 +1,25 @@
+<svg id="canvas"
+     width="100%" height="100%" 
+     xmlns="http://www.w3.org/2000/svg" 
+     xmlns:lively="http://www.experimentalstuff.com/Lively"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     xmlns:D="DAV:"
+     xml:space="preserve"
+     zoomAndPan="disable"
+     >
+<defs>
+  <script type="text/ecmascript" xlink:href="JSON.js" />
+  <script type="text/ecmascript" xlink:href="miniprototype.js" />
+  <script type="text/ecmascript" xlink:href="defaultconfig.js"/>
+  <script type="text/ecmascript" xlink:href="Base.js"/>
+  <script type="text/ecmascript" xlink:href="scene.js"/>
+  <script type="text/ecmascript" xlink:href="Core.js"/>
+  <script type="text/ecmascript" xlink:href="Text.js"/>
+  <script type="text/ecmascript" xlink:href="Widgets.js"/>
+  <script type="text/ecmascript" xlink:href="Network.js"/>
+  <script type="text/ecmascript" xlink:href="Data.js"/>
+  <script type="text/ecmascript" xlink:href="Storage.js"/>
+  <script type="text/ecmascript" xlink:href="Tools.js"/>
+  <script type="text/ecmascript" xlink:href="simpleMain.js"/>
+</defs>
+</svg>

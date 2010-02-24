@@ -1,0 +1,46 @@
+AuthType Basic
+AuthName "Logon to the Sun Labs Lively Kernel host site"
+AuthUserFile /local/webserver/users
+AddHandler cgi-script cgi sh py
+
+# the following: good for development, not good for performance ...
+<FilesMatch "\.js$">
+Header set Cache-Control "no-cache"
+</FilesMatch>
+
+#<Limit PUT DELETE POST COPY MOVE MKCOL>Require valid-user </Limit>
+<LimitExcept GET HEAD>
+Require valid-user
+</LimitExcept>
+
+#<Location "server">
+Options +ExecCGI
+#</Location>
+
+RewriteEngine On
+RewriteBase   /
+RewriteRule   ^proxy/news.com.com(.*)$               http://news.com.com$1 [P]
+RewriteRule   ^proxy/news.cnet.com(.*)$              http://news.cnet.com$1 [P]
+RewriteRule   ^proxy/weatherforecastmap.com(.*)$     http://weatherforecastmap.com$1 [P]
+RewriteRule   ^proxy/feeds.bbc.co.uk(.*)$            http://feeds.bbc.co.uk$1 [P]
+RewriteRule   ^proxy/finance.google.com(.*)$         http://finance.google.com$1 [P]
+RewriteRule   ^proxy/download.finance.yahoo.com(.*)$ http://download.finance.yahoo.com$1 [P]
+RewriteRule   ^proxy/feeds.feedburner.com(.*)$ 	     http://feeds.feedburner.com$1 [P]
+RewriteRule   ^proxy/blogs.sun.com(.*)$              http://blogs.sun.com$1 [P]
+RewriteRule   ^proxy/feeds.tuaw.com(.*)$ 	     http://feeds.tuaw.com$1 [P]
+#the following to enable a personal webserver 
+RewriteRule   ^proxy/localhost/808([0-9])/(.*)$	     http://localhost:808$1/$2 [P]
+
+RewriteRule   ^proxy/livelykernel.sunlabs.com/8093(.*)$ http://livelykernel.sunlabs.com:8093$1 [P]
+
+#enable LK repository access
+#RewriteRule   ^proxy/livelykernel.sunlabs.com/repository/(.*)   http://livelykernel.sunlabs.com/repository/$1 [P]
+
+RewriteRule   ^proxy/lively-kernel/(.*)		http://livelykernel.sunlabs.com/repository/lively-kernel/$1 [P]
+RewriteRule   ^proxy/lively-wiki/(.*)		http://livelykernel.sunlabs.com/repository/lively-wiki/$1 [P
+RewriteRule   ^proxy/lively-project/(.*)   	http://livelykernel.sunlabs.com/$1 [P]
+
+# for local svn wiki -- how to access the current URL (everything which comes before proxy/wiki ?)
+RewriteRule   ^proxy/wiki.*/(.*js)$              http://localhost/livelyBranch/$1 [P]
+RewriteRule   ^proxy/wiki(.*)$               http://localhost/testsvn/repo1$1 [P]
+

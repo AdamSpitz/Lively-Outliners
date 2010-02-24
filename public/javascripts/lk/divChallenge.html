@@ -1,0 +1,49 @@
+<head>
+  <script type="text/javascript">
+    function getGlobalOfWorld(id) {
+      // get the window/Global object
+      return document.getElementById(id).getSVGDocument().defaultView;
+    }
+    function callWorld1Main() {
+        var label = document.getElementById('world1_label1')
+        var global = getGlobalOfWorld('world1');
+        global.main(global.connectAndShowClock.curry(label));
+    }
+    function callWorld2Main() {
+      var global = getGlobalOfWorld('world2');
+      global.main(global.connectAndShowClock.curry(null));
+    }
+    function setWorld2Time(offset) {
+      var global = getGlobalOfWorld('world2');
+      var world2WorldMorph = global.WorldMorph.current();
+      var clock = world2WorldMorph.submorphs.last();
+      clock.timeZoneOffset = offset;
+    }
+    function callWorld3Main() {
+      var label = document.getElementById('world3_label1')
+      var global = getGlobalOfWorld('world3');
+      global.main(global.connectAndShowEngine.curry(label));
+    }    
+  </script>
+  
+  <title>Lively Div Challenge 01</title>
+</head>
+<body style="margin:0px">
+  <table>
+    <tr><td>world 1</td><td>world 2</td><td>world 3</td></tr>
+    <tr>
+      <td><object id="world1" data="divChallengeWorld.svg" width="200" height="500" type="image/svg+xml" onload="callWorld1Main()">Error</object></td>
+      <td><object id="world2" data="divChallengeWorld.svg" width="200" height="500" type="image/svg+xml" onload="callWorld2Main()">Error</object></td>
+      <td><object id="world3" data="divChallengeWorld.svg" width="400" height="624" type="image/svg+xml" onload="callWorld3Main()">Error</object></td>
+    </tr>
+    <tr>
+      <td><label>TimeZone: </label><input type="text" value="0" id="world1_label1"></td>
+      <td>
+        <a href='javascript:setWorld2Time(1)'>Central European Time</a><br>
+        <a href='javascript:setWorld2Time(-8)'>Pacific Standard Time</a><br>
+        <a href='javascript:setWorld2Time(-5)'>Eastern Standard Time</a><br>
+      </td>
+      <td><label>Cylinders: </label><input type="text" value="0" id="world3_label1"></td>
+    </tr>
+  </table>
+</body>

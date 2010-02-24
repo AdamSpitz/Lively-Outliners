@@ -1,0 +1,134 @@
+<g xmlns="http://www.w3.org/2000/svg" type="FabrikMorph" id="389:FabrikMorph" transform="translate(0,0)">
+     <rect x="0" y="0" width="400" height="400" stroke-width="1.5" stroke="rgb(0,0,204)" fill="rgb(127,127,230)" fill-opacity="0.8" stroke-opacity="0.8" rx="3" ry="3"/>     
+     <field name="ownerWidget" ref="378:FabrikComponent"/>
+     <field name="component" ref="378:FabrikComponent"/>
+     <widget id="378:FabrikComponent">
+         <record id="379:anonymous_103">
+             <definition><![CDATA[{"Name":{}}]]></definition>
+             <field name="Name"><![CDATA["Abstract Component"]]></field>
+         </record>
+         <field name="formalModel" ref="379:anonymous_103"/>
+         <field name="actualModel" ref="379:anonymous_103"/>
+         <array name="pinHandles"> 
+         </array>
+         <array name="components">
+             <item ref="523:TextComponent"/>
+             <item ref="527:TextComponent"/>
+             <item ref="542:FunctionComponent"/>
+         </array>
+         <array name="connectors">
+             <item ref="610:PinConnector"/>
+             <item ref="664:PinConnector"/>
+         </array>
+         <widget id="527:TextComponent">
+             <record id="528:anonymous_141">
+                 <definition><![CDATA[{"Name":{},"Text":{"to":null}}]]></definition>
+                 <field name="Name"><![CDATA["Abstract Component"]]></field>
+                 <field name="Text"><![CDATA["null"]]></field>
+             </record>
+             <field name="formalModel" ref="528:anonymous_141"/>
+             <field name="actualModel" ref="528:anonymous_141"/>
+             <array name="pinHandles">
+                 <item ref="529:PinHandle"/>
+             </array>
+             <widget id="529:PinHandle">
+                 <record id="530:anonymous_142">
+                     <field name="Name"><![CDATA["Text"]]></field>
+                     <field name="PinType"><![CDATA["regular"]]></field>
+                     <definition><![CDATA[{"Name":{},"PinType":{}}]]></definition>
+                 </record>
+                 <field name="formalModel" ref="530:anonymous_142"/>
+                 <field name="actualModel" ref="530:anonymous_142"/>
+                 <field name="component" ref="527:TextComponent"/>
+                 <array name="connectors">
+                     <item ref="610:PinConnector"/>
+                 </array>
+             </widget>
+             <field name="fabrik" ref="521:FabrikComponent"/>
+             <field name="panel" ref="584:TextComponentMorph"/>
+         </widget>
+         <widget id="523:TextComponent">
+             <record id="524:anonymous_139">
+                 <definition><![CDATA[{"Name":{},"Text":{"to":null}}]]></definition>
+                 <field name="Name"><![CDATA["Abstract Component"]]></field>
+                 <field name="Text"><![CDATA["null"]]></field>
+             </record>
+             <field name="formalModel" ref="524:anonymous_139"/>
+             <field name="actualModel" ref="524:anonymous_139"/>
+             <array name="pinHandles">
+                 <item ref="525:PinHandle"/>
+             </array>
+             <widget id="525:PinHandle">
+                 <record id="526:anonymous_140">
+                     <field name="Name"><![CDATA["Text"]]></field>
+                     <field name="PinType"><![CDATA["regular"]]></field>
+                     <definition><![CDATA[{"Name":{},"PinType":{}}]]></definition>
+                 </record>
+                 <field name="formalModel" ref="526:anonymous_140"/>
+                 <field name="actualModel" ref="526:anonymous_140"/>
+                 <field name="component" ref="523:TextComponent"/>
+                 <array name="connectors">
+                     <item ref="610:PinConnector"/>
+                 </array>
+             </widget>
+             <field name="fabrik" ref="521:FabrikComponent"/>
+         </widget>
+         <widget id="542:FunctionComponent">
+             <record id="543:anonymous_152">
+                     <definition><![CDATA[{"Name":{},"FunctionBody":{},"FunctionHeader":{},"Result":{},"Input":{}}]]></definition>
+                     <field name="Name"><![CDATA["Abstract Component"]]></field>
+                     <field name="FunctionBody"><![CDATA["input + input"]]></field>
+                     <field name="Result">null</field>
+                     <field name="FunctionHeader"><![CDATA["function f(input)"]]></field>
+                     <field name="Input"><![CDATA["null"]]></field>
+             </record>
+             <field name="formalModel" ref="543:anonymous_152"/>
+             <field name="actualModel" ref="543:anonymous_152"/>
+             <array name="pinHandles">
+                     <item ref="544:PinHandle"/>
+                     <item ref="546:PinHandle"/>
+             </array>
+             <field name="fabrik" ref="532:FabrikComponent"/>
+             <field name="panel" ref="627:FunctionComponentMorph"/>
+             <field name="morph" ref="649:TextMorph"/>
+             <widget id="544:PinHandle">
+                     <record id="545:anonymous_153">
+                             <field name="Name"><![CDATA["Result"]]></field>
+                             <field name="PinType"><![CDATA["regular"]]></field>
+                             <definition><![CDATA[{"Name":{},"PinType":{}}]]></definition>
+                     </record>
+                     <field name="formalModel" ref="545:anonymous_153"/>
+                     <field name="actualModel" ref="545:anonymous_153"/>
+                     <field name="component" ref="542:FunctionComponent"/>
+                     <array name="connectors"/>
+             </widget>
+             <widget id="546:PinHandle">
+                     <record id="547:anonymous_154">
+                             <field name="Name"><![CDATA["Input"]]></field>
+                             <definition><![CDATA[{"Name":{},"PinType":{}}]]></definition>
+                             <field name="PinType"><![CDATA["input"]]></field>
+                     </record>
+                     <field name="formalModel" ref="547:anonymous_154"/>
+                     <field name="actualModel" ref="547:anonymous_154"/>
+                     <field name="component" ref="542:FunctionComponent"/>
+                     <array name="connectors">
+                             <item ref="664:PinConnector"/>
+                     </array>
+                     <field name="morph" ref="629:PinMorph"/>
+             </widget> 
+         </widget>
+         <widget id="610:PinConnector">
+             <field name="fromPin" ref="525:PinHandle"/>
+             <field name="toPin" ref="529:PinHandle"/>
+             <field name="isBidirectional">false</field>
+             <field name="fabrik" ref="521:FabrikComponent"/>
+         </widget>
+         <widget id="664:PinConnector">
+             <field name="fromPin" ref="525:PinHandle"/>
+             <field name="toPin" ref="546:PinHandle"/>
+             <field name="isBidirectional">false</field>
+             <field name="fabrik" ref="521:FabrikComponent"/>
+         </widget>
+     </widget>
+     <field name="fabrik" ref="378:FabrikComponent"/>
+</g>
