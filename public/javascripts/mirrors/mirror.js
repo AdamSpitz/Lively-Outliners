@@ -19,6 +19,7 @@ Object.subclass("Mirror", {
 
   eachSlot: function(f) {
     var o = this.reflectee();
+    f(new ParentSlot(this));
     for (var name in o) {
       if (o.hasOwnProperty(name)) {
         f(this.slotAt(name));
@@ -68,5 +69,29 @@ Object.subclass("Mirror", {
     var contents = o[oldName];
     delete o[oldName];
     o[newName] = contents;
+  },
+
+  parent: function() {
+    var o = this.reflectee();
+    if (! is_proto_property_supported) {
+      return new Mirror(o.__parent_slot_that_does_not_actually_mean_anything_but_is_here_for_reflective_purposes__);
+    } else {
+      return new Mirror(o.__proto__);
+    }
+  },
+
+  canSetParent: function() { return is_proto_property_supported; },
+
+  setParent: function(pMir) {
+    if (! this.canSetParent()) { throw "Sorry, you can't change an object's parent in this browser. Try Firefox or Safari."; }
+    this.reflectee().__proto__ = pMir.reflectee();
+  },
+
+  createChild: function() {
+    var parent = this.reflectee();
+    var ChildConstructor = is_proto_property_supported ? function() {} : function() {this.__parent_slot_that_does_not_actually_mean_anything_but_is_here_for_reflective_purposes__ = parent;};
+    ChildConstructor.prototype = parent;
+    var child = new ChildConstructor();
+    return new Mirror(child);
   },
 });

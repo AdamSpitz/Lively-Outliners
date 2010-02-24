@@ -1,15 +1,22 @@
-Object.subclass("Slot", {
-  initialize: function(n, m) {
-    this._name = n;
+Object.subclass("AbstractSlot", {
+  initialize: function(m) {
     this._mirror = m;
   },
 
-    name: function() { return this._name;   },
   mirror: function() { return this._mirror; },
   holder: function() { return this._mirror; },
+});
 
-     contents: function( ) { return this._mirror.   contentsAt(this._name   ); },
-  setContents: function(m) { return this._mirror.setContentsAt(this._name, m); },
+AbstractSlot.subclass("Slot", {
+  initialize: function($super, n, m) {
+    $super(m);
+    this._name = n;
+  },
+
+  name: function() { return this._name; },
+
+     contents: function( ) { return this._mirror.   contentsAt(this.name()   ); },
+  setContents: function(m) { return this._mirror.setContentsAt(this.name(), m); },
 
   copyTo: function(newMir) {
     newMir.setContentsAt(this.name(), this.contents());
@@ -17,6 +24,12 @@ Object.subclass("Slot", {
   },
 
   remove: function() {
-    this.mirror().removeSlotAt(this._name);
+    this.mirror().removeSlotAt(this.name());
   },
+});
+
+AbstractSlot.subclass("ParentSlot", {
+  name: function() { return "*parent*"; },
+  
+  contents: function( ) { return this._mirror.parent(); },
 });

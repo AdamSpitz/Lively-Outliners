@@ -366,6 +366,11 @@ ColumnMorph.subclass("OutlinerMorph", {
       this.updateAppearance();
     }.bind(this)]]);
 
+    menu.addSection([["create child", function() {
+      /* aaa I don't understand these damned Event things */ evt = new Event(evt); evt.hand = evt.rawEvent.hand;
+      this.world().outlinerFor(this.mirror().createChild()).grabMe(evt);
+    }.bind(this)]]);
+
     return menu;
   },
 
@@ -446,6 +451,10 @@ WorldMorph.addMethods({
         periodicArrowUpdatingProcess.isRunning() ? [ "stop updating arrows", function() {periodicArrowUpdatingProcess.stop();}]
                                                  : ["start updating arrows", function() {periodicArrowUpdatingProcess.ensureRunning();}],
       ]);
+
+      menu.addSection([[ "aaaaa", function() {
+        alert(eval("3 + 4; 5 + 13"));
+      }]]);
     }
 
     return menu;
@@ -714,8 +723,12 @@ ColumnMorph.subclass("EvaluatorMorph", {
     this.beUngrabbable();
   },
 
+  outliner: function() { return this._outliner; },
+
   doIt: function() {
-    return eval(this.textMorph.getText());
+    // aaa - How does LK do this?
+    EvaluatorMorph.__aaa_hack_evaluator_receiver__ = this.outliner().mirror().reflectee();
+    return eval("var self = EvaluatorMorph.__aaa_hack_evaluator_receiver__; " + this.textMorph.getText());
   },
 
   getIt: function() {
