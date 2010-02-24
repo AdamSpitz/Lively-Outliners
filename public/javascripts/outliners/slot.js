@@ -8,7 +8,9 @@ Object.subclass("Slot", {
   mirror: function() { return this._mirror; },
   holder: function() { return this._mirror; },
 
-  contents: function() {
-    return this._mirror.contentsAt(this._name);
-  },
+     contents: function( ) { return this._mirror.   contentsAt(this._name   ); },
+  setContents: function(m) { return this._mirror.setContentsAt(this._name, m); },
+
+  // aaa - rename, of course
+  setTopic: function(t) { this.setContents(t); },
 });

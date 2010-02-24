@@ -91,12 +91,16 @@ ColumnMorph.subclass("OutlinerMorph", {
     // this.closeDnD(); When this was uncommented, we couldn't drag arrows.
 
     this.expander = new ExpanderMorph(this);
+    this.titleLabel = createLabel("");
     this.titleTopicRef = new TopicRef(this.topic, true, "Title");
     this.discussButton = createButton("Discuss", function() {this.topic.openDiscussionWindow();}.bind(this), 0);
     this.dismissButton = new WindowControlMorph(new Rectangle(0, 0, 22, 22), 3, Color.primary.yellow);
     this.dismissButton.relayToModel(this, {HelpText: "-DismissHelp", Trigger: "=removeFromWorld"});
     this.create_header_row();
   },
+
+  suppressHandles: true,
+  okToDuplicate: Functions.False,
 
   // Optimization: create the panels lazily. Most will never be needed, and it's bad to make the user wait while we create dozens of them up front.
   // aaa: Can I create a general lazy thingamajig mechanism?
@@ -160,6 +164,11 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   // updating
 
+  updateEverything: function() {
+    this.populateOccurrencesPanel();
+    this.updateAppearance();
+  },
+
   updateAppearance: function() {
     if (! this.world()) {return;}
     this.refillWithAppropriateColor();
@@ -173,8 +182,13 @@ ColumnMorph.subclass("OutlinerMorph", {
     if (u == !!this.was_already_unobtrusive && this.headerRow.getThingies().size() > 0) {return;}
     this.was_already_unobtrusive = u;
     this.sPadding = this.fPadding = u ? 2 : 10;
-    this.headerRow.replaceThingiesWith(u ? [this.titleTopicRef.morph()] : [this.expander, this.discussButton, this.dismissButton]);
+    this.updateTitle();
+    this.headerRow.replaceThingiesWith(u ? [this.titleTopicRef.morph()] : [this.expander, this.titleLabel, this.discussButton, this.dismissButton]);
     this.rejiggerTheLayout();
+  },
+
+  updateTitle: function() {
+    this.titleLabel.setText(this.inspect());
   },
 
 
@@ -203,6 +217,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   wasJustCreated: function() {
     if (! this.world()) {return;}
     this.expand();
+    this.updateTitle();
     this.titleTopicRef.morph().updateAppearance();
     this.titleTopicRef.morph().beWritableAndSelectAll();
   },
@@ -258,7 +273,14 @@ ColumnMorph.subclass("OutlinerMorph", {
       contentsPointer.connectModel({model: {Value: null, getValue: function() {return this.Value;}, setValue: function(v) {this.Value = v; if (!v) {WorldMorph.current().outlinerFor(s.contents()).ensureIsInWorld(); WorldMorph.current().addMorph(contentsPointer.arrow);}}}, setValue: "setValue", getValue: "getValue"});
       contentsPointer.suppressHandles = true;
       contentsPointer.okToDuplicate = Functions.False;
-      return createLabelledNode(s.name(), contentsPointer);
+
+      var slotPanel = new RowMorph().beInvisible();
+      var lbl = new SlotNameMorph(s);
+      slotPanel.addThingies([lbl, contentsPointer]);
+      slotPanel.labelMorph = lbl;
+      slotPanel.labelledMorph = contentsPointer;
+      slotPanel.inspect = function() {return "a slot panel";};
+      return slotPanel;
     }.bind(this));
   },
 
@@ -360,7 +382,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   acceptsDropping: function(m) {
-    return this.topic.get__current_users_opinion() != null && m.canBeDroppedOnTopic;
+    return m.canBeDroppedOnTopic;
   },
 
   justReceivedDrop: function(m) {
@@ -427,7 +449,7 @@ WorldMorph.addMethods({
     menu.addItem(["create new object", function() {
       /* aaa I don't understand these damned Event things */
       evt = new Event(evt); evt.hand = evt.rawEvent.hand;
-      var o = {argle: {}, bargle: {}};
+      var o = {anObject: {}, anArray: ['zero', 1, 'two'], aNull: null, fortyTwo: 42, aString: 'here is a string', aBoolean: true};
       this.outlinerFor(new Mirror(o)).grabMe(evt);
     }]);
 
@@ -503,7 +525,7 @@ ArrowMorph.subclass("SlotContentsPointerArrow", {
 
   createEndpoints: function() {
     this.endpoint1 = this._fixedEndpoint;
-    this.endpoint2 = new ArrowEndpoint(this._slot, this, true);
+    this.endpoint2 = new ArrowEndpoint(this._slot, this);
   },
 
   noLongerNeedsToBeVisible: function() {
@@ -518,3 +540,88 @@ ArrowMorph.subclass("SlotContentsPointerArrow", {
 function eachArrowThatShouldBeUpdated(f) {
   allTopicRefArrows.each(function(a) {if (!a.noLongerNeedsToBeUpdated) {f(a);}});
 }
+
+
+TwoModeTextMorph.subclass("SlotNameMorph", {
+  initialize: function($super, slot) {
+    this.topicRef = slot;
+    $super(pt(5, 10).extent(pt(140, 20)), slot.name());
+    // aaa - taken out, fix it the proper way: if (this.isReadOnly) {this.ignoreEvents();}
+    this.extraMenuItemAdders = [];
+    this.normalBorderWidth = 1;
+    this.backgroundColorWhenUnwritable = this.constructor.backgroundColorWhenUnwritable;
+    this.backgroundColorWhenWritable   = this.constructor.backgroundColorWhenWritable;
+    this.setBorderColor(Color.black);
+    this.setFill(Color.gray.lighter());
+    // aaa do we need this for outliners? this.topicRef.notifier.add_observer(function() {this.updateAppearance();}.bind(this));
+    this.updateAppearance();
+    this.startPeriodicallyUpdating();
+    this.normalBorderWidth = 0;
+    this.nameOfEditCommand = "rename";
+    this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
+  },
+
+  slot: function() {return this.topicRef;},
+  inspect:  function() {return this.slot().name();},
+
+  outliner: function() {
+    return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
+  },
+
+  // aaa onMouseDown: function(evt) { return false; },  // don't allow selection
+
+  canBecomeWritable: function() { return true; },
+
+  updateAppearance: function() {
+    this.updateLabel();
+  },
+
+  startPeriodicallyUpdating: function() {
+    new PeriodicalExecuter(function(pe) {this.updateAppearance();}.bind(this), 8);
+  },
+
+  updateLabel: function() {
+    if (! this.isInWritableMode) {
+      var newText = this.slot().name();
+      if (newText != this.getText()) {
+        this.setText(newText);
+      }
+    }
+  },
+
+  determineWhichMorphToAttachTo: function() {return true;},
+  attachToTheRightPlace: function() {},
+  noLongerNeedsToBeVisibleAsArrowEndpoint: function() {},
+  relativeLineEndpoint: pt(70,10),
+
+  morphMenu: function(evt) {
+    var menu = new MenuMorph([], this);
+    if (!this.isInWritableMode) { // aaa is this right for outliners?
+      this.extraMenuItemAdders.each(function(mia) {mia(menu, evt);});
+    }
+    return menu;
+  },
+
+  returnKeyShouldAccept: function() { return true; },
+
+  getSavedText: function() {
+    return this.slot().name();
+  },
+
+  setSavedText: function(text) {
+    if (text !== this.slot().name()) {
+      this.slot().holder().renameSlot(this.slot().name(), text);
+      this.outliner().updateEverything();
+    }
+  },
+
+  captureMouseEvent: function($super, evt, hasFocus) {
+    if (evt.type == "MouseDown" && !this.isInWritableMode) {return false;}
+    return $super(evt, hasFocus);
+  },
+});
+Object.extend(SlotNameMorph.prototype, CanHaveArrowsAttachedToIt);
+Object.extend(SlotNameMorph, {
+  backgroundColorWhenUnwritable: Color.gray.lighter(),
+  backgroundColorWhenWritable:   Color.gray.lighter(),
+});

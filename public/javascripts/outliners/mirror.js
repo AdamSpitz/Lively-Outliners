@@ -14,7 +14,7 @@ Object.subclass("Mirror", {
   },
 
   inspect: function() {
-    return "a mirror on " + this.reflectee();
+    return "" + this.reflectee();
   },
 
   eachSlot: function(f) {
@@ -34,6 +34,14 @@ Object.subclass("Mirror", {
     return this.reflectee()[n];
   },
 
+  setContentsAt: function(n, m) {
+    this.primitiveSetContentsAt(n, m.reflectee());
+  },
+
+  primitiveSetContentsAt: function(n, o) {
+    return this.reflectee()[n] = o;
+  },
+
   findUnusedSlotName: function(prefix) {
     var pre = prefix || "slot";
     var i = 0;
@@ -43,5 +51,14 @@ Object.subclass("Mirror", {
       name = pre + i;
     } while (this.reflectee().hasOwnProperty(name));
     return name;
+  },
+
+  renameSlot: function(oldName, newName) {
+    var o = this.reflectee();
+    if (  o.hasOwnProperty(newName)) { throw o + " already has a slot named " + newName; }
+    if (! o.hasOwnProperty(oldName)) { throw o + " has no slot named "        + oldName; }
+    var contents = o[oldName];
+    delete o[oldName];
+    o[newName] = contents;
   },
 });

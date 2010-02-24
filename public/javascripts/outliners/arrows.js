@@ -126,6 +126,9 @@ Morph.subclass("ArrowEndpoint", {
     this.canBeDroppedOnWorld = true;
   },
 
+  suppressHandles: true,
+  okToDuplicate: Functions.False,
+
   determineWhichMorphToAttachTo: function() {
     if (this.owner instanceof HandMorph) {return this.morphToAttachTo = this.owner;}
     var slotContents = this.topicRef.contents();
@@ -228,7 +231,6 @@ Morph.subclass("ArrowEndpoint", {
     }
     this.vectorFromOtherEndpoint = null;
     this.topicRef.setTopic(t);
-    this.association.set__voted_yes_by_current_user(true);
   },
 
   wasJustDroppedOnWorld: function(w) {
