@@ -461,6 +461,17 @@ WorldMorph.addMethods({
   outlinerFor: function(mir) {
     return this.outliners().getOrIfAbsentPut(mir, function() {return new OutlinerMorph(mir);});
   },
+
+
+  // dropping stuff
+
+  acceptsDropping: function(m) {
+    return m.canBeDroppedOnWorld;
+  },
+
+  justReceivedDrop: function(m) {
+    if (m.wasJustDroppedOnWorld !== undefined) { m.wasJustDroppedOnWorld(this); }
+  },
 });
 
 Object.subclass("TopicRef", {
@@ -652,6 +663,13 @@ RowMorph.subclass("SlotMorph", {
     outliner.expand();
     this.remove();
     outliner.updateEverything();
+  },
+
+  wasJustDroppedOnWorld: function(world) {
+    var outliner = world.outlinerFor(this.slot().mirror());
+    world.addMorphAt(outliner, this.position());
+    outliner.expand();
+    this.remove();
   },
 
   morphMenu: function(evt) {
