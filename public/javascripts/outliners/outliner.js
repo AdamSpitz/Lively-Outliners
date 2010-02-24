@@ -433,7 +433,7 @@ WorldMorph.addMethods({
     menu.addItem(["create new object", function() {
       /* aaa I don't understand these damned Event things */
       evt = new Event(evt); evt.hand = evt.rawEvent.hand;
-      var o = {anObject: {}, anArray: ['zero', 1, 'two'], aNull: null, fortyTwo: 42, aString: 'here is a string', aBoolean: true};
+      var o = {anObject: {}, anArray: ['zero', 1, 'two'], aNull: null, fortyTwo: 42, aString: 'here is a string', aBoolean: true, aFunction: function(a, b) {argleBargle();}};
       this.outlinerFor(new Mirror(o)).grabMe(evt);
     }]);
 
