@@ -221,7 +221,7 @@ Morph.subclass("ArrowEndpoint", {
     return menu;
   },
 
-  wasJustDroppedOnTopic: function(t) {
+  wasJustDroppedOnOutliner: function(outliner) {
     if (this.shouldDisappearAfterAttaching) {
       this.topicRef.setterArrow = null;
       this.noLongerNeedsToBeVisibleAsArrowEndpoint();
@@ -230,7 +230,7 @@ Morph.subclass("ArrowEndpoint", {
       this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = false;
     }
     this.vectorFromOtherEndpoint = null;
-    this.topicRef.setTopic(t);
+    this.topicRef.setContents(outliner.mirror());
   },
 
   wasJustDroppedOnWorld: function(w) {

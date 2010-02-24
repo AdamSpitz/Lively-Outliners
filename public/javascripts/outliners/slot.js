@@ -11,6 +11,12 @@ Object.subclass("Slot", {
      contents: function( ) { return this._mirror.   contentsAt(this._name   ); },
   setContents: function(m) { return this._mirror.setContentsAt(this._name, m); },
 
-  // aaa - rename, of course
-  setTopic: function(t) { this.setContents(t); },
+  copyTo: function(newMir) {
+    newMir.setContentsAt(this.name(), this.contents());
+    return newMir.slotAt(this.name());
+  },
+
+  remove: function() {
+    this.mirror().removeSlotAt(this._name);
+  },
 });

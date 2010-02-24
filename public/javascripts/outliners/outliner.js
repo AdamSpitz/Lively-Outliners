@@ -101,13 +101,17 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   suppressHandles: true,
   okToDuplicate: Functions.False,
+  
+  mirror: function() {return this.topic;},
 
   // Optimization: create the panels lazily. Most will never be needed, and it's bad to make the user wait while we create dozens of them up front.
   // aaa: Can I create a general lazy thingamajig mechanism?
   get_occurrences_panel: function() { return this.occurrences_panel || (this.occurrences_panel = this.create_occurrences_panel()); },
 
   create_occurrences_panel: function() {
-    return createLabelledPanel("Slots", "This object's slots");
+    var p = createLabelledPanel("Slots", "This object's slots");
+    p.beInvisible();
+    return p;
   },
 
   create_header_row: function() {
@@ -260,27 +264,7 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   slotPanelFor: function(s) {
     return this.slotPanels().getOrIfAbsentPut(s.name(), function() {
-      var contentsPointer = new ButtonMorph(pt(0,0).extent(pt(10,10)));
-
-      // aaa Is this the right object to put this stuff on?
-      contentsPointer.determineWhichMorphToAttachTo = function() {return true;};
-      contentsPointer.attachToTheRightPlace = function() {};
-      contentsPointer.noLongerNeedsToBeVisibleAsArrowEndpoint = function() {};
-      contentsPointer.relativeLineEndpoint = pt(70,10);
-      contentsPointer.setShapeToLookLikeACircle = function() {};
-
-      contentsPointer.arrow = new SlotContentsPointerArrow(s, contentsPointer);
-      contentsPointer.connectModel({model: {Value: null, getValue: function() {return this.Value;}, setValue: function(v) {this.Value = v; if (!v) {WorldMorph.current().outlinerFor(s.contents()).ensureIsInWorld(); WorldMorph.current().addMorph(contentsPointer.arrow);}}}, setValue: "setValue", getValue: "getValue"});
-      contentsPointer.suppressHandles = true;
-      contentsPointer.okToDuplicate = Functions.False;
-
-      var slotPanel = new RowMorph().beInvisible();
-      var lbl = new SlotNameMorph(s);
-      slotPanel.addThingies([lbl, contentsPointer]);
-      slotPanel.labelMorph = lbl;
-      slotPanel.labelledMorph = contentsPointer;
-      slotPanel.inspect = function() {return "a slot panel";};
-      return slotPanel;
+      return new SlotMorph(s);
     }.bind(this));
   },
 
@@ -386,7 +370,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   justReceivedDrop: function(m) {
-    m.wasJustDroppedOnTopic(this.topic);
+    m.wasJustDroppedOnOutliner(this);
   },
 
   onMouseOver: function(evt) {
@@ -624,4 +608,62 @@ Object.extend(SlotNameMorph.prototype, CanHaveArrowsAttachedToIt);
 Object.extend(SlotNameMorph, {
   backgroundColorWhenUnwritable: Color.gray.lighter(),
   backgroundColorWhenWritable:   Color.gray.lighter(),
+});
+
+
+RowMorph.subclass("SlotMorph", {
+  initialize: function($super, slot) {
+    $super();
+    this._slot = slot;
+    //this.beInvisible();
+    this.setFill(Color.gray.lighter());
+    this.setBorderWidth(1);
+    this.setBorderColor(Color.black);
+    this.labelMorph = new SlotNameMorph(slot);
+
+    var contentsPointer = this.contentsPointer = new ButtonMorph(pt(0,0).extent(pt(10,10)));
+
+    // aaa Is this the right object to put this stuff on?
+    contentsPointer.determineWhichMorphToAttachTo = function() {return true;};
+    contentsPointer.attachToTheRightPlace = function() {};
+    contentsPointer.noLongerNeedsToBeVisibleAsArrowEndpoint = function() {};
+    contentsPointer.relativeLineEndpoint = pt(70,10);
+    contentsPointer.setShapeToLookLikeACircle = function() {};
+    
+    contentsPointer.arrow = new SlotContentsPointerArrow(slot, contentsPointer);
+    contentsPointer.connectModel({model: {Value: null, getValue: function() {return this.Value;}, setValue: function(v) {this.Value = v; if (!v) {WorldMorph.current().outlinerFor(slot.contents()).ensureIsInWorld(); WorldMorph.current().addMorph(contentsPointer.arrow);}}}, setValue: "setValue", getValue: "getValue"});
+    contentsPointer.suppressHandles = true;
+    contentsPointer.okToDuplicate = Functions.False;
+
+    this.addThingies([this.labelMorph, contentsPointer]);
+  },
+
+     slot: function() { return this._slot; },
+  inspect: function() { return "a slot morph"; },
+
+  outliner: function() {
+    return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
+  },
+
+  canBeDroppedOnTopic: true,
+
+  wasJustDroppedOnOutliner: function(outliner) {
+    this.slot().copyTo(outliner.mirror());
+    outliner.expand();
+    this.remove();
+    outliner.updateEverything();
+  },
+
+  morphMenu: function(evt) {
+    var menu = new MenuMorph([], this);
+    menu.addItem(["move", function(evt) {
+      var newMir = new Mirror({});
+      newMir.setContentsAt(this.slot().name(), this.slot().contents());
+      var newSlot = newMir.slotAt(this.slot().name());
+      this.slot().remove();
+      evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
+      this.outliner().updateEverything();
+    }]);
+    return menu;
+  },
 });

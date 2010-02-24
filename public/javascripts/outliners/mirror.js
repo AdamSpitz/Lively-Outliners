@@ -21,9 +21,13 @@ Object.subclass("Mirror", {
     var o = this.reflectee();
     for (var name in o) {
       if (o.hasOwnProperty(name)) {
-        f(new Slot(name, this));
+        f(this.slotAt(name));
       }
     }
+  },
+
+  slotAt: function(n) {
+    return new Slot(n, this);
   },
 
   contentsAt: function(n) {
@@ -40,6 +44,10 @@ Object.subclass("Mirror", {
 
   primitiveSetContentsAt: function(n, o) {
     return this.reflectee()[n] = o;
+  },
+
+  removeSlotAt: function(n) {
+    delete this.reflectee()[n];
   },
 
   findUnusedSlotName: function(prefix) {
