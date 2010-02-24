@@ -1,1 +1,1 @@
-var debugMode = false;
+var debugMode = true;

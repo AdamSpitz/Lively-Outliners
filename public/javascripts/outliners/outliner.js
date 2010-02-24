@@ -103,7 +103,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   get_occurrences_panel: function() { return this.occurrences_panel || (this.occurrences_panel = this.create_occurrences_panel()); },
 
   create_occurrences_panel: function() {
-    return createLabelledPanel("Web pages", "Web pages about this specific concept");
+    return createLabelledPanel("Slots", "This object's slots");
   },
 
   create_header_row: function() {
@@ -244,7 +244,22 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   slotPanelFor: function(s) {
-    return this.slotPanels().getOrIfAbsentPut(s.name(), function() {return createLabel(s.name());});
+    return this.slotPanels().getOrIfAbsentPut(s.name(), function() {
+      var contentsPointer = new ButtonMorph(pt(0,0).extent(pt(10,10)));
+
+      // aaa Is this the right object to put this stuff on?
+      contentsPointer.determineWhichMorphToAttachTo = function() {return true;};
+      contentsPointer.attachToTheRightPlace = function() {};
+      contentsPointer.noLongerNeedsToBeVisibleAsArrowEndpoint = function() {};
+      contentsPointer.relativeLineEndpoint = pt(70,10);
+      contentsPointer.setShapeToLookLikeACircle = function() {};
+
+      contentsPointer.arrow = new SlotContentsPointerArrow(s, contentsPointer);
+      contentsPointer.connectModel({model: {Value: null, getValue: function() {return this.Value;}, setValue: function(v) {this.Value = v; if (!v) {WorldMorph.current().outlinerFor(s.contents()).ensureIsInWorld(); WorldMorph.current().addMorph(contentsPointer.arrow);}}}, setValue: "setValue", getValue: "getValue"});
+      contentsPointer.suppressHandles = true;
+      contentsPointer.okToDuplicate = Functions.False;
+      return createLabelledNode(s.name(), contentsPointer);
+    }.bind(this));
   },
 
   populateOccurrencesPanel: function() {
@@ -299,7 +314,7 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   addToWorld: function() {
     WorldMorph.current().addMorph(this);
-    this.titleTopicRef.morph().updateAppearance();
+    // aaa - I do think the outliner will eventually want a title: this.titleTopicRef.morph().updateAppearance();
     // Stop this scaling nonsense:   this.smoothlyScaleBackToNormalSize();
   },
 
@@ -413,8 +428,16 @@ WorldMorph.addMethods({
       /* aaa I don't understand these damned Event things */
       evt = new Event(evt); evt.hand = evt.rawEvent.hand;
       var o = {argle: {}, bargle: {}};
-      this.outlinerFor(o).grabMe(evt);
+      this.outlinerFor(new Mirror(o)).grabMe(evt);
     }]);
+
+    if (debugMode) {
+      menu.addSection([
+        periodicArrowUpdatingProcess.isRunning() ? [ "stop updating arrows", function() {periodicArrowUpdatingProcess.stop();}]
+                                                 : ["start updating arrows", function() {periodicArrowUpdatingProcess.ensureRunning();}],
+      ]);
+    }
+
     return menu;
   },
 
@@ -425,9 +448,12 @@ WorldMorph.addMethods({
     return this._outliners;
   },
 
-  outlinerFor: function(o) {
-    var m = new Mirror(o);
-    return this.outliners().getOrIfAbsentPut(m, function() {return new OutlinerMorph(m);});
+  existingOutlinerFor: function(mir) {
+    return this.outliners().get(mir);
+  },
+
+  outlinerFor: function(mir) {
+    return this.outliners().getOrIfAbsentPut(mir, function() {return new OutlinerMorph(mir);});
   },
 });
 
@@ -461,5 +487,34 @@ Object.subclass("TopicRef", {
     association:          function() {return this.associationThatIAmTheTypeOf; },
 });
 
-
 var overlays = [];
+
+
+var allTopicRefArrows = [];
+
+ArrowMorph.subclass("SlotContentsPointerArrow", {
+  initialize: function($super, slot, fep) {
+    this._slot = slot;
+    this._fixedEndpoint = fep;
+    $super();
+    this.initializeUI();
+    allTopicRefArrows.push(this);
+  },
+
+  createEndpoints: function() {
+    this.endpoint1 = this._fixedEndpoint;
+    this.endpoint2 = new ArrowEndpoint(this._slot, this, true);
+  },
+
+  noLongerNeedsToBeVisible: function() {
+    this.noLongerNeedsToBeUpdated = true;
+    this.remove();
+  },
+
+  rankAmongArrowsWithSameEndpoints: function() {return 0;},
+});
+
+
+function eachArrowThatShouldBeUpdated(f) {
+  allTopicRefArrows.each(function(a) {if (!a.noLongerNeedsToBeUpdated) {f(a);}});
+}

@@ -43,7 +43,6 @@ Morph.subclass("ArrowMorph", {
   shouldUpdateOnThisTick: function(n) {return this.shouldUpdateOnEveryTick || n == 0;},
 
   putVerticesInTheRightPlace: function() {
-   try {
     if (this.shouldBeShown()) {
       this.calculateCenterPoints();
       this.endpoint1.attachToTheRightPlace();
@@ -60,9 +59,6 @@ Morph.subclass("ArrowMorph", {
         this.tickSlowly();
       }
     }
-   } catch (e) {
-     logError(e); // aaa take this out?
-   }
   },
 
   shouldBeShown: function() {
@@ -132,9 +128,9 @@ Morph.subclass("ArrowEndpoint", {
 
   determineWhichMorphToAttachTo: function() {
     if (this.owner instanceof HandMorph) {return this.morphToAttachTo = this.owner;}
-    var t = this.topicRef.getTopic();
-    var m = t ? t.morphForArrowsToAttachTo() : null;
-    return this.morphToAttachTo = m ? (m.world() ? m : null) : WorldMorph.current();
+    var slotContents = this.topicRef.contents();
+    var outliner = WorldMorph.current().existingOutlinerFor(slotContents);
+    return this.morphToAttachTo = outliner ? (outliner.world() ? outliner : null) : null;
   },
 
   attachToTheRightPlace: function() {
@@ -142,8 +138,9 @@ Morph.subclass("ArrowEndpoint", {
     if (this.morphToAttachTo == this.owner && this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner) {return;}
     if (this.morphToAttachTo != WorldMorph.current()) {
 
+      // aaa - Do outliners need this stuff?
       var index = this.association.rankAmongArrowsWithSameEndpoints();
-      var offsetFromMidpoint = Math.floor((index + 1) / 2) * (index % 2 == 0 ? 1 : -1) * (this.topicRef == this.association.get__topic1_ref() ? 1 : -1);
+      var offsetFromMidpoint = Math.floor((index + 1) / 2) * (index % 2 == 0 ? 1 : -1);
       //console.log("Index thingy:" + index + ", offsetFromMidpoint: " + offsetFromMidpoint);
 
       var localCenter = this.ownerRelativeCenterpoint();
