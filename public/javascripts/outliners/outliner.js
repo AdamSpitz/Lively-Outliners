@@ -33,7 +33,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   get_slots_panel: function() { return this.slots_panel || (this.slots_panel = this.create_slots_panel()); },
 
   create_slots_panel: function() {
-    var p = createLabelledPanel("Slots", "This object's slots");
+    var p = new ColumnMorph();
     p.beInvisible();
     return p;
   },
@@ -70,14 +70,8 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   repositionStuff: function() {
-    var ip = this.interest_panel;
-    if (ip) {
-      ip.labelledMorph.rejiggerTheLayout();
-      ip.rejiggerTheLayout();
-    }
     var op = this.slots_panel;
     if (op) {
-      op.labelledMorph.rejiggerTheLayout();
       op.rejiggerTheLayout();
     }
     this.rejiggerTheLayout();
@@ -190,11 +184,11 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   populateSlotsPanel: function() {
     var op = this.get_slots_panel();
-    op.labelledMorph.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
-      op.labelledMorph.removeAllThingies();
+    op.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
+      op.removeAllThingies();
       this.mirror().eachSlot(function(s) {
         var sp = this.slotPanelFor(s);
-        op.labelledMorph.addThingy(sp);
+        op.addThingy(sp);
         this.rejiggerTheLayout();
       }.bind(this));
     }.bind(this));
@@ -206,7 +200,6 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   rejiggerThePanels: function() {
     if (this.slots_panel) {this.slots_panel.rejiggerTheLayout();}
-    if (this.   interest_panel) {   this.interest_panel.rejiggerTheLayout();}
   },
 
   repositionJustMyStuff: function() {
@@ -442,6 +435,10 @@ var overlays = [];
 
 var allTopicRefArrows = [];
 
+function eachArrowThatShouldBeUpdated(f) {
+  allTopicRefArrows.each(function(a) {if (!a.noLongerNeedsToBeUpdated) {f(a);}});
+}
+
 ArrowMorph.subclass("SlotContentsPointerArrow", {
   initialize: function($super, slot, fep) {
     this._slot = slot;
@@ -450,6 +447,9 @@ ArrowMorph.subclass("SlotContentsPointerArrow", {
     this.initializeUI();
     allTopicRefArrows.push(this);
   },
+
+  suppressHandles: true,
+  okToDuplicate: Functions.False,
 
   createEndpoints: function() {
     this.endpoint1 = this._fixedEndpoint;
@@ -461,13 +461,13 @@ ArrowMorph.subclass("SlotContentsPointerArrow", {
     this.remove();
   },
 
+  needsToBeVisible: function() {
+    this.noLongerNeedsToBeUpdated = false;
+  },
+
   rankAmongArrowsWithSameEndpoints: function() {return 0;},
 });
 
-
-function eachArrowThatShouldBeUpdated(f) {
-  allTopicRefArrows.each(function(a) {if (!a.noLongerNeedsToBeUpdated) {f(a);}});
-}
 
 
 TwoModeTextMorph.subclass("SlotNameMorph", {
@@ -480,7 +480,7 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
     this.backgroundColorWhenUnwritable = this.constructor.backgroundColorWhenUnwritable;
     this.backgroundColorWhenWritable   = this.constructor.backgroundColorWhenWritable;
     this.setBorderColor(Color.black);
-    this.setFill(Color.gray.lighter());
+    this.setFill(null);
     // aaa do we need this for outliners? this.topicRef.notifier.add_observer(function() {this.updateAppearance();}.bind(this));
     this.updateAppearance();
     this.startPeriodicallyUpdating();
@@ -488,6 +488,9 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
     this.nameOfEditCommand = "rename";
     this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
   },
+
+  suppressHandles: true,
+  okToDuplicate: Functions.False,
 
   slot: function() {return this.topicRef;},
   inspect:  function() {return this.slot().name();},
@@ -558,10 +561,13 @@ Object.extend(SlotNameMorph, {
 ColumnMorph.subclass("SlotMorph", {
   initialize: function($super, slot) {
     $super();
+    this.sPadding = 3;
+    this.fPadding = 3;
     this._slot = slot;
-    this.setFill(Color.gray.lighter());
+    this.setFillToDefaultWithColor(Color.gray);
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
+    this.beUngrabbable();
     this.labelMorph = new SlotNameMorph(slot);
 
     this.signatureRow = new RowMorph().beInvisible();
@@ -581,10 +587,15 @@ ColumnMorph.subclass("SlotMorph", {
     var slot = this.slot();
     var arrow;
     m = this._contentsPointer = this.createButton(function() {
-      WorldMorph.current().outlinerFor(slot.contents()).ensureIsInWorld();
-      WorldMorph.current().addMorph(arrow);
+      if (arrow.noLongerNeedsToBeUpdated) {
+        WorldMorph.current().outlinerFor(slot.contents()).ensureIsInWorld();
+        arrow.needsToBeVisible();
+      } else {        
+        arrow.noLongerNeedsToBeVisible();
+      }
     });
     arrow = new SlotContentsPointerArrow(slot, m);
+    arrow.noLongerNeedsToBeUpdated = true;
 
     m.determineWhichMorphToAttachTo = function() {return true;};
     m.attachToTheRightPlace = function() {};
@@ -645,6 +656,9 @@ ColumnMorph.subclass("SlotMorph", {
     return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
   },
 
+  suppressHandles: true,
+  okToDuplicate: Functions.False,
+
   canBeDroppedOnTopic: true,
 
   wasJustDroppedOnOutliner: function(outliner) {
@@ -663,6 +677,10 @@ ColumnMorph.subclass("SlotMorph", {
 
   morphMenu: function(evt) {
     var menu = new MenuMorph([], this);
+
+    this.labelMorph.addEditingMenuItemsTo(menu, evt);
+
+    menu.addLine();
 
     menu.addItem(["copy", function(evt) {
       var newSlot = this.slot().copyTo(new Mirror({}));

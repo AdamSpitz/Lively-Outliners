@@ -178,12 +178,7 @@ Morph.addMethods({
   },
 
   grabMe: function(evt) {
-    // aaa - Not sure why setting the position twice is necessary. But the drop shadow comes out
-    // kinda weird if we don't do the first one, and it doesn't seem to work right at all if we
-    // don't do the second one.
-    this.setPosition(evt.hand.position());
     evt.hand.grabMorph(this, evt);
-    this.setPosition(pt(0,0)); // aaa - Maybe grab in the center rather than 0,0?
   },
 
 
@@ -904,6 +899,7 @@ Morph.subclass("RowOrColumnMorph", {
     this.setFill(null);
     this.setBorderWidth(0);
     this.beUngrabbable();
+    this.suppressHandles = true;
     return this;
   },
 });
