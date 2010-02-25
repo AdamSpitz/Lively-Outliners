@@ -59,19 +59,6 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.repositionStuff();
   },
 
-  rejiggerTheColumns: function() {
-    if (this.slots_column) {this.slots_column.rejiggerTheLayout();}
-  },
-
-  rejiggerThePanels: function() {
-    if (this.slots_panel) {this.slots_panel.rejiggerTheLayout();}
-  },
-
-  repositionJustMyStuff: function() {
-    this.rejiggerTheColumns();
-    this.rejiggerThePanels();
-  },
-
 
   // updating    // aaa - maybe make a standard method name ("updateAppearance" or something) for all this updating stuff
 
@@ -199,22 +186,21 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   morphMenu: function(evt) {
     var menu = new MenuMorph([], this);
-
-    menu.addSection([["add slot", function() {
-      /* aaa I don't understand these damned Event things */ evt = new Event(evt); evt.hand = evt.rawEvent.hand;
-      var name = this.mirror().findUnusedSlotName("slot");
-      this.mirror().reflectee()[name] = null;
-      this.updateEverything();
-      this.expand();
-      this.slotPanelFor(this.mirror().slotAt(name)).labelMorph.beWritableAndSelectAll();
-    }.bind(this)]]);
-
-    menu.addSection([["create child", function() {
-      /* aaa I don't understand these damned Event things */ evt = new Event(evt); evt.hand = evt.rawEvent.hand;
-      this.world().outlinerFor(this.mirror().createChild()).grabMe(evt);
-    }.bind(this)]]);
-
+    menu.addSection([["add slot",     function(evt) { this.    addSlot(evt); }.bind(this)]]);
+    menu.addSection([["create child", function(evt) { this.createChild(evt); }.bind(this)]]);
     return menu;
+  },
+
+  addSlot: function(evt) {
+    var name = this.mirror().findUnusedSlotName("slot");
+    this.mirror().reflectee()[name] = null;
+    this.updateEverything();
+    this.expand();
+    this.slotPanelFor(this.mirror().slotAt(name)).labelMorph.beWritableAndSelectAll();
+  },
+
+  createChild: function(evt) {
+    this.world().outlinerFor(this.mirror().createChild()).grabMe(evt);
   },
 
 
@@ -253,11 +239,8 @@ Object.extend(OutlinerMorph.prototype, CanHaveArrowsAttachedToIt);
 WorldMorph.addMethods({
   morphMenu: function(evt) {
     var menu = new MenuMorph([], this);
-    menu.addItem(["create new object", function() {
-      /* aaa I don't understand these damned Event things */
-      evt = new Event(evt); evt.hand = evt.rawEvent.hand;
-      var o = {};
-      this.outlinerFor(new Mirror(o)).grabMe(evt);
+    menu.addItem(["create new object", function(evt) {
+      this.outlinerFor(new Mirror({})).grabMe(evt);
     }]);
 
     if (debugMode) {
@@ -265,9 +248,7 @@ WorldMorph.addMethods({
         periodicArrowUpdatingProcess.isRunning() ? [ "stop updating arrows", function() {periodicArrowUpdatingProcess.stop();}]
                                                  : ["start updating arrows", function() {periodicArrowUpdatingProcess.ensureRunning();}],
 
-        ["create new weirdo test object", function() {
-          /* aaa I don't understand these damned Event things */
-          evt = new Event(evt); evt.hand = evt.rawEvent.hand;
+        ["create new weirdo test object", function(evt) {
           var o = {anObject: {}, anArray: ['zero', 1, 'two'], aNull: null, fortyTwo: 42, aString: 'here is a string', aBoolean: true, aFunction: function(a, b) {argleBargle();}};
           this.outlinerFor(new Mirror(o)).grabMe(evt);
         }]
