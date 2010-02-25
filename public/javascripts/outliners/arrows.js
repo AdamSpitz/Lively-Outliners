@@ -282,5 +282,3 @@ CanHaveArrowsAttachedToIt = {
     });
   },
 };
-
-console.log('loaded arrows.js');

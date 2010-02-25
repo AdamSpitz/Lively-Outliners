@@ -66,5 +66,3 @@ Object.subclass("PeriodicalExecuter", {
 Object.extend(PeriodicalExecuter, {
   createButDontStartYet: function(callback, frequency) {return new PeriodicalExecuter(callback, frequency, true);},
 });
-
-console.log('loaded periodical_executer.js');

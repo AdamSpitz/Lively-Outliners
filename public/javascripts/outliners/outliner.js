@@ -77,14 +77,14 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   // color
 
-  calculateAppropriateColor: function() {
+  calculateAppropriateFill: function() {
     var color = Color.neutral.gray.lighter();
     if (this.isHighlighted()) {color = color.lighter().lighter();}
-    return color;
+    return defaultFillWithColor(color);
   },
 
   refillWithAppropriateColor: function() {
-    this.setFillToDefaultWithColor(this.calculateAppropriateColor());
+    this.setFill(this.calculateAppropriateFill());
   },
 
   beUnhighlighted: function() {        this.highlighter.setChecked(false); },
@@ -464,7 +464,7 @@ ColumnMorph.subclass("SlotMorph", {
     this.sPadding = 3;
     this.fPadding = 3;
     this._slot = slot;
-    this.setFillToDefaultWithColor(Color.gray);
+    this.setFill(defaultFillWithColor(Color.gray));
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
     this.beUngrabbable();

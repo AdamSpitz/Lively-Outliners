@@ -3,7 +3,7 @@ ColumnMorph.subclass("ErrorMessageMorph", {
     $super();
     this.shape.roundEdgesBy(10);
     this._message = "" + msg;
-    this.setFillToDefaultWithColor(Color.red);
+    this.setFill(defaultFillWithColor(Color.red));
     this.addThingy(createLabel("Error:"));
     this.addThingy(createLabel(this._message));
   },

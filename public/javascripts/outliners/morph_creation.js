@@ -166,13 +166,6 @@ Morph.addMethods({
     beUngrabbable: function() {if (!this.old_okToBeGrabbedBy) {this.old_okToBeGrabbedBy = this.okToBeGrabbedBy; this.okToBeGrabbedBy = function(evt) {return null;};}},
     beGrabbable:   function() {if ( this.old_okToBeGrabbedBy) {this.okToBeGrabbedBy = this.old_okToBeGrabbedBy; this.old_okToBeGrabbedBy = null;}},
 
-  // aaa - I just use this a lot, so it's convenient to have a shortcut.
-  setFillToDefaultWithColor: function(c) {
-    this.setFill(new lively.paint.LinearGradient([new lively.paint.Stop(0, c),
-                                                  new lively.paint.Stop(1, c.lighter())],
-                                                 lively.paint.LinearGradient.SouthNorth));
-  },
-
   setHelpText: function ( newText ) {
     this.getHelpText = function() {return newText;};
   },
@@ -222,6 +215,13 @@ Morph.addMethods({
   },
 
 });
+
+// aaa - I just use this a lot, so it's convenient to have a shortcut.
+function defaultFillWithColor(c) {
+  return new lively.paint.LinearGradient([new lively.paint.Stop(0, c),
+                                          new lively.paint.Stop(1, c.lighter())],
+                                         lively.paint.LinearGradient.SouthNorth);
+}
 
 ButtonMorph.addMethods({
   setToggle: function(b) {this.toggle = b;}, // I'm not sure why they took this method out. -- Adam, Jan. 2009
@@ -1050,6 +1050,3 @@ Object.subclass("Scaler", {
     this.morph.scaleBy(this.scalingFactor);
   },
 });
-
-
-console.log('loaded morph_creation.js');
