@@ -218,10 +218,10 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   // adding and removing to/from the world
 
-  ensureIsInWorld: function() {
+  ensureIsInWorld: function(p) {
     this.stopZoomingOuttaHere();
     var shallBeAdded = this.world() == null;
-    if (shallBeAdded) {this.addToWorld();}
+    if (shallBeAdded) {this.addToWorld(p);}
     return shallBeAdded;
   },
 
@@ -231,10 +231,12 @@ ColumnMorph.subclass("OutlinerMorph", {
     return shallBeRemoved;
   },
 
-  addToWorld: function() {
-    WorldMorph.current().addMorph(this);
-    // aaa - I do think the outliner will eventually want a title: this.titleTopicRef.morph().updateAppearance();
-    // Stop this scaling nonsense:   this.smoothlyScaleBackToNormalSize();
+  addToWorld: function(p) {
+    if (p) {
+      WorldMorph.current().addMorphAt(this, p);
+    } else {
+      WorldMorph.current().addMorph(this);
+    }
   },
 
   removeFromWorld: function() {
@@ -588,7 +590,7 @@ ColumnMorph.subclass("SlotMorph", {
     var arrow;
     m = this._contentsPointer = this.createButton(function() {
       if (arrow.noLongerNeedsToBeUpdated) {
-        WorldMorph.current().outlinerFor(slot.contents()).ensureIsInWorld();
+        WorldMorph.current().outlinerFor(slot.contents()).ensureIsInWorld(m.worldPoint(pt(150,0)));
         arrow.needsToBeVisible();
       } else {        
         arrow.noLongerNeedsToBeVisible();
