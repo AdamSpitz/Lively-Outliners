@@ -740,8 +740,7 @@ function createButton(text, f, padding) {
   var p = (padding != null) ? padding : 5;
   var b = new ButtonMorph(pt(0,0).extent(label.bounds().extent().addXY(p * 2, p * 2)));
   b.addMorphAt(label, pt(p, p));
-  //b.getModel().setValue = function(v) {this.Value = v; if (!v) {f();}}; // aaa - upgrading LK
-  b.connectModel({model: {Value: null, getValue: function() {return this.Value;}, setValue: function(v) {this.Value = v; if (!v) {f();}}}, setValue: "setValue", getValue: "getValue"});
+  b.connectModel({model: {Value: null, getValue: function() {return this.Value;}, setValue: function(v) {this.Value = v; if (!v) {f(createFakeEvent());}}}, setValue: "setValue", getValue: "getValue"});
   return b;
 }
 
@@ -762,6 +761,14 @@ function createCheckBoxWithImage(imageURL, size) {
   var button = new CheckBoxMorph(size, image);
   button.setFill(null);
   return button;
+}
+
+function createFakeEvent() {
+  return {
+    hand: WorldMorph.current().hands[0],
+    isShiftDown: Functions.False,
+    isForContextMenu: Functions.False,
+  };
 }
 
 ButtonMorph.subclass("CheckBoxMorph", {

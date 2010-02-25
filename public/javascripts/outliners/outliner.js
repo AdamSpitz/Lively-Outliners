@@ -12,7 +12,7 @@ ColumnMorph.subclass("OutlinerMorph", {
 
     this.expander = new ExpanderMorph(this);
     this.titleLabel = createLabel("");
-    this.evaluatorButton = createButton("E", function() {this.openEvaluator();}.bind(this), 0);
+    this.evaluatorButton = createButton("E", function(evt) {this.openEvaluator(evt);}.bind(this), 0);
     this.dismissButton = new WindowControlMorph(new Rectangle(0, 0, 22, 22), 3, Color.primary.yellow);
     this.dismissButton.relayToModel(this, {HelpText: "-DismissHelp", Trigger: "=removeFromWorld"});
     this.create_header_row();
@@ -198,10 +198,10 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.startZoomingOuttaHere();
   },
 
-  openEvaluator: function() {
+  openEvaluator: function(evt) {
     var e = new EvaluatorMorph(this);
     this.addThingy(e);
-    e.beFocused();
+    evt.hand.setKeyboardFocus(e.textMorph());
   },
 
   destinationForZoomingOuttaHere: function() { return WorldMorph.current().dock; },
@@ -367,8 +367,6 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
     // aaa - taken out, fix it the proper way: if (this.isReadOnly) {this.ignoreEvents();}
     this.extraMenuItemAdders = [];
     this.normalBorderWidth = 1;
-    this.backgroundColorWhenUnwritable = this.constructor.backgroundColorWhenUnwritable;
-    this.backgroundColorWhenWritable   = this.constructor.backgroundColorWhenWritable;
     this.setBorderColor(Color.black);
     this.setFill(null);
     // aaa do we need this for outliners? this._slot.notifier.add_observer(function() {this.updateAppearance();}.bind(this));
@@ -436,8 +434,6 @@ TwoModeTextMorph.subclass("MethodSourceMorph", {
     // aaa - taken out, fix it the proper way: if (this.isReadOnly) {this.ignoreEvents();}
     this.extraMenuItemAdders = [];
     this.normalBorderWidth = 1;
-    this.backgroundColorWhenUnwritable = this.constructor.backgroundColorWhenUnwritable;
-    this.backgroundColorWhenWritable   = this.constructor.backgroundColorWhenWritable;
     this.setBorderColor(Color.black);
     this.closeDnD();
     this.setFill(null);
@@ -533,7 +529,7 @@ ColumnMorph.subclass("SlotMorph", {
       if (arrow.noLongerNeedsToBeUpdated) {
         WorldMorph.current().outlinerFor(slot.contents()).ensureIsInWorld(m.worldPoint(pt(150,0)));
         arrow.needsToBeVisible();
-      } else {        
+      } else {
         arrow.noLongerNeedsToBeVisible();
       }
     });
@@ -632,75 +628,5 @@ ColumnMorph.subclass("SlotMorph", {
     }
 
     return menu;
-  },
-});
-
-ColumnMorph.subclass("EvaluatorMorph", {
-  initialize: function($super, outliner) {
-    $super();
-    this._outliner = outliner;
-    
-    this.textMorph = createTextField();
-    this.textMorph.setExtent(pt(150,60));
-    this.addThingy(this.textMorph);
-    
-    this.buttonsPanel = new RowMorph().beInvisible();
-    this.buttonsPanel.addThingy(createButton("Do it",  function() {this.  doIt();}.bind(this)));
-    this.buttonsPanel.addThingy(createButton("Get it", function() {this. getIt();}.bind(this)));
-    this.buttonsPanel.addThingy(createButton("Close",  function() {this.remove();}.bind(this)));
-    this.addThingy(this.buttonsPanel);
-
-    this.setFill(Color.gray);
-    this.beUngrabbable();
-  },
-
-  outliner: function() { return this._outliner; },
-
-  beFocused: function() {
-    this.world().hands[0].setKeyboardFocus(this.textMorph);
-    return this;
-  },
-
-  runTheCode: function() {
-    // aaa - How does LK do this? Maybe new Function()?
-    EvaluatorMorph.__aaa_hack_evaluator_receiver__ = this.outliner().mirror().reflectee();
-    return eval("var self = EvaluatorMorph.__aaa_hack_evaluator_receiver__; " + this.textMorph.getText());
-  },
-
-  doIt: function() {
-    try {
-      this.runTheCode();
-    } catch (ex) {
-      this.showException(ex);
-    }
-  },
-
-  getIt: function() {
-    try {
-      var result = this.runTheCode();
-      this.world().hands[0].grabMorphWithoutAskingPermission(this.world().outlinerFor(new Mirror(result)));
-      return result;
-    } catch (ex) {
-      this.showException(ex);
-    }
-  },
-
-  showException: function(ex) {
-    this.world().hands[0].grabMorphWithoutAskingPermission(new ErrorMessageMorph("" + ex));
-  },
-});
-
-ColumnMorph.subclass("ErrorMessageMorph", {
-  initialize: function($super, msg) {
-    $super();
-    this.shape.roundEdgesBy(10);
-    this._message = msg;
-    this.setFillToDefaultWithColor(Color.red);
-    this.addThingy(createLabel("Error:"));
-    this.addThingy(createLabel(msg));
-  },
-
-  wasJustDroppedOnWorld: function(world) {
-    this.zoomOuttaHereTimer = setInterval(function() {this.startZoomingOuttaHere();}.bind(this), 5000);
   },
 });
