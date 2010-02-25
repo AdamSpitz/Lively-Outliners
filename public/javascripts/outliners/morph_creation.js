@@ -487,6 +487,11 @@ TextMorph.addMethods({
         this.requestKeyboardFocus(evt.hand);
         return true;
     },
+
+  // Added by Adam, February 2010
+  refreshText: function() {
+    this.setText(this.getRefreshedText());
+  },
 });
 
 TextMorph.subclass("TwoModeTextMorph", {
@@ -906,6 +911,7 @@ Morph.subclass("RowOrColumnMorph", {
     this.setFill(null);
     this.setBorderWidth(0);
     this.beUngrabbable();
+    this.ignoreEvents(); // aaa - just added this, not sure it's the right thing to do
     return this;
   },
 });

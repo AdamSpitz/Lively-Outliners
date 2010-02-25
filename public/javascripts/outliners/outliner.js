@@ -3,6 +3,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     $super();
     this._mirror = m;
 
+    this.sPadding = this.fPadding = 5;
     this.shape.roundEdgesBy(10);
 
     this.highlighter = new BooleanHolder(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
@@ -11,6 +12,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.expander = new ExpanderMorph(this);
 
     this.titleLabel = createLabel("");
+    this.titleLabel.getRefreshedText = function() {return m.inspect();};
 
     this.evaluatorButton = createButton("E", function(evt) {this.openEvaluator(evt);}.bind(this), 0);
 
@@ -18,25 +20,20 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.dismissButton.relayToModel(this, {HelpText: "-DismissHelp", Trigger: "=removeFromWorld"});
 
     this.create_header_row();
+    this.rejiggerTheLayout();
   },
 
   mirror: function() { return this._mirror; },
 
   // Optimization: create the panels lazily. Most will never be needed, and it's bad to make the user wait while we create dozens of them up front.
   // aaa: Can I create a general lazy thingamajig mechanism?
-  get_slots_panel: function() { return this.slots_panel || (this.slots_panel = this.create_slots_panel()); },
-
-  create_slots_panel: function() {
-    return new ColumnMorph().beInvisible();
-  },
+  get_slots_panel: function() { return this.slots_panel || (this.slots_panel = new ColumnMorph().beInvisible()); },
 
   create_header_row: function() {
-    var r = new RowMorph().beInvisible();
+    var r = this.headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
     r.fPadding = 3;
-    r.closeDnD(); // aaa - why do I ad-hocly do all this invisibility stuff. Aren't there just a couple of options? Either I want the morph to be clickable, or I want it to be totally ignored. Right?
-    r.ignoreEvents();
-    this.headerRow = r; // aaa - put underscores in front of the instvars
-    this.updateHeader(); // aaa - maybe make a single method name ("updateAppearance" or something) for all this updating stuff
+    this.titleLabel.refreshText();
+    r.replaceThingiesWith([this.expander, this.titleLabel, this.evaluatorButton, this.dismissButton]);
     this.addRow(r);
     return r;
   },
@@ -76,29 +73,14 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
 
-  // updating
+  // updating    // aaa - maybe make a standard method name ("updateAppearance" or something) for all this updating stuff
 
   updateEverything: function() {
     this.populateSlotsPanel();
-    this.updateAppearance();
-  },
-
-  updateAppearance: function() {
     if (! this.world()) {return;}
     this.refillWithAppropriateColor();
-    this.updateHeader();
-  },
-
-  updateHeader: function() {
-    if (!this.headerRow) {return;} // not initialized yet
-    this.sPadding = this.fPadding = 5;
-    this.updateTitle();
-    this.headerRow.replaceThingiesWith([this.expander, this.titleLabel, this.evaluatorButton, this.dismissButton]);
+    this.titleLabel.refreshText();
     this.rejiggerTheLayout();
-  },
-
-  updateTitle: function() {
-    this.titleLabel.setText(this.inspect());
   },
 
 
@@ -172,6 +154,15 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
 
+  // evaluators
+
+  openEvaluator: function(evt) {
+    var e = new EvaluatorMorph(this);
+    this.addThingy(e);
+    evt.hand.setKeyboardFocus(e.textMorph());
+  },
+
+
   // adding and removing to/from the world
 
   ensureIsInWorld: function(p) {
@@ -199,32 +190,22 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.startZoomingOuttaHere();
   },
 
-  openEvaluator: function(evt) {
-    var e = new EvaluatorMorph(this);
-    this.addThingy(e);
-    evt.hand.setKeyboardFocus(e.textMorph());
-  },
-
   destinationForZoomingOuttaHere: function() { return WorldMorph.current().dock; },
 
   getDismissHelp: function() {return "Hide";}, // aaa - I don't think this works but I don't know why.
 
-  showDebugInfo: function() {
-    this.mirror().showDebugInfo();
-  },
+
+  // menu
 
   morphMenu: function(evt) {
     var menu = new MenuMorph([], this);
-
-    if (debugMode) {
-      menu.addSection([["show debug info", function() {this.showDebugInfo();}.bind(this)]]);
-    }
 
     menu.addSection([["add slot", function() {
       /* aaa I don't understand these damned Event things */ evt = new Event(evt); evt.hand = evt.rawEvent.hand;
       var name = this.mirror().findUnusedSlotName("slot");
       this.mirror().reflectee()[name] = null;
       this.updateEverything();
+      this.expand();
       this.slotPanelFor(this.mirror().slotAt(name)).labelMorph.beWritableAndSelectAll();
     }.bind(this)]]);
 
@@ -236,7 +217,10 @@ ColumnMorph.subclass("OutlinerMorph", {
     return menu;
   },
 
-  acceptsDropping: function(m) {
+
+  // mouse events
+
+  acceptsDropping: function(m) { // aaa - could this be generalized?
     return m.canBeDroppedOnOutliner;
   },
 
@@ -261,12 +245,7 @@ ColumnMorph.subclass("OutlinerMorph", {
       this.showMorphMenu(evt);
       return true;
     }
-
     return false;
-  },
-
-  morphForArrowsToAttachTo: function() {
-    return this;
   },
 });
 Object.extend(OutlinerMorph.prototype, CanHaveArrowsAttachedToIt);

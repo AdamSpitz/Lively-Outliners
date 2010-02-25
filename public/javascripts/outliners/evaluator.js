@@ -8,9 +8,9 @@ ColumnMorph.subclass("EvaluatorMorph", {
     this.addThingy(tm);
     
     var bp = this.buttonsPanel = new RowMorph().beInvisible();
-    bp.addThingy(createButton("Do it",  function(evt) {this.  doIt(evt);}.bind(this)));
-    bp.addThingy(createButton("Get it", function(evt) {this. getIt(evt);}.bind(this)));
-    bp.addThingy(createButton("Close",  function(evt) {this.remove(   );}.bind(this)));
+    bp.addThingy(createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)));
+    bp.addThingy(createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)));
+    bp.addThingy(createButton("Close",  function(evt) {this.close(evt);}.bind(this)));
     this.addThingy(bp);
 
     this.setFill(Color.gray);
@@ -28,4 +28,9 @@ ColumnMorph.subclass("EvaluatorMorph", {
 
    doIt: function(evt) { ErrorMessageMorph.showIfErrorDuring(function() {                                         this.runTheCode()              ; }.bind(this), evt); },
   getIt: function(evt) { ErrorMessageMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(new Mirror(this.runTheCode())).grabMe(evt); }.bind(this), evt); },
+
+  close: function(evt) {
+    this.remove();
+    this.outliner().rejiggerTheLayout();
+  },
 });
