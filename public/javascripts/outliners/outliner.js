@@ -1,43 +1,42 @@
 ColumnMorph.subclass("OutlinerMorph", {
   initialize: function($super, m) {
-    this._mirror = m;
     $super();
+    this._mirror = m;
+
+    this.shape.roundEdgesBy(10);
 
     this.highlighter = new BooleanHolder(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
     this.beUnhighlighted();
 
-    this.shape.roundEdgesBy(10);
-
-    // this.closeDnD(); When this was uncommented, we couldn't drag arrows.
-
     this.expander = new ExpanderMorph(this);
+
     this.titleLabel = createLabel("");
+
     this.evaluatorButton = createButton("E", function(evt) {this.openEvaluator(evt);}.bind(this), 0);
+
     this.dismissButton = new WindowControlMorph(new Rectangle(0, 0, 22, 22), 3, Color.primary.yellow);
     this.dismissButton.relayToModel(this, {HelpText: "-DismissHelp", Trigger: "=removeFromWorld"});
+
     this.create_header_row();
   },
 
-  mirror: function() {return this._mirror;},
+  mirror: function() { return this._mirror; },
 
   // Optimization: create the panels lazily. Most will never be needed, and it's bad to make the user wait while we create dozens of them up front.
   // aaa: Can I create a general lazy thingamajig mechanism?
   get_slots_panel: function() { return this.slots_panel || (this.slots_panel = this.create_slots_panel()); },
 
   create_slots_panel: function() {
-    var p = new ColumnMorph();
-    p.beInvisible();
-    return p;
+    return new ColumnMorph().beInvisible();
   },
 
   create_header_row: function() {
     var r = new RowMorph().beInvisible();
-    r.fPadding = 10;
-    r.closeDnD();
+    r.fPadding = 3;
+    r.closeDnD(); // aaa - why do I ad-hocly do all this invisibility stuff. Aren't there just a couple of options? Either I want the morph to be clickable, or I want it to be totally ignored. Right?
     r.ignoreEvents();
-    r.inspect = function() {return "header row for " + this.mirror().inspect();}.bind(this);
-    this.headerRow = r;
-    this.updateHeader();
+    this.headerRow = r; // aaa - put underscores in front of the instvars
+    this.updateHeader(); // aaa - maybe make a single method name ("updateAppearance" or something) for all this updating stuff
     this.addRow(r);
     return r;
   },
@@ -49,7 +48,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.dontBotherRejiggeringTheLayoutUntilTheEndOf(f);
   },
 
-  repositionStuff: function() {
+  repositionStuff: function() { // aaa - can I have a well-known method name for this, too? and maybe find a way to generalize it, so this method can live up in RowOrColumnMorph?
     var op = this.slots_panel;
     if (op) {
       op.rejiggerTheLayout();
@@ -57,10 +56,23 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.rejiggerTheLayout();
   },
 
-  repositionStuffIncludingTheHeaderRow: function() {
+  repositionStuffIncludingTheHeaderRow: function() { // aaa ditto
     var hr = this.headerRow;
     if (hr) {hr.rejiggerTheLayout();}
     this.repositionStuff();
+  },
+
+  rejiggerTheColumns: function() {
+    if (this.slots_column) {this.slots_column.rejiggerTheLayout();}
+  },
+
+  rejiggerThePanels: function() {
+    if (this.slots_panel) {this.slots_panel.rejiggerTheLayout();}
+  },
+
+  repositionJustMyStuff: function() {
+    this.rejiggerTheColumns();
+    this.rejiggerThePanels();
   },
 
 
@@ -107,8 +119,8 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   beUnhighlighted: function() {        this.highlighter.setChecked(false); },
-  beHighlighted:   function() {        this.highlighter.setChecked(true ); },
-  isHighlighted:   function() { return this.highlighter. isChecked();      },
+    beHighlighted: function() {        this.highlighter.setChecked(true ); },
+    isHighlighted: function() { return this.highlighter. isChecked();      },
 
 
 
@@ -132,6 +144,9 @@ ColumnMorph.subclass("OutlinerMorph", {
     }.bind(this));
   },
 
+
+  // slot panels
+
   slotPanels: function() {
     if (! this._slotPanels) {
       this._slotPanels = new BloodyHashTable();
@@ -148,26 +163,12 @@ ColumnMorph.subclass("OutlinerMorph", {
   populateSlotsPanel: function() {
     var op = this.get_slots_panel();
     op.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
-      op.removeAllThingies();
-      this.mirror().eachSlot(function(s) {
-        var sp = this.slotPanelFor(s);
-        op.addThingy(sp);
-        this.rejiggerTheLayout();
-      }.bind(this));
+      var sps = [];
+      this.mirror().eachSlot(function(s) { sps.push(this.slotPanelFor(s)); }.bind(this));
+      sps.sort(function(sp1, sp2) {return sp1.slot().name() < sp2.slot().name() ? -1 : 1});
+      op.replaceThingiesWith(sps);
+      this.rejiggerTheLayout();
     }.bind(this));
-  },
-
-  rejiggerTheColumns: function() {
-    if (this.slots_column) {this.slots_column.rejiggerTheLayout();}
-  },
-
-  rejiggerThePanels: function() {
-    if (this.slots_panel) {this.slots_panel.rejiggerTheLayout();}
-  },
-
-  repositionJustMyStuff: function() {
-    this.rejiggerTheColumns();
-    this.rejiggerThePanels();
   },
 
 
