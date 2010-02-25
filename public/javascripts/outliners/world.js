@@ -15,6 +15,10 @@ WorldMorph.addMethods({
           this.outlinerFor(new Mirror(o)).grabMe(evt);
         }],
 
+        ["get the lobby", function(evt) {
+          this.outlinerFor(new Mirror(lobby)).grabMe(evt);
+        }],
+
         ["aaaaa", function(evt) {
           // var url = URL.source.withFilename("uploads/testFile.js");
           var url = new URL("http://localhost/~adam/uploads/testFile.js");

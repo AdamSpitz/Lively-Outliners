@@ -28,11 +28,19 @@ Object.extend(BloodyHashTable.prototype, {
   },
 
   bucketForKey: function(k) {
-    var b = this._buckets[k];
+    var bucketName = "" + k;
+    if (bucketName === 'constructor') { bucketName = 'constructor_key_hack'; }
+
+    var b = this._buckets[bucketName];
     if (typeof b === "undefined") {
       b = new BloodyHashTable.Bucket();
-      this._buckets[k] = b;
+      this._buckets[bucketName] = b;
     }
+    //else {
+    //  if (! this._buckets.hasOwnProperty(bucketName)) {
+    //    console.log("Bad bucket name: " + bucketName);
+    //  }
+    //}
     return b;
   },
 
@@ -40,6 +48,7 @@ Object.extend(BloodyHashTable.prototype, {
     var b = this.bucketForKey(k);
     for (var i = 0, n = b.length; i < n; ++i) {
       var pair = b[i];
+      //if (!pair) {console.log("Huh? b.length is " + b.length + ", b itself is " + b + ", hasOwnProperty is " + this._buckets.hasOwnProperty(k));}
       if (this.keysAreEqual(k, pair.key)) {
         return pair;
       }
@@ -77,11 +86,13 @@ Object.extend(BloodyHashTable.prototype, {
 
   _each: function(iterator) {
     for (var h in this._buckets) {
-      var b = this._buckets[h];
-      if (b instanceof BloodyHashTable.Bucket) {
-        for (var i = 0, n = b.length; i < n; ++i) {
-          var pair = b[i];
-          iterator(pair);
+      if (this._buckets.hasOwnProperty(h)) {
+        var b = this._buckets[h];
+        if (b instanceof BloodyHashTable.Bucket) {
+          for (var i = 0, n = b.length; i < n; ++i) {
+            var pair = b[i];
+            iterator(pair);
+          }
         }
       }
     }
