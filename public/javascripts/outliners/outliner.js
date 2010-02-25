@@ -485,7 +485,6 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
     this.setFill(null);
     // aaa do we need this for outliners? this.topicRef.notifier.add_observer(function() {this.updateAppearance();}.bind(this));
     this.updateAppearance();
-    this.startPeriodicallyUpdating();
     this.normalBorderWidth = 0;
     this.nameOfEditCommand = "rename";
     this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
@@ -509,10 +508,6 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
     this.updateLabel();
   },
 
-  startPeriodicallyUpdating: function() {
-    new PeriodicalExecuter(function(pe) {this.updateAppearance();}.bind(this), 8);
-  },
-
   updateLabel: function() {
     if (! this.isInWritableMode) {
       var newText = this.slot().name();
@@ -521,11 +516,6 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
       }
     }
   },
-
-  determineWhichMorphToAttachTo: function() {return true;},
-  attachToTheRightPlace: function() {},
-  noLongerNeedsToBeVisibleAsArrowEndpoint: function() {},
-  relativeLineEndpoint: pt(70,10),
 
   morphMenu: function(evt) {
     var menu = new MenuMorph([], this);
@@ -553,10 +543,79 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
     return $super(evt, hasFocus);
   },
 });
-Object.extend(SlotNameMorph.prototype, CanHaveArrowsAttachedToIt);
-Object.extend(SlotNameMorph, {
-  backgroundColorWhenUnwritable: Color.gray.lighter(),
-  backgroundColorWhenWritable:   Color.gray.lighter(),
+
+TwoModeTextMorph.subclass("MethodSourceMorph", {
+  initialize: function($super, slot) {
+    this.topicRef = slot;
+    $super(pt(5, 10).extent(pt(140, 80)), slot.contents().source());
+    // aaa - taken out, fix it the proper way: if (this.isReadOnly) {this.ignoreEvents();}
+    this.extraMenuItemAdders = [];
+    this.normalBorderWidth = 1;
+    this.backgroundColorWhenUnwritable = this.constructor.backgroundColorWhenUnwritable;
+    this.backgroundColorWhenWritable   = this.constructor.backgroundColorWhenWritable;
+    this.setBorderColor(Color.black);
+    this.closeDnD();
+    this.setFill(null);
+    // aaa do we need this for outliners? this.topicRef.notifier.add_observer(function() {this.updateAppearance();}.bind(this));
+    this.updateAppearance();
+    this.normalBorderWidth = 0;
+    this.nameOfEditCommand = "edit source";
+    this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
+  },
+
+  suppressHandles: true,
+  okToDuplicate: Functions.False,
+
+  slot: function() {return this.topicRef;},
+  inspect:  function() {return this.slot().name() + " source";},
+
+  outliner: function() {
+    return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
+  },
+
+  // aaa onMouseDown: function(evt) { return false; },  // don't allow selection
+
+  canBecomeWritable: function() { return true; },
+
+  updateAppearance: function() {
+    this.updateLabel();
+  },
+
+  updateLabel: function() {
+    if (! this.isInWritableMode) {
+      var newText = this.slot().contents().source();
+      if (newText != this.getText()) {
+        this.setText(newText);
+      }
+    }
+  },
+
+  morphMenu: function(evt) {
+    var menu = new MenuMorph([], this);
+    if (!this.isInWritableMode) { // aaa is this right for outliners?
+      this.extraMenuItemAdders.each(function(mia) {mia(menu, evt);});
+    }
+    return menu;
+  },
+
+  returnKeyShouldAccept: function() { return false; },
+
+  getSavedText: function() {
+    return this.slot().contents().source();
+  },
+
+  setSavedText: function(text) {
+    if (text !== this.slot().contents().source()) {
+      var newContents = new Mirror(eval("(" + text + ")"));
+      this.slot().setContents(newContents);
+      this.outliner().updateEverything();
+    }
+  },
+
+  captureMouseEvent: function($super, evt, hasFocus) {
+    if (evt.type == "MouseDown" && !this.isInWritableMode) {return false;}
+    return $super(evt, hasFocus);
+  },
 });
 
 
@@ -631,11 +690,7 @@ ColumnMorph.subclass("SlotMorph", {
   sourceMorph: function() {
     var m = this._sourceMorph;
     if (m) { return m; }
-    m = this._sourceMorph = new TextMorph(pt(0,0).extent(pt(100,80)), this.slot().contents().source());
-    m.acceptInput = true;
-    m.closeDnD();
-    m.setBorderWidth(0);
-    m.setFill(Color.gray.lighter());
+    m = this._sourceMorph = new MethodSourceMorph(this.slot());
     return m;
   },
 
