@@ -2,86 +2,10 @@
 // many of them can be eliminated. For now I'm just trying to get this refactoring done as
 // quick as possible so that Andrew can start using the model objects. -- Adam, Feb. 2009
 
-Object.subclass("Topic", {
-});
-
-Topic.addMethods({
-  doesNotNeedToBeCheckedForChanges: function() {
-    return  (! this.world()) && !this.might_not_have_been_saved_since_being_hidden;
-  },
-
-  morph: function() {
-    if (this.lazily_created_morph == null) {
-      this.lazily_created_morph = new OutlinerMorph(this);
-    }
-    return this.lazily_created_morph;
-  },
-
-  morphIfAlreadyCreated: function() {
-    return this.lazily_created_morph;
-  },
-
-  world: function() {
-    var m = this.morphIfAlreadyCreated();
-    return m && m.world();
-  },
-
-  justIncorporatedNewInfo: function() {
-    this.might_not_have_been_saved_since_being_hidden = false;
-    var m = this.morphIfAlreadyCreated();
-    if (m) { m.expandIfAnythingIsHighlighted(); }
-  },
-
-  ensureIsInWorld: function() {
-    return this.morph().ensureIsInWorld();
-  },
-
-  ensureIsNotInWorld: function() {
-    var m = this.morphIfAlreadyCreated();
-    if (m) { return m.ensureIsNotInWorld(); } else { return false; }
-  },
-
-  addToWorld: function() {
-    return this.morph().addToWorld();
-  },
-
-  removeFromWorld: function() {
-    this.might_not_have_been_saved_since_being_hidden = true;
-    var m = this.morphIfAlreadyCreated();
-    return m && m.removeFromWorld();
-  },
-
-  makingManyChangesDuring: function(f) {
-    var m = this.morphIfAlreadyCreated();
-    if (m) {
-      return m.makingManyChangesDuring(f);
-    } else {
-      return f();
-    }
-  },
-
-  wasJustCreated: function() {
-    var m = this.morphIfAlreadyCreated();
-    return m && m.wasJustCreated();
-  },
-
-  morphForArrowsToAttachTo: function() {
-    var m = this.morphIfAlreadyCreated();
-    return m && m.morphForArrowsToAttachTo();
-  },
-
-  showDebugInfo: function() {
-    alert("id: "                            + this.get__database_object_id()
-      + "\ndisplayNameForTopic: "           + displayNameForTopic(this));
-  },
-});
-
 ColumnMorph.subclass("OutlinerMorph", {
   initialize: function($super, t) {
     this.topic = t;
     $super();
-
-    this.was_already_unobtrusive = true;
 
     this.highlighter = new BooleanHolder(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
     this.beUnhighlighted();
@@ -106,9 +30,9 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   // Optimization: create the panels lazily. Most will never be needed, and it's bad to make the user wait while we create dozens of them up front.
   // aaa: Can I create a general lazy thingamajig mechanism?
-  get_occurrences_panel: function() { return this.occurrences_panel || (this.occurrences_panel = this.create_occurrences_panel()); },
+  get_slots_panel: function() { return this.slots_panel || (this.slots_panel = this.create_slots_panel()); },
 
-  create_occurrences_panel: function() {
+  create_slots_panel: function() {
     var p = createLabelledPanel("Slots", "This object's slots");
     p.beInvisible();
     return p;
@@ -151,7 +75,7 @@ ColumnMorph.subclass("OutlinerMorph", {
       ip.labelledMorph.rejiggerTheLayout();
       ip.rejiggerTheLayout();
     }
-    var op = this.occurrences_panel;
+    var op = this.slots_panel;
     if (op) {
       op.labelledMorph.rejiggerTheLayout();
       op.rejiggerTheLayout();
@@ -169,7 +93,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   // updating
 
   updateEverything: function() {
-    this.populateOccurrencesPanel();
+    this.populateSlotsPanel();
     this.updateAppearance();
   },
 
@@ -181,13 +105,9 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   updateHeader: function() {
     if (!this.headerRow) {return;} // not initialized yet
-    var u = !!this.topic.is_unobtrusive;
-    if (u) {this.collapse();}
-    if (u == !!this.was_already_unobtrusive && this.headerRow.getThingies().size() > 0) {return;}
-    this.was_already_unobtrusive = u;
-    this.sPadding = this.fPadding = u ? 2 : 10;
+    this.sPadding = this.fPadding = 5;
     this.updateTitle();
-    this.headerRow.replaceThingiesWith(u ? [this.titleTopicRef.morph()] : [this.expander, this.titleLabel, this.evaluatorButton, this.dismissButton]);
+    this.headerRow.replaceThingiesWith([this.expander, this.titleLabel, this.evaluatorButton, this.dismissButton]);
     this.rejiggerTheLayout();
   },
 
@@ -237,8 +157,8 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
       var isExpanded = this.isExpanded();
       if (isExpanded && !this.wasAlreadyExpanded) {
-        this.populateOccurrencesPanel();
-        this.replaceThingiesWith([this.headerRow, this.get_occurrences_panel()]);
+        this.populateSlotsPanel();
+        this.replaceThingiesWith([this.headerRow, this.get_slots_panel()]);
       } else if (!isExpanded && this.wasAlreadyExpanded) {
         this.replaceThingiesWith([this.headerRow]);
       }
@@ -268,8 +188,8 @@ ColumnMorph.subclass("OutlinerMorph", {
     }.bind(this));
   },
 
-  populateOccurrencesPanel: function() {
-    var op = this.get_occurrences_panel();
+  populateSlotsPanel: function() {
+    var op = this.get_slots_panel();
     op.labelledMorph.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
       op.labelledMorph.removeAllThingies();
       this.mirror().eachSlot(function(s) {
@@ -281,11 +201,11 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   rejiggerTheColumns: function() {
-    if (this.occurrences_column) {this.occurrences_column.rejiggerTheLayout();}
+    if (this.slots_column) {this.slots_column.rejiggerTheLayout();}
   },
 
   rejiggerThePanels: function() {
-    if (this.occurrences_panel) {this.occurrences_panel.rejiggerTheLayout();}
+    if (this.slots_panel) {this.slots_panel.rejiggerTheLayout();}
     if (this.   interest_panel) {   this.interest_panel.rejiggerTheLayout();}
   },
 
@@ -362,7 +282,7 @@ ColumnMorph.subclass("OutlinerMorph", {
       /* aaa I don't understand these damned Event things */ evt = new Event(evt); evt.hand = evt.rawEvent.hand;
       var name = this.topic.findUnusedSlotName("slot");
       this.topic.reflectee()[name] = 'argle bargle';
-      this.populateOccurrencesPanel();
+      this.populateSlotsPanel();
       this.updateAppearance();
     }.bind(this)]]);
 
@@ -726,7 +646,7 @@ ColumnMorph.subclass("EvaluatorMorph", {
   outliner: function() { return this._outliner; },
 
   doIt: function() {
-    // aaa - How does LK do this?
+    // aaa - How does LK do this? Maybe new Function()?
     EvaluatorMorph.__aaa_hack_evaluator_receiver__ = this.outliner().mirror().reflectee();
     return eval("var self = EvaluatorMorph.__aaa_hack_evaluator_receiver__; " + this.textMorph.getText());
   },
