@@ -969,6 +969,8 @@ ButtonMorph.subclass("ExpanderMorph", {
     return this;
   },
 
+  focusHaloBorderWidth: 0, // I don't like the halo
+
   changeAppearanceFor: function($super, value) {
     var baseColor = Color.blue; // Not sure how the new LK style system works. -- Adam, Jan. 2009
     var vertices  = value ? [pt(0,0),pt(12,0),pt(6,12),pt(0,0)] : [pt(0,0),pt(12,6),pt(0,12),pt(0,0)];

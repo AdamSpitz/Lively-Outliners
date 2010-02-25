@@ -3,6 +3,12 @@ var periodicArrowUpdatingProcess = PeriodicalExecuter.createButDontStartYet(func
   updateAllArrows();
 }, 0.1);
 
+var allArrows = [];
+
+function eachArrowThatShouldBeUpdated(f) {
+  allArrows.each(function(a) {if (!a.noLongerNeedsToBeUpdated) {f(a);}});
+}
+
 function updateAllArrows() {
   eachArrowThatShouldBeUpdated(function(a) {
     if (a.shouldUpdateOnThisTick(tickNumber)) {
