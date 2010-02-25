@@ -245,7 +245,9 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   openEvaluator: function() {
-    this.addThingy(new EvaluatorMorph(this));
+    var e = new EvaluatorMorph(this);
+    this.addThingy(e);
+    e.beFocused();
   },
 
   destinationForZoomingOuttaHere: function() { return WorldMorph.current().dock; },
@@ -700,6 +702,7 @@ ColumnMorph.subclass("SlotMorph", {
     } else {
       this.addThingy(this.sourceMorph());
     }
+    this.owner.rejiggerTheLayout();
   },
   
   isSourceShowing: function() {
@@ -762,6 +765,7 @@ ColumnMorph.subclass("EvaluatorMorph", {
     
     this.textMorph = createTextField();
     this.textMorph.suppressHandles = true;
+    this.textMorph.setExtent(pt(150,60));
     this.addThingy(this.textMorph);
     
     this.buttonsPanel = new RowMorph().beInvisible();
@@ -776,15 +780,56 @@ ColumnMorph.subclass("EvaluatorMorph", {
 
   outliner: function() { return this._outliner; },
 
-  doIt: function() {
+  beFocused: function() {
+    this.world().hands[0].setKeyboardFocus(this.textMorph);
+    return this;
+  },
+
+  suppressHandles: true,
+
+  runTheCode: function() {
     // aaa - How does LK do this? Maybe new Function()?
     EvaluatorMorph.__aaa_hack_evaluator_receiver__ = this.outliner().mirror().reflectee();
     return eval("var self = EvaluatorMorph.__aaa_hack_evaluator_receiver__; " + this.textMorph.getText());
   },
 
+  doIt: function() {
+    try {
+      this.runTheCode();
+    } catch (ex) {
+      this.showException(ex);
+    }
+  },
+
   getIt: function() {
-    var result = this.doIt();
-    this.world().hands[0].grabMorphWithoutAskingPermission(this.world().outlinerFor(new Mirror(result)));
-    return result;
+    try {
+      var result = this.runTheCode();
+      this.world().hands[0].grabMorphWithoutAskingPermission(this.world().outlinerFor(new Mirror(result)));
+      return result;
+    } catch (ex) {
+      this.showException(ex);
+    }
+  },
+
+  showException: function(ex) {
+    this.world().hands[0].grabMorphWithoutAskingPermission(new ErrorMessageMorph("" + ex));
+  },
+});
+
+ColumnMorph.subclass("ErrorMessageMorph", {
+  initialize: function($super, msg) {
+    $super();
+    this.shape.roundEdgesBy(10);
+    this._message = msg;
+    this.setFillToDefaultWithColor(Color.red);
+    this.addThingy(createLabel("Error:"));
+    this.addThingy(createLabel(msg));
+  },
+
+  suppressHandles: true,
+  okToDuplicate: Functions.False,
+
+  wasJustDroppedOnWorld: function(world) {
+    this.zoomOuttaHereTimer = setInterval(function() {this.startZoomingOuttaHere();}.bind(this), 5000);
   },
 });
