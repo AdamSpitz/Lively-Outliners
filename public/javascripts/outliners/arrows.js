@@ -122,7 +122,7 @@ Morph.subclass("ArrowEndpoint", {
     this.layoutRepulsiveCharge = 0.25;
 
     // aaa - make this cleaner, so that ArrowEndpoint can be more general, not just for topicRefs
-    this.canBeDroppedOnTopic = true;
+    this.canBeDroppedOnOutliner = true;
     this.canBeDroppedOnWorld = true;
   },
 

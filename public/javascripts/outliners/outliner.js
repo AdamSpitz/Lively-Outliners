@@ -1,6 +1,6 @@
 ColumnMorph.subclass("OutlinerMorph", {
-  initialize: function($super, t) {
-    this.topic = t;
+  initialize: function($super, m) {
+    this._mirror = m;
     $super();
 
     this.highlighter = new BooleanHolder(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
@@ -21,7 +21,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   suppressHandles: true,
   okToDuplicate: Functions.False,
   
-  mirror: function() {return this.topic;},
+  mirror: function() {return this._mirror;},
 
   // Optimization: create the panels lazily. Most will never be needed, and it's bad to make the user wait while we create dozens of them up front.
   // aaa: Can I create a general lazy thingamajig mechanism?
@@ -94,13 +94,13 @@ ColumnMorph.subclass("OutlinerMorph", {
 
 
   // inspecting
-  inspect: function() {return this.topic.inspect();},
+  inspect: function() {return this.mirror().inspect();},
 
 
   // color
 
   calculateAppropriateColor: function() {
-    var color = overlays.inject(Color.neutral.gray.lighter(), function(c, overlay) {return overlay.adjustColorOfTopic(this.topic, c);}.bind(this));
+    var color = Color.neutral.gray.lighter();
     if (this.isHighlighted()) {color = color.lighter().lighter();}
     return color;
   },
@@ -142,14 +142,6 @@ ColumnMorph.subclass("OutlinerMorph", {
     }.bind(this));
   },
 
-  expandIfAnythingIsHighlighted: function() {
-    if (this.world() && this.containsAnyHighlightedItems()) {
-      this.expand();
-    }
-  },
-
-  mirror: function() {return this.topic;},
-
   slotPanels: function() {
     if (! this._slotPanels) {
       this._slotPanels = new BloodyHashTable();
@@ -188,14 +180,6 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.rejiggerThePanels();
   },
 
-  containsAnyHighlightedItems: function() {
-    var b = false;
-    this.topic.eachOpinion(function(o) {
-      if (o.containsAnyHighlightedItems()) {b = true;}
-    }.bind(this));
-    return b;
-  },
-
 
   // adding and removing to/from the world
 
@@ -221,7 +205,6 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   removeFromWorld: function() {
-    this.topic.might_not_have_been_saved_since_being_hidden = true;
     this.startZoomingOuttaHere();
   },
 
@@ -235,14 +218,8 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   getDismissHelp: function() {return "Hide";}, // aaa - I don't think this works but I don't know why.
 
-  focusOnMe: function() {
-    loadTopicsWithIDs([this.topic.get__database_object_id()]);
-  },
-
-  uniqueID: function() { return this.topic.get__database_object_id(); },
-
   showDebugInfo: function() {
-    this.topic.showDebugInfo();
+    this.mirror().showDebugInfo();
   },
 
   morphMenu: function(evt) {
@@ -269,7 +246,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   acceptsDropping: function(m) {
-    return m.canBeDroppedOnTopic;
+    return m.canBeDroppedOnOutliner;
   },
 
   justReceivedDrop: function(m) {
@@ -298,8 +275,6 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   morphForArrowsToAttachTo: function() {
-    var r = this.topic.get__referent();
-    if (r) {return r.morphForArrowsToAttachTo();}
     return this;
   },
 });
@@ -320,10 +295,6 @@ WorldMorph.addMethods({
         periodicArrowUpdatingProcess.isRunning() ? [ "stop updating arrows", function() {periodicArrowUpdatingProcess.stop();}]
                                                  : ["start updating arrows", function() {periodicArrowUpdatingProcess.ensureRunning();}],
       ]);
-
-      menu.addSection([[ "aaaaa", function() {
-        alert(eval("3 + 4; 5 + 13"));
-      }]]);
     }
 
     return menu;
@@ -397,7 +368,7 @@ ArrowMorph.subclass("SlotContentsPointerArrow", {
 
 TwoModeTextMorph.subclass("SlotNameMorph", {
   initialize: function($super, slot) {
-    this.topicRef = slot;
+    this._slot = slot;
     $super(pt(5, 10).extent(pt(140, 20)), slot.name());
     // aaa - taken out, fix it the proper way: if (this.isReadOnly) {this.ignoreEvents();}
     this.extraMenuItemAdders = [];
@@ -406,7 +377,7 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
     this.backgroundColorWhenWritable   = this.constructor.backgroundColorWhenWritable;
     this.setBorderColor(Color.black);
     this.setFill(null);
-    // aaa do we need this for outliners? this.topicRef.notifier.add_observer(function() {this.updateAppearance();}.bind(this));
+    // aaa do we need this for outliners? this._slot.notifier.add_observer(function() {this.updateAppearance();}.bind(this));
     this.updateAppearance();
     this.normalBorderWidth = 0;
     this.nameOfEditCommand = "rename";
@@ -416,7 +387,7 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
   suppressHandles: true,
   okToDuplicate: Functions.False,
 
-  slot: function() {return this.topicRef;},
+  slot: function() {return this._slot;},
   inspect:  function() {return this.slot().name();},
 
   outliner: function() {
@@ -469,7 +440,7 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
 
 TwoModeTextMorph.subclass("MethodSourceMorph", {
   initialize: function($super, slot) {
-    this.topicRef = slot;
+    this._slot = slot;
     $super(pt(5, 10).extent(pt(140, 80)), slot.contents().source());
     // aaa - taken out, fix it the proper way: if (this.isReadOnly) {this.ignoreEvents();}
     this.extraMenuItemAdders = [];
@@ -479,7 +450,7 @@ TwoModeTextMorph.subclass("MethodSourceMorph", {
     this.setBorderColor(Color.black);
     this.closeDnD();
     this.setFill(null);
-    // aaa do we need this for outliners? this.topicRef.notifier.add_observer(function() {this.updateAppearance();}.bind(this));
+    // aaa do we need this for outliners? this.slot().notifier.add_observer(function() {this.updateAppearance();}.bind(this));
     this.updateAppearance();
     this.normalBorderWidth = 0;
     this.nameOfEditCommand = "edit source";
@@ -489,7 +460,7 @@ TwoModeTextMorph.subclass("MethodSourceMorph", {
   suppressHandles: true,
   okToDuplicate: Functions.False,
 
-  slot: function() {return this.topicRef;},
+  slot: function() {return this._slot;},
   inspect:  function() {return this.slot().name() + " source";},
 
   outliner: function() {
@@ -640,7 +611,7 @@ ColumnMorph.subclass("SlotMorph", {
   suppressHandles: true,
   okToDuplicate: Functions.False,
 
-  canBeDroppedOnTopic: true,
+  canBeDroppedOnOutliner: true,
 
   wasJustDroppedOnOutliner: function(outliner) {
     this.slot().copyTo(outliner.mirror());
