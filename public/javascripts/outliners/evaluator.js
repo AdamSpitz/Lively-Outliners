@@ -26,8 +26,8 @@ ColumnMorph.subclass("EvaluatorMorph", {
     return eval("var self = EvaluatorMorph.__aaa_hack_evaluator_receiver__; " + this.textMorph().getText());
   },
 
-   doIt: function(evt) { ErrorMessageMorph.showIfErrorDuring(function() {                                         this.runTheCode()              ; }.bind(this), evt); },
-  getIt: function(evt) { ErrorMessageMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(new Mirror(this.runTheCode())).grabMe(evt); }.bind(this), evt); },
+   doIt: function(evt) { MessageNotifierMorph.showIfErrorDuring(function() {                                         this.runTheCode()              ; }.bind(this), evt); },
+  getIt: function(evt) { MessageNotifierMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(new Mirror(this.runTheCode())).grabMe(evt); }.bind(this), evt); },
 
   close: function(evt) {
     this.remove();

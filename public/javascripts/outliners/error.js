@@ -1,10 +1,9 @@
-ColumnMorph.subclass("ErrorMessageMorph", {
-  initialize: function($super, msg) {
+ColumnMorph.subclass("MessageNotifierMorph", {
+  initialize: function($super, msg, color) {
     $super();
     this.shape.roundEdgesBy(10);
     this._message = "" + msg;
-    this.setFill(defaultFillWithColor(Color.red));
-    this.addThingy(createLabel("Error:"));
+    this.setFill(defaultFillWithColor(color || Color.red));
     this.addThingy(createLabel(this._message));
   },
 
@@ -13,12 +12,12 @@ ColumnMorph.subclass("ErrorMessageMorph", {
   },
 });
 
-Object.extend(ErrorMessageMorph, {
+Object.extend(MessageNotifierMorph, {
   showIfErrorDuring: function(f, evt) {
     try {
       return f();
     } catch (ex) {
-      new this(ex).grabMe(evt);
+      new this(ex, Color.red).grabMe(evt);
     }
   },
 });
