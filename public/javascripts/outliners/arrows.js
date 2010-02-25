@@ -161,6 +161,7 @@ Morph.subclass("ArrowEndpoint", {
       } else {
         this.morphToAttachTo.addMorphAt(this, localNewLoc);
       }
+      this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = true;
     } else {
       if (this.vectorFromOtherEndpoint == null) {this.vectorFromOtherEndpoint = this.calculateDefaultVectorFromOtherEndpoint();}
       var newLoc = this.otherEndpoint.world() ? this.otherEndpoint.worldPoint(pt(0,0)).addPt(this.vectorFromOtherEndpoint) : pt(0,0);
