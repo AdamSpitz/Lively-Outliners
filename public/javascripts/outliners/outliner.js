@@ -196,11 +196,13 @@ ColumnMorph.subclass("OutlinerMorph", {
   // mouse events
 
   acceptsDropping: function(m) { // aaa - could this be generalized?
-    return m.canBeDroppedOnOutliner;
+    return typeof(m.wasJustDroppedOnOutliner) === 'function';
   },
 
   justReceivedDrop: function(m) {
-    m.wasJustDroppedOnOutliner(this);
+    if (this.acceptsDropping(m)) { 
+      m.wasJustDroppedOnOutliner(this);
+    }
   },
 
   onMouseOver: function(evt) {

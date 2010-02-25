@@ -126,10 +126,6 @@ Morph.subclass("ArrowEndpoint", {
     this.shouldDisappearAfterAttaching = isTransient;
 
     this.layoutRepulsiveCharge = 0.25;
-
-    // aaa - make this cleaner, so that ArrowEndpoint can be more general, not just for topicRefs
-    this.canBeDroppedOnOutliner = true;
-    this.canBeDroppedOnWorld = true;
   },
 
   suppressHandles: true,
@@ -228,6 +224,7 @@ Morph.subclass("ArrowEndpoint", {
     return menu;
   },
 
+  // aaa - make this cleaner, so that ArrowEndpoint can be more general, not just for outliners
   wasJustDroppedOnOutliner: function(outliner) {
     if (this.shouldDisappearAfterAttaching) {
       this.topicRef.setterArrow = null;
@@ -238,11 +235,6 @@ Morph.subclass("ArrowEndpoint", {
     }
     this.vectorFromOtherEndpoint = null;
     this.topicRef.setContents(outliner.mirror());
-  },
-
-  wasJustDroppedOnWorld: function(w) {
-    this.vectorFromOtherEndpoint = this.lineEndpoint().subPt(this.otherEndpoint.lineEndpoint());
-    this.topicRef.setTopic(null);
   },
 });
 

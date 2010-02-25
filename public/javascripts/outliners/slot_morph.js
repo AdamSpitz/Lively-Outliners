@@ -257,8 +257,6 @@ ColumnMorph.subclass("SlotMorph", {
     return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
   },
 
-  canBeDroppedOnOutliner: true,
-
   wasJustDroppedOnOutliner: function(outliner) {
     this.slot().copyTo(outliner.mirror());
     outliner.expander().expand();

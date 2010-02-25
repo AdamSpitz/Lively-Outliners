@@ -39,10 +39,12 @@ WorldMorph.addMethods({
   // dropping stuff
 
   acceptsDropping: function(m) {
-    return m.canBeDroppedOnWorld;
+    return typeof m.wasJustDroppedOnWorld === 'function';
   },
 
   justReceivedDrop: function(m) {
-    if (m.wasJustDroppedOnWorld !== undefined) { m.wasJustDroppedOnWorld(this); }
+    if (this.acceptsDropping(m)) { 
+      m.wasJustDroppedOnWorld(this);
+    }
   },
 });
