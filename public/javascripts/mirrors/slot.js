@@ -26,10 +26,14 @@ AbstractSlot.subclass("Slot", {
   remove: function() {
     this.mirror().removeSlotAt(this.name());
   },
+
+  isMethod: function() { return this.contents().isReflecteeFunction(); },
 });
 
 AbstractSlot.subclass("ParentSlot", {
   name: function() { return "*parent*"; },
   
   contents: function( ) { return this._mirror.parent(); },
+
+  isMethod: function() { return false; },
 });

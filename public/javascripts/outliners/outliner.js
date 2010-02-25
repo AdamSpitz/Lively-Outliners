@@ -555,31 +555,87 @@ Object.extend(SlotNameMorph, {
 });
 
 
-RowMorph.subclass("SlotMorph", {
+ColumnMorph.subclass("SlotMorph", {
   initialize: function($super, slot) {
     $super();
     this._slot = slot;
-    //this.beInvisible();
     this.setFill(Color.gray.lighter());
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
     this.labelMorph = new SlotNameMorph(slot);
 
-    var contentsPointer = this.contentsPointer = new ButtonMorph(pt(0,0).extent(pt(10,10)));
+    this.signatureRow = new RowMorph().beInvisible();
 
-    // aaa Is this the right object to put this stuff on?
-    contentsPointer.determineWhichMorphToAttachTo = function() {return true;};
-    contentsPointer.attachToTheRightPlace = function() {};
-    contentsPointer.noLongerNeedsToBeVisibleAsArrowEndpoint = function() {};
-    contentsPointer.relativeLineEndpoint = pt(70,10);
-    contentsPointer.setShapeToLookLikeACircle = function() {};
+    if (slot.isMethod()) {
+      this.signatureRow.addThingies([this.labelMorph, this.sourceButton()]);
+    } else {
+      this.signatureRow.addThingies([this.labelMorph, this.contentsPointer()]);
+    }
+
+    this.addRow(this.signatureRow);
+  },
+
+  contentsPointer: function() {
+    var m = this._contentsPointer;
+    if (m) { return m; }
+    var slot = this.slot();
+    var arrow;
+    m = this._contentsPointer = this.createButton(function() {
+      WorldMorph.current().outlinerFor(slot.contents()).ensureIsInWorld();
+      WorldMorph.current().addMorph(arrow);
+    });
+    arrow = new SlotContentsPointerArrow(slot, m);
+
+    m.determineWhichMorphToAttachTo = function() {return true;};
+    m.attachToTheRightPlace = function() {};
+    m.noLongerNeedsToBeVisibleAsArrowEndpoint = function() {};
+    m.relativeLineEndpoint = pt(70,10);
+    m.setShapeToLookLikeACircle = function() {};
+
+    return m;
+  },
+
+  sourceButton: function() {
+    var m = this._sourceButton;
+    if (m) { return m; }
+    var slot = this.slot();
+    m = this._sourceButton = this.createButton(function() {
+      this.toggleSource();
+    }.bind(this));
+
+    return m;
+  },
+
+  createButton: function(func) {
+    var m = new ButtonMorph(pt(0,0).extent(pt(10,10)));
     
-    contentsPointer.arrow = new SlotContentsPointerArrow(slot, contentsPointer);
-    contentsPointer.connectModel({model: {Value: null, getValue: function() {return this.Value;}, setValue: function(v) {this.Value = v; if (!v) {WorldMorph.current().outlinerFor(slot.contents()).ensureIsInWorld(); WorldMorph.current().addMorph(contentsPointer.arrow);}}}, setValue: "setValue", getValue: "getValue"});
-    contentsPointer.suppressHandles = true;
-    contentsPointer.okToDuplicate = Functions.False;
+    m.connectModel({model: {Value: null, getValue: function() {return this.Value;}, setValue: function(v) {this.Value = v; if (!v) {func();}}}, setValue: "setValue", getValue: "getValue"});
+    m.suppressHandles = true;
+    m.okToDuplicate = Functions.False;
+    return m;
+  },
 
-    this.addThingies([this.labelMorph, contentsPointer]);
+  sourceMorph: function() {
+    var m = this._sourceMorph;
+    if (m) { return m; }
+    m = this._sourceMorph = new TextMorph(pt(0,0).extent(pt(100,80)), this.slot().contents().source());
+    m.acceptInput = true;
+    m.closeDnD();
+    m.setBorderWidth(0);
+    m.setFill(Color.gray.lighter());
+    return m;
+  },
+
+  toggleSource: function() {
+    if (this.isSourceShowing()) {
+      this.removeThingy(this.sourceMorph());
+    } else {
+      this.addThingy(this.sourceMorph());
+    }
+  },
+  
+  isSourceShowing: function() {
+    return this._sourceMorph && this._sourceMorph.world();
   },
 
      slot: function() { return this._slot; },

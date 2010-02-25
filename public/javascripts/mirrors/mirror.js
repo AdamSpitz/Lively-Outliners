@@ -94,4 +94,13 @@ Object.subclass("Mirror", {
     var child = new ChildConstructor();
     return new Mirror(child);
   },
+
+  isReflecteeFunction: function() {
+    return typeof(this.reflectee()) === 'function';
+  },
+
+  source: function() {
+    if (! this.isReflecteeFunction()) { throw "not a function"; }
+    return this.reflectee().toString();
+  },
 });
