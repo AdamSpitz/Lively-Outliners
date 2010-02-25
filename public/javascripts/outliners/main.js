@@ -1,1 +1,2 @@
 periodicArrowUpdatingProcess.ensureRunning();
+Morph.suppressAllHandlesForever();

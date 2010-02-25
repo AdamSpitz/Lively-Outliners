@@ -18,9 +18,6 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.create_header_row();
   },
 
-  suppressHandles: true,
-  okToDuplicate: Functions.False,
-  
   mirror: function() {return this._mirror;},
 
   // Optimization: create the panels lazily. Most will never be needed, and it's bad to make the user wait while we create dozens of them up front.
@@ -113,13 +110,6 @@ ColumnMorph.subclass("OutlinerMorph", {
   beHighlighted:   function() {        this.highlighter.setChecked(true ); },
   isHighlighted:   function() { return this.highlighter. isChecked();      },
 
-
-
-  wasJustCreated: function() {
-    if (! this.world()) {return;}
-    this.expand();
-    this.updateTitle();
-  },
 
 
   // expanding and collapsing
@@ -286,7 +276,7 @@ WorldMorph.addMethods({
     menu.addItem(["create new object", function() {
       /* aaa I don't understand these damned Event things */
       evt = new Event(evt); evt.hand = evt.rawEvent.hand;
-      var o = {anObject: {}, anArray: ['zero', 1, 'two'], aNull: null, fortyTwo: 42, aString: 'here is a string', aBoolean: true, aFunction: function(a, b) {argleBargle();}};
+      var o = {};
       this.outlinerFor(new Mirror(o)).grabMe(evt);
     }]);
 
@@ -294,6 +284,13 @@ WorldMorph.addMethods({
       menu.addSection([
         periodicArrowUpdatingProcess.isRunning() ? [ "stop updating arrows", function() {periodicArrowUpdatingProcess.stop();}]
                                                  : ["start updating arrows", function() {periodicArrowUpdatingProcess.ensureRunning();}],
+
+        ["create new weirdo test object", function() {
+          /* aaa I don't understand these damned Event things */
+          evt = new Event(evt); evt.hand = evt.rawEvent.hand;
+          var o = {anObject: {}, anArray: ['zero', 1, 'two'], aNull: null, fortyTwo: 42, aString: 'here is a string', aBoolean: true, aFunction: function(a, b) {argleBargle();}};
+          this.outlinerFor(new Mirror(o)).grabMe(evt);
+        }]
       ]);
     }
 
@@ -344,9 +341,6 @@ ArrowMorph.subclass("SlotContentsPointerArrow", {
     allArrows.push(this);
   },
 
-  suppressHandles: true,
-  okToDuplicate: Functions.False,
-
   createEndpoints: function() {
     this.endpoint1 = this._fixedEndpoint;
     this.endpoint2 = new ArrowEndpoint(this._slot, this);
@@ -383,9 +377,6 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
     this.nameOfEditCommand = "rename";
     this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
   },
-
-  suppressHandles: true,
-  okToDuplicate: Functions.False,
 
   slot: function() {return this._slot;},
   inspect:  function() {return this.slot().name();},
@@ -426,7 +417,7 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
   },
 
   setSavedText: function(text) {
-    if (text !== this.slot().name()) {
+    if (text !== this.getSavedText()) {
       this.slot().holder().renameSlot(this.slot().name(), text);
       this.outliner().updateEverything();
     }
@@ -456,9 +447,6 @@ TwoModeTextMorph.subclass("MethodSourceMorph", {
     this.nameOfEditCommand = "edit source";
     this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
   },
-
-  suppressHandles: true,
-  okToDuplicate: Functions.False,
 
   slot: function() {return this._slot;},
   inspect:  function() {return this.slot().name() + " source";},
@@ -499,7 +487,7 @@ TwoModeTextMorph.subclass("MethodSourceMorph", {
   },
 
   setSavedText: function(text) {
-    if (text !== this.slot().contents().source()) {
+    if (text !== this.getSavedText()) {
       var newContents = new Mirror(eval("(" + text + ")"));
       this.slot().setContents(newContents);
       this.outliner().updateEverything();
@@ -576,8 +564,6 @@ ColumnMorph.subclass("SlotMorph", {
     var m = new ButtonMorph(pt(0,0).extent(pt(10,10)));
     
     m.connectModel({model: {Value: null, getValue: function() {return this.Value;}, setValue: function(v) {this.Value = v; if (!v) {func();}}}, setValue: "setValue", getValue: "getValue"});
-    m.suppressHandles = true;
-    m.okToDuplicate = Functions.False;
     return m;
   },
 
@@ -608,9 +594,6 @@ ColumnMorph.subclass("SlotMorph", {
     return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
   },
 
-  suppressHandles: true,
-  okToDuplicate: Functions.False,
-
   canBeDroppedOnOutliner: true,
 
   wasJustDroppedOnOutliner: function(outliner) {
@@ -632,19 +615,21 @@ ColumnMorph.subclass("SlotMorph", {
 
     this.labelMorph.addEditingMenuItemsTo(menu, evt);
 
-    menu.addLine();
+    if (this.slot().copyTo) {
+      menu.addItem(["copy", function(evt) {
+        var newSlot = this.slot().copyTo(new Mirror({}));
+        evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
+      }]);
+    }
 
-    menu.addItem(["copy", function(evt) {
-      var newSlot = this.slot().copyTo(new Mirror({}));
-      evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
-    }]);
-
-    menu.addItem(["move", function(evt) {
-      var newSlot = this.slot().copyTo(new Mirror({}));
-      this.slot().remove();
-      evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
-      this.outliner().updateEverything();
-    }]);
+    if (this.slot().remove) {
+      menu.addItem(["move", function(evt) {
+        var newSlot = this.slot().copyTo(new Mirror({}));
+        this.slot().remove();
+        evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
+        this.outliner().updateEverything();
+      }]);
+    }
 
     return menu;
   },
@@ -656,7 +641,6 @@ ColumnMorph.subclass("EvaluatorMorph", {
     this._outliner = outliner;
     
     this.textMorph = createTextField();
-    this.textMorph.suppressHandles = true;
     this.textMorph.setExtent(pt(150,60));
     this.addThingy(this.textMorph);
     
@@ -676,8 +660,6 @@ ColumnMorph.subclass("EvaluatorMorph", {
     this.world().hands[0].setKeyboardFocus(this.textMorph);
     return this;
   },
-
-  suppressHandles: true,
 
   runTheCode: function() {
     // aaa - How does LK do this? Maybe new Function()?
@@ -717,8 +699,6 @@ ColumnMorph.subclass("ErrorMessageMorph", {
     this.addThingy(createLabel("Error:"));
     this.addThingy(createLabel(msg));
   },
-
-  suppressHandles: true,
 
   wasJustDroppedOnWorld: function(world) {
     this.zoomOuttaHereTimer = setInterval(function() {this.startZoomingOuttaHere();}.bind(this), 5000);

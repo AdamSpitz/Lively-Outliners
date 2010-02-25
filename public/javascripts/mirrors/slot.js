@@ -33,7 +33,8 @@ AbstractSlot.subclass("Slot", {
 AbstractSlot.subclass("ParentSlot", {
   name: function() { return "*parent*"; },
   
-  contents: function( ) { return this._mirror.parent(); },
+     contents: function( ) { return this._mirror.parent(); },
+  setContents: function(m) { return this._mirror.setParent(m); },
 
   isMethod: function() { return false; },
 });

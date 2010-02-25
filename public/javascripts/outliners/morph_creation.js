@@ -899,7 +899,6 @@ Morph.subclass("RowOrColumnMorph", {
     this.setFill(null);
     this.setBorderWidth(0);
     this.beUngrabbable();
-    this.suppressHandles = true;
     return this;
   },
 });
