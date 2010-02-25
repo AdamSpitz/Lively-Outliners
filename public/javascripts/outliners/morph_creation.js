@@ -709,15 +709,16 @@ function createTextField(readOnly, initialText, pos, extent) {
   return tf;
 }
 
-function createLabel(initialText, pos, extent) {
+function createLabel(textOrFunction, pos, extent) {
   pos = pos || pt(5, 10);
   extent = extent || pt(50,20);
-  initialText = initialText || "";
+  var initialText = typeof textOrFunction === 'function' ? textOrFunction() : textOrFunction || "";
   var tf = new TextMorph(pos.extent(extent), initialText);
   tf.acceptInput = false;
   tf.closeDnD();
   tf.beLabel();
   tf.morphMenu = function(evt) {return null;};
+  if (typeof textOrFunction === 'function') { tf.getRefreshedText = textOrFunction; }
   return tf;
 }
 

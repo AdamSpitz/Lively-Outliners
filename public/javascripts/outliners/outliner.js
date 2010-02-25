@@ -6,15 +6,15 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.sPadding = this.fPadding = 5;
     this.shape.roundEdgesBy(10);
 
+    this.     _slotsPanel = new ColumnMorph().beInvisible();
+    this._evaluatorsPanel = new ColumnMorph().beInvisible();
+
     this._highlighter = new BooleanHolder(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
     this._highlighter.setChecked(false);
 
     this._expander = new ExpanderMorph(this);
 
-    this.titleLabel = createLabel("");
-    this.titleLabel.getRefreshedText = function() {return m.inspect();};
-
-    //this.evaluatorButton = createButton("E", function(evt) {this.openEvaluator(evt);}.bind(this), 0);
+    this.titleLabel = createLabel(function() {return m.inspect();});
 
     this.evaluatorButton = new WindowControlMorph(new Rectangle(0, 0, 22, 22), 3, Color.purple);
     this.evaluatorButton.relayToModel(this, {HelpText: "-EvaluatorHelp", Trigger: "=openEvaluator"});
@@ -23,20 +23,15 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.dismissButton.relayToModel(this, {HelpText: "-DismissHelp", Trigger: "=removeFromWorld"});
 
     this.create_header_row();
-    this.rejiggerTheLayout();
+    this.addRow(this._evaluatorsPanel);
+    this.rejiggerTheLayoutIncludingSubmorphs();
   },
 
   mirror: function() { return this._mirror; },
 
-  // Optimization: create the panels lazily. Most will never be needed, and it's bad to make the user wait while we create dozens of them up front.
-  // aaa: Can I create a general lazy thingamajig mechanism?
-  get_slots_panel:      function() { return this.     slots_panel || (this.     slots_panel = new ColumnMorph().beInvisible()); },
-  get_evaluators_panel: function() { return this.evaluators_panel || (this.evaluators_panel = new ColumnMorph().beInvisible()); },
-
   create_header_row: function() {
-    var r = this.headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
+    var r = this._headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
     r.fPadding = 3;
-    this.titleLabel.refreshText();
     r.replaceThingiesWith([this._expander, this.titleLabel, this.evaluatorButton, this.dismissButton]);
     this.addRow(r);
     return r;
@@ -49,18 +44,13 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.dontBotherRejiggeringTheLayoutUntilTheEndOf(f);
   },
 
-  repositionStuff: function() { // aaa - can I have a well-known method name for this, too? and maybe find a way to generalize it, so this method can live up in RowOrColumnMorph?
-    var op = this.slots_panel;
-    if (op) {
-      op.rejiggerTheLayout();
-    }
-    this.rejiggerTheLayout();
-  },
-
-  repositionStuffIncludingTheHeaderRow: function() { // aaa ditto
-    var hr = this.headerRow;
+  // aaa - can I have a well-known method name for this, too? and maybe find a way to generalize it, so this method can live up in RowOrColumnMorph?
+  rejiggerTheLayoutIncludingSubmorphs: function() {
+    var hr = this._headerRow;
     if (hr) {hr.rejiggerTheLayout();}
-    this.repositionStuff();
+    this._slotsPanel.rejiggerTheLayout();
+    this._evaluatorsPanel.rejiggerTheLayout();
+    this.rejiggerTheLayout();
   },
 
 
@@ -71,7 +61,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     if (! this.world()) {return;}
     this.refillWithAppropriateColor();
     this.titleLabel.refreshText();
-    this.rejiggerTheLayout();
+    this.rejiggerTheLayoutIncludingSubmorphs();
   },
 
 
@@ -104,12 +94,12 @@ ColumnMorph.subclass("OutlinerMorph", {
       var isExpanded = this.expander().isExpanded();
       if (isExpanded && !this.wasAlreadyExpanded) {
         this.populateSlotsPanel();
-        this.replaceThingiesWith([this.headerRow, this.get_slots_panel()]);
+        this.replaceThingiesWith([this._headerRow, this._slotsPanel, this._evaluatorsPanel]);
       } else if (!isExpanded && this.wasAlreadyExpanded) {
-        this.replaceThingiesWith([this.headerRow]);
+        this.replaceThingiesWith([this._headerRow, this._evaluatorsPanel]);
       }
       this.wasAlreadyExpanded = isExpanded;
-      this.repositionStuff();
+      this.rejiggerTheLayoutIncludingSubmorphs();
     }.bind(this));
   },
 
@@ -126,7 +116,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   populateSlotsPanel: function() {
-    var op = this.get_slots_panel();
+    var op = this._slotsPanel;
     op.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
       var sps = [];
       this.mirror().eachSlot(function(s) { sps.push(this.slotPanelFor(s)); }.bind(this));
@@ -141,7 +131,8 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   openEvaluator: function(evt) {
     var e = new EvaluatorMorph(this);
-    this.addThingy(e);
+    this._evaluatorsPanel.addRow(e);
+    this.rejiggerTheLayoutIncludingSubmorphs();
     evt.hand.setKeyboardFocus(e.textMorph());
   },
 

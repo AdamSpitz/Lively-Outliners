@@ -31,6 +31,6 @@ ColumnMorph.subclass("EvaluatorMorph", {
 
   close: function(evt) {
     this.remove();
-    this.outliner().rejiggerTheLayout();
+    this.outliner().rejiggerTheLayoutIncludingSubmorphs();
   },
 });
