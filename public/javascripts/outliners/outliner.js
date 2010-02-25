@@ -1,7 +1,3 @@
-// aaa - Go through all the methods that we're adding here to the "model" objects and see how
-// many of them can be eliminated. For now I'm just trying to get this refactoring done as
-// quick as possible so that Andrew can start using the model objects. -- Adam, Feb. 2009
-
 ColumnMorph.subclass("OutlinerMorph", {
   initialize: function($super, t) {
     this.topic = t;
@@ -16,7 +12,6 @@ ColumnMorph.subclass("OutlinerMorph", {
 
     this.expander = new ExpanderMorph(this);
     this.titleLabel = createLabel("");
-    this.titleTopicRef = new TopicRef(this.topic, true, "Title");
     this.evaluatorButton = createButton("E", function() {this.openEvaluator();}.bind(this), 0);
     this.dismissButton = new WindowControlMorph(new Rectangle(0, 0, 22, 22), 3, Color.primary.yellow);
     this.dismissButton.relayToModel(this, {HelpText: "-DismissHelp", Trigger: "=removeFromWorld"});
@@ -43,7 +38,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     r.fPadding = 10;
     r.closeDnD();
     r.ignoreEvents();
-    r.inspect = function() {return "header row for " + this.titleTopicRef.displayName();}.bind(this);
+    r.inspect = function() {return "header row for " + this.mirror().inspect();}.bind(this);
     this.headerRow = r;
     this.updateHeader();
     this.addRow(r);
@@ -54,19 +49,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   // rejiggering the layout
 
   makingManyChangesDuring: function(f) {
-    this.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
-      this.makingManyChangesToOpinionDuring(this.topic.get__current_users_opinion(), function() {
-        this.makingManyChangesToOpinionDuring(this.topic.get__collective_opinion(), f);
-      }.bind(this));
-    }.bind(this));
-  },
-
-  makingManyChangesToOpinionDuring: function(o, f) {
-    if (o) {
-      o.makingManyChangesDuring(f);
-    } else {
-      f();
-    }
+    this.dontBotherRejiggeringTheLayoutUntilTheEndOf(f);
   },
 
   repositionStuff: function() {
@@ -136,8 +119,6 @@ ColumnMorph.subclass("OutlinerMorph", {
     if (! this.world()) {return;}
     this.expand();
     this.updateTitle();
-    this.titleTopicRef.morph().updateAppearance();
-    this.titleTopicRef.morph().beWritableAndSelectAll();
   },
 
 
@@ -254,10 +235,6 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   getDismissHelp: function() {return "Hide";}, // aaa - I don't think this works but I don't know why.
 
-  isMovableByForcesFromOtherNodes: function() {
-    return ! this.topic.get__was_explicitly_requested();
-  },
-
   focusOnMe: function() {
     loadTopicsWithIDs([this.topic.get__database_object_id()]);
   },
@@ -277,10 +254,10 @@ ColumnMorph.subclass("OutlinerMorph", {
 
     menu.addSection([["add slot", function() {
       /* aaa I don't understand these damned Event things */ evt = new Event(evt); evt.hand = evt.rawEvent.hand;
-      var name = this.topic.findUnusedSlotName("slot");
-      this.topic.reflectee()[name] = 'argle bargle';
-      this.populateSlotsPanel();
-      this.updateAppearance();
+      var name = this.mirror().findUnusedSlotName("slot");
+      this.mirror().reflectee()[name] = null;
+      this.updateEverything();
+      this.slotPanelFor(this.mirror().slotAt(name)).labelMorph.beWritableAndSelectAll();
     }.bind(this)]]);
 
     menu.addSection([["create child", function() {
@@ -312,37 +289,12 @@ ColumnMorph.subclass("OutlinerMorph", {
   handlesMouseDown: function(evt) { return true; },
 
   onMouseDown: function(evt) {
-    if (this.checkForDoubleClick(evt)) {return true;}
-
     if (evt.isRightMouseButton()) {
       this.showMorphMenu(evt);
       return true;
     }
 
     return false;
-  },
-
-  onDoubleClick: function(evt) {
-    this.focusOnMe();
-  },
-
-  eachSpring: function(f) {
-    this.eachAssociation(function(assoc, otherTopic) {
-      f(assoc, otherTopic.morph());
-    }.bind(this));
-  },
-
-  eachAssociation: function(f) {
-    // aaa - I think this could (and probably should) be optimized.
-    this.eachArrowEndpoint(function(m) {
-      var a = m.association;
-      var t1 = a.get__topic1();
-      var t2 = a.get__topic2();
-      var other =  this.topic == t1 ? t2 : t1;
-      if (other != null && other.world()) {
-        f(a, other);
-      }
-    }.bind(this));
   },
 
   morphForArrowsToAttachTo: function() {
@@ -404,43 +356,12 @@ WorldMorph.addMethods({
   },
 });
 
-Object.subclass("TopicRef", {
-    initialize: function(t, readOnly, title) {
-      stats.increment(this.constructor.type + " created");
-
-      this.notifier = new Notifier(this);
-      this.isReadOnly = readOnly;
-      this.title = title;
-      this.setTopic(t);
-    },
-
-    getTopic: function( ) { return this._topic; },
-
-    setTopic: function(t) {
-      if (this._topic !== t) {
-        this._topic = t;
-        this.notifier.notify_all_observers();
-      }
-    },
-
-    inspect: function() {return this.title || "a topic reference";},
-
-    displayName: function() {return displayNameForTopic(this.getTopic());},
-
-    loadTopic: function() { loadTopicsWithIDs([this.getTopic().get__database_object_id()]); },
-
-    beAssociationTypeFor: function(a) {      this.associationThatIAmTheTypeOf = a; return this; },
-    isAssociationType:    function() {return this.associationThatIAmTheTypeOf != null; },
-    association:          function() {return this.associationThatIAmTheTypeOf; },
-});
-
 var overlays = [];
 
-
-var allTopicRefArrows = [];
+var allArrows = [];
 
 function eachArrowThatShouldBeUpdated(f) {
-  allTopicRefArrows.each(function(a) {if (!a.noLongerNeedsToBeUpdated) {f(a);}});
+  allArrows.each(function(a) {if (!a.noLongerNeedsToBeUpdated) {f(a);}});
 }
 
 ArrowMorph.subclass("SlotContentsPointerArrow", {
@@ -449,7 +370,7 @@ ArrowMorph.subclass("SlotContentsPointerArrow", {
     this._fixedEndpoint = fep;
     $super();
     this.initializeUI();
-    allTopicRefArrows.push(this);
+    allArrows.push(this);
   },
 
   suppressHandles: true,
@@ -827,7 +748,6 @@ ColumnMorph.subclass("ErrorMessageMorph", {
   },
 
   suppressHandles: true,
-  okToDuplicate: Functions.False,
 
   wasJustDroppedOnWorld: function(world) {
     this.zoomOuttaHereTimer = setInterval(function() {this.startZoomingOuttaHere();}.bind(this), 5000);
