@@ -50,12 +50,18 @@ Object.subclass("Mirror", {
   },
 
   eachSlot: function(f) {
-    var o = this.reflectee();
     f(new ParentSlot(this));
+    this.eachNonParentSlot(f);
+  },
+
+  eachNonParentSlot: function(f) {
     if (! this.canHaveSlots()) {return;} // aaa - should this go one line up? Do primitives have a parent? Or maybe numbers do but null doesn't or something?
+    var o = this.reflectee();
     for (var name in o) {
       if (o.hasOwnProperty(name)) {
-        f(this.slotAt(name));
+        if (name !== '__annotation__') { // shh! pretend it's not there.
+          f(this.slotAt(name));
+        }
       }
     }
   },
@@ -164,13 +170,18 @@ Object.subclass("Mirror", {
     this.annotation().creatorSlot = s;
   },
 
+  canHaveAnnotation: function() {
+    return this.isReflecteeObject() || this.isReflecteeFunction();
+  },
+
   hasAnnotation: function() {
-    return (this.isReflecteeObject() || this.isReflecteeFunction()) && this.reflectee().hasOwnProperty("__annotation__");
+    return this.canHaveAnnotation() && this.reflectee().hasOwnProperty("__annotation__");
   },
 
   annotation: function() {
     if (! this.hasAnnotation()) {
-      return this.reflectee().__annotation__ = new Annotation();
+      if (! this.canHaveAnnotation()) { throw this.name() + " cannot have an annotation"; }
+      return this.reflectee().__annotation__ = new ObjectAnnotation();
     }
     return this.reflectee().__annotation__;
   },

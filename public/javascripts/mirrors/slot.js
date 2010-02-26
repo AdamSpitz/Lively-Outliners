@@ -37,10 +37,6 @@ AbstractSlot.subclass("Slot", {
 
   isMethod: function() { return this.contents().isReflecteeFunction(); },
 
-  beCreator: function() {
-    this.contents().setCreatorSlot(this);
-  },
-
   rename: function(newName) {
     var oldName = this.name();
     if (oldName === newName) {return;}
@@ -54,6 +50,30 @@ AbstractSlot.subclass("Slot", {
     delete o[oldName];
     o[newName] = contents;
     if (isCreator) {this.holder().slotAt(newName).beCreator();}
+  },
+  
+  hasAnnotation: function() {
+    return this.holder().hasAnnotation() && this.holder().annotation().slotAnnotations()[this.name()];
+  },
+
+  annotation: function() {
+    var oa = this.holder().annotation();
+    var sa = oa.slotAnnotations()[this.name()];
+    if (sa) {return sa;}
+    return oa.slotAnnotations()[this.name()] = new SlotAnnotation();
+  },
+
+  beCreator: function() {
+    this.contents().setCreatorSlot(this);
+  },
+
+  module: function() {
+    if (! this.hasAnnotation()) { return null; }
+    return this.annotation().module;
+  },
+
+  setModule: function(m) {
+    this.annotation().module = m;
   },
 });
 

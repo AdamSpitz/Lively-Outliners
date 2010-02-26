@@ -163,13 +163,28 @@ TwoModeTextMorph.subclass("MethodSourceMorph", {
 });
 
 
+ColumnMorph.subclass("SlotAnnotationMorph", {
+  initialize: function($super, slot) {
+    $super();
+    this._slot = slot;
+    this.beInvisible();
+    this._moduleLabel = createLabel(function() {var m = this._slot.module(); return m ? m.name() : "";}.bind(this));
+    this.addRow(createLabelledNode("Module", this._moduleLabel));
+  },
+
+  updateAppearance: function() {
+    this._moduleLabel.refreshText();
+    this.rejiggerTheLayout();
+  },
+});
+
 ColumnMorph.subclass("SlotMorph", {
   initialize: function($super, slot) {
     $super();
+    this._slot = slot;
     this.shape.roundEdgesBy(4);
     this.sPadding = 3;
     this.fPadding = 3;
-    this._slot = slot;
     this.setFill(defaultFillWithColor(Color.gray));
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
@@ -184,7 +199,7 @@ ColumnMorph.subclass("SlotMorph", {
       this.signatureRow.addThingies([this.labelMorph, this.contentsPointer()]);
     }
 
-    this.addRow(this.signatureRow);
+    this.updateAppearance();
   },
 
   contentsPointer: function() {
@@ -237,17 +252,21 @@ ColumnMorph.subclass("SlotMorph", {
     return m;
   },
 
-  toggleSource: function() {
-    if (this.isSourceShowing()) {
-      this.removeThingy(this.sourceMorph());
-    } else {
-      this.addThingy(this.sourceMorph());
-    }
-    this.owner.rejiggerTheLayout();
+  annotationMorph: function() {
+    var m = this._annotationMorph;
+    if (m) { return m; }
+    m = this._annotationMorph = new SlotAnnotationMorph(this.slot());
+    return m;
   },
-  
-  isSourceShowing: function() {
-    return this._sourceMorph && this._sourceMorph.world();
+
+  toggleSource: function() {
+    this._shouldShowSource = ! this._shouldShowSource;
+    this.updateAppearance();
+  },
+
+  toggleAnnotation: function() {
+    this._shouldShowAnnotation = ! this._shouldShowAnnotation;
+    this.updateAppearance();
   },
 
      slot: function() { return this._slot; },
@@ -258,7 +277,14 @@ ColumnMorph.subclass("SlotMorph", {
   },
 
   updateAppearance: function() {
-    // aaa - what needs to happen here?
+    this.labelMorph.updateAppearance();
+    if (this._sourceMorph)     { this._sourceMorph    .updateAppearance(); }
+    if (this._annotationMorph) { this._annotationMorph.updateAppearance(); }
+    var rows = [this.signatureRow];
+    if (this._shouldShowSource    ) { rows.push(this.    sourceMorph()); }
+    if (this._shouldShowAnnotation) { rows.push(this.annotationMorph()); }
+    this.replaceThingiesWith(rows);
+    if (this.owner) { this.owner.rejiggerTheLayout(); }
   },
 
   wasJustDroppedOnOutliner: function(outliner) {
@@ -308,6 +334,33 @@ ColumnMorph.subclass("SlotMorph", {
         }.bind(this)]);
       }
     }
+
+    if (this.slot().setModule) {
+      menu.addItem(["set module...", function(evt) {
+        var menu = new MenuMorph([], this);
+        menu.addItem(["new module...", function(evt) {
+          evt.hand.world().prompt("Module name?", function(name) {
+            if (name) {
+              this.slot().setModule(new Module(name));
+              this.updateAppearance();
+            }
+          }.bind(this));
+        }.bind(this)]);
+        menu.addLine();
+        var modulesMir = new Mirror(lobby.modules);
+        modulesMir.eachNonParentSlot(function(s) {
+          menu.addItem([s.name(), function(evt) {
+            this.slot().setModule(s.contents().reflectee());
+            this.updateAppearance();
+          }.bind(this)]);
+        }.bind(this));
+        menu.openIn(this.world(), evt.point());
+      }.bind(this)]);
+    }
+
+    menu.addItem([this._shouldShowAnnotation ? "hide annotation" : " show annotation", function(evt) {
+      this.toggleAnnotation();
+    }.bind(this)]);
 
     return menu;
   },
