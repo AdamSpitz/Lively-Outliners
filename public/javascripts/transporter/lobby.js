@@ -1,1 +1,1 @@
-var lobby = window;
+var lobby = Object.create(window);

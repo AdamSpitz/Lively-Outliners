@@ -171,7 +171,10 @@ Morph.addMethods({
   },
 
   grabMe: function(evt) {
+    // aaa - Can't seem to make the drop shadows come out right without messing up the way it looks when you grab something that's already in the world.
+    //this.setPosition(evt.hand.position());
     evt.hand.grabMorph(this, evt);
+    //this.setPosition(pt(0,0));
   },
 
 

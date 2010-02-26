@@ -19,7 +19,7 @@ WorldMorph.addMethods({
           this.outlinerFor(new Mirror(lobby)).grabMe(evt);
         }],
 
-        ["aaaaa", function(evt) {
+        ["write a test file", function(evt) {
           // var url = URL.source.withFilename("uploads/testFile.js");
           var url = new URL("http://localhost/~adam/uploads/testFile.js");
           var doc = "Here is the document.";
@@ -31,6 +31,10 @@ WorldMorph.addMethods({
           } else {
             new MessageNotifierMorph("failure publishing world at " + url + ", status " + status.code(), Color.red  ).grabMe(evt);
           }
+        }],
+
+        ["aaaaa", function(evt) {
+            alert(eval("({})"));
         }],
       ]);
     }

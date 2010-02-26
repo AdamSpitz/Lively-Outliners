@@ -1,0 +1,2 @@
+Object.subclass("Annotation", {
+});

@@ -21,9 +21,8 @@ ColumnMorph.subclass("EvaluatorMorph", {
   textMorph: function() { return this._textMorph; },
 
   runTheCode: function() {
-    // aaa - How does LK do this? Maybe new Function()?
-    EvaluatorMorph.__aaa_hack_evaluator_receiver__ = this.outliner().mirror().reflectee();
-    return eval("var self = EvaluatorMorph.__aaa_hack_evaluator_receiver__; " + this.textMorph().getText());
+    var self = this.outliner().mirror().reflectee();
+    return eval("(" +  this.textMorph().getText() + ")");
   },
 
    doIt: function(evt) { MessageNotifierMorph.showIfErrorDuring(function() {                                         this.runTheCode()              ; }.bind(this), evt); },

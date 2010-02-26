@@ -82,7 +82,7 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
 
   setSavedText: function(text) {
     if (text !== this.getSavedText()) {
-      this.slot().holder().renameSlot(this.slot().name(), text);
+      this.slot().rename(text);
       this.outliner().updateEverything();
     }
   },
@@ -257,6 +257,10 @@ ColumnMorph.subclass("SlotMorph", {
     return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
   },
 
+  updateAppearance: function() {
+    // aaa - what needs to happen here?
+  },
+
   wasJustDroppedOnOutliner: function(outliner) {
     this.slot().copyTo(outliner.mirror());
     outliner.expander().expand();
@@ -280,7 +284,7 @@ ColumnMorph.subclass("SlotMorph", {
       menu.addItem(["copy", function(evt) {
         var newSlot = this.slot().copyTo(new Mirror({}));
         evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
-      }]);
+      }.bind(this)]);
     }
 
     if (this.slot().remove) {
@@ -289,7 +293,20 @@ ColumnMorph.subclass("SlotMorph", {
         this.slot().remove();
         evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
         this.outliner().updateEverything();
-      }]);
+      }.bind(this)]);
+    }
+
+    if (this.slot().beCreator && this.slot().contents().canHaveCreatorSlot()) {
+      var cs = this.slot().contents().creatorSlot();
+      if (!cs || ! cs.equals(this.slot())) {
+        menu.addItem(["be creator", function(evt) {
+          this.slot().beCreator();
+          var contentsOutliner = this.world().existingOutlinerFor(this.slot().contents());
+          if (contentsOutliner) contentsOutliner.updateEverything();
+          this.updateAppearance();
+          this.outliner().updateEverything();
+        }.bind(this)]);
+      }
     }
 
     return menu;
