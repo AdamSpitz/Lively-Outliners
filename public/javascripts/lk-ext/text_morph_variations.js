@@ -303,3 +303,10 @@ TwoModeTextMorph.subclass("LinkingTextMorph", {
 
   returnKeyShouldAccept: function() { return true; },
 });
+
+
+TextMorph.addMethods({
+  // For compatibility with TwoModeTextMorphs.
+  getSavedText: function()  {return this.getText( );},
+  setSavedText: function(t) {return this.setText(t);}
+});

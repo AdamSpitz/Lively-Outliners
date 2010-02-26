@@ -91,7 +91,7 @@ Morph.subclass("RowOrColumnMorph", {
     this.beUngrabbable();
     this.ignoreEvents(); // aaa - just added this, not sure it's the right thing to do
     return this;
-  },
+  }
 });
 
 RowOrColumnMorph.subclass("ColumnMorph", {
@@ -135,3 +135,7 @@ var HorizontalDirection = {
   positionAtForwardCoord: function(f) {return pt(f, 0);},
   point: function(f, s) {return pt(f, s);}
 };
+
+HandMorph.addMethods({
+  shouldNotBePartOfRowOrColumn: true
+});
