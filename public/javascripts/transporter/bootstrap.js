@@ -21,14 +21,17 @@ lobby.transporter.module.named = function(n) {
   return m;
 };
 
-lobby.transporter.loadSlot = function(holder, name, contents, annotation, isCreatorSlot) {
-  holder[name] = contents;
-  if (! holder.__annotation__) { holder.__annotation__ = newObjectAnnotation(); }
-  holder.__annotation__.slotAnnotations[name] = annotation;
-  if (isCreatorSlot) {
-    var a = contents.__annotation__ = newObjectAnnotation();
-    a.creatorSlotName   = name;
-    a.creatorSlotHolder = holder;
-  }
-  lobby.transporter.module.cache[annotation.module._name].push(holder);
+lobby.transporter.module.addSlots = function(holder, block) {
+  lobby.transporter.module.cache[this._name].push(holder);
+
+  block(function(name, contents, annotation, isCreatorSlot) {
+    holder[name] = contents;
+    if (! holder.__annotation__) { holder.__annotation__ = newObjectAnnotation(); }
+    holder.__annotation__.slotAnnotations[name] = annotation;
+    if (isCreatorSlot) {
+      var a = contents.__annotation__ = newObjectAnnotation();
+      a.creatorSlotName   = name;
+      a.creatorSlotHolder = holder;
+    }
+  });
 };
