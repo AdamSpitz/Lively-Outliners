@@ -74,7 +74,7 @@ AbstractSlot.subclass("Slot", {
 
   setModule: function(m) {
     this.annotation().module = m;
-    Transporter.objectsThatMightContainSlotsInModule(m).push(this.holder()); // aaa - there'll be a lot of duplicates; fix the performance later
+    m.mirrorsThatMightContainSlotsInMe().push(this.holder()); // aaa - there'll be a lot of duplicates; fix the performance later
   },
 
   fileOutTo: function(buffer) {

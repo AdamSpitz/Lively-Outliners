@@ -11,9 +11,13 @@ Object.subclass("Module", {
 
   toString: function() { return "the " + this.name() + " module"; },
 
+  mirrorsThatMightContainSlotsInMe: function() {
+    return Module.cache.getOrIfAbsentPut(this.name(), function() {return [];});
+  },
+
   slotsInOrderForFilingOut: function(f) {
     var alreadySeen = new BloodyHashTable(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
-    Transporter.objectsThatMightContainSlotsInModule(this).each(function(mir) {
+    this.mirrorsThatMightContainSlotsInMe().each(function(mir) {
       if (! alreadySeen.containsKey(mir)) {
         alreadySeen.put(mir, mir);
       }
@@ -76,4 +80,10 @@ Object.extend(Module, {
     var code = FileDirectory.getContent(url);
     eval(code);
   },
+
+  eachModule: function(f) {
+    new Mirror(lobby.modules).eachNonParentSlot(function(s) { f(s.contents().reflectee()); });
+  },
+
+  cache: new BloodyHashTable(),
 });

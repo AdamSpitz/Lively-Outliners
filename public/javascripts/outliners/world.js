@@ -17,7 +17,7 @@ WorldMorph.addMethods({
 
     menu.addItem(["file out module...", function(evt) {
       var modulesMenu = new MenuMorph([], this);
-      Transporter.eachModule(function(m) {
+      Module.eachModule(function(m) {
         modulesMenu.addItem([m.name(), function(evt) {
           MessageNotifierMorph.showIfErrorDuring(function() { m.fileOut(); }, evt);
         }.bind(this)]);

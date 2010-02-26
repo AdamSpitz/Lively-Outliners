@@ -333,7 +333,7 @@ ColumnMorph.subclass("SlotMorph", {
           }.bind(this));
         }.bind(this)]);
         modulesMenu.addLine();
-        Transporter.eachModule(function(m) {
+        Module.eachModule(function(m) {
           modulesMenu.addItem([m.name(), function(evt) {
             this.setModule(m, evt);
           }.bind(this)]);
