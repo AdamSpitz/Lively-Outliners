@@ -40,7 +40,7 @@ WorldMorph.addMethods({
         }],
 
         ["aaaaa", function(evt) {
-            alert(eval("({})"));
+            PromptDialog.test();
         }],
       ]);
     }
