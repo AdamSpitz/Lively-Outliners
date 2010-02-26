@@ -14,22 +14,18 @@ Object.subclass("Mirror", {
   },
 
   inspect: function() {
+    if (this.reflectee() === lobby) {return "lobby";} // aaa - just a hack for now, until I can make it come out right for real
     return this.name(); // later can add the concept of complete objects, so I can do a toString()
   },
 
   name: function() {
     if (this.isReflecteePrimitive()) {return "" + this.reflectee();}
 
-    var cs = this.creatorSlot();
-    if (cs) {
-      var isWellKnown = cs.contents().equals(this);
-      var lobbyMir = new Mirror(lobby);
-      var chain = [cs];
-      while (! cs.holder().equals(lobbyMir)) {
-        cs = cs.holder().creatorSlot();
-        chain.push(cs);
-      }
-      var s = new StringBuffer(isWellKnown ? "" : (/^[AEIOUaeiou]/).exec(cs.name()) ? "an " : "a ");
+    var chain = this.creatorSlotChain();
+    if (chain) {
+      if (chain.length === 0) {return "";}
+      var isThePrototype = chain[0].contents().equals(this);
+      var s = new StringBuffer(isThePrototype ? "" : (/^[AEIOUaeiou]/).exec(chain[chain.length - 1].name()) ? "an " : "a ");
       for (var i = chain.length - 1; i >= 0; i -= 1) {
         s.append(chain[i].name());
         if (i > 0) {s.append(" ");}
@@ -39,10 +35,33 @@ Object.subclass("Mirror", {
       return "an object";
     }
   },
-  
-  isWellKnown: function() {
-    var cs = this.creatorSlot();
-    return cs ? cs.contents().equals(this) : false;
+
+  creatorSlotChainExpression: function() {
+    if (this.isReflecteePrimitive()) {throw this.reflectee() + " does not have a creator slot chain.";}
+
+    var chain = this.creatorSlotChain();
+    var s = new StringBuffer("lobby");
+    for (var i = chain.length - 1; i >= 0; i -= 1) {
+      s.append(".").append(chain[i].name());
+    }
+    return s.toString();
+  },
+
+  creatorSlotChain: function() {
+    if (this.isReflecteePrimitive()) {return null;}
+
+    var chain = [];
+    var lobbyMir = new Mirror(lobby);
+    var mir = this;
+        var cs;
+
+    while (true) {
+      if (mir.equals(lobbyMir)) { return chain; }
+      cs = mir.creatorSlot();
+      if (! cs) { return null; }
+      chain.push(cs);
+      mir = cs.holder();
+    }
   },
 
   reflecteeToString: function() {
@@ -145,6 +164,7 @@ Object.subclass("Mirror", {
   isReflecteeString:    function() { return typeof this.reflectee() === 'string';  },
   isReflecteeNumber:    function() { return typeof this.reflectee() === 'number';  },
   isReflecteeBoolean:   function() { return typeof this.reflectee() === 'boolean'; },
+  isReflecteeArray:     function() { return typeof this.reflectee() === 'object' && this.reflectee() instanceof Array; },
   isReflecteePrimitive: function() { return ! (this.isReflecteeObject() || this.isReflecteeFunction()); },
 
   isReflecteeObject: function() {

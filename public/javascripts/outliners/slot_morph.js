@@ -337,8 +337,8 @@ ColumnMorph.subclass("SlotMorph", {
 
     if (this.slot().setModule) {
       menu.addItem(["set module...", function(evt) {
-        var menu = new MenuMorph([], this);
-        menu.addItem(["new module...", function(evt) {
+        var modulesMenu = new MenuMorph([], this);
+        modulesMenu.addItem(["new module...", function(evt) {
           evt.hand.world().prompt("Module name?", function(name) {
             if (name) {
               this.slot().setModule(new Module(name));
@@ -346,15 +346,14 @@ ColumnMorph.subclass("SlotMorph", {
             }
           }.bind(this));
         }.bind(this)]);
-        menu.addLine();
-        var modulesMir = new Mirror(lobby.modules);
-        modulesMir.eachNonParentSlot(function(s) {
-          menu.addItem([s.name(), function(evt) {
-            this.slot().setModule(s.contents().reflectee());
+        modulesMenu.addLine();
+        Transporter.eachModule(function(m) {
+          modulesMenu.addItem([m.name(), function(evt) {
+            this.slot().setModule(m);
             this.updateAppearance();
           }.bind(this)]);
         }.bind(this));
-        menu.openIn(this.world(), evt.point());
+        modulesMenu.openIn(this.world(), evt.point());
       }.bind(this)]);
     }
 

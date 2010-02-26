@@ -74,6 +74,42 @@ AbstractSlot.subclass("Slot", {
 
   setModule: function(m) {
     this.annotation().module = m;
+    Transporter.objectsThatMightContainSlotsInModule(m).push(this.holder()); // aaa - there'll be a lot of duplicates; fix the performance later
+  },
+
+  fileOutTo: function(buffer) {
+    buffer.append("thisModule.loadSlot(").append(this.holder().creatorSlotChainExpression()).append(", '").append(this.name()).append("', ");
+    var m = this.contents();
+    var array = null;
+    if (m.isReflecteePrimitive()) {
+      buffer.append("" + m.reflectee());
+    } else {
+      var cs = m.creatorSlot();
+      if (! cs) {
+        throw "Cannot file out a reference to " + m.name();
+      } else if (! cs.equals(this)) {
+        // This is just a reference to some well-known object that's created elsewhere.
+        buffer.append(m.creatorSlotChainExpression());
+      } else {
+        // This is the object's creator slot; gotta create it.
+        if (m.isReflecteeFunction()) {
+          buffer.append(m.reflectee().toString());
+        } else if (m.isReflecteeArray()) {
+          buffer.append("[]");
+          array = m.reflectee();
+        } else {
+          buffer.append("{}");
+        }
+        buffer.append(", {isCreatorSlot: true}");
+      }
+    }
+    buffer.append(");\n\n");
+
+    if (array) {
+      for (var i = 0, n = array.length; i < n; i += 1) {
+        m.slotAt(i.toString()).fileOutTo(buffer);
+      }
+    }
   },
 });
 

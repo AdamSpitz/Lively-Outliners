@@ -100,8 +100,8 @@ Object.extend(BloodyHashTable.prototype, {
 
   values: function() {
     var vs = [];
-    this._each(function(v) {
-      vs.push(v);
+    this._each(function(pair) {
+      vs.push(pair.value);
     });
     return vs;
   },

@@ -5,6 +5,26 @@ WorldMorph.addMethods({
       this.outlinerFor(new Mirror({})).grabMe(evt);
     }]);
 
+    menu.addLine();
+
+    menu.addItem(["file in module...", function(evt) {
+      this.prompt("Module name?", function(name) {
+        if (name) {
+          MessageNotifierMorph.showIfErrorDuring(function() { Module.fileIn(name); }, evt);
+        }
+      }.bind(this));
+    }.bind(this)]);
+
+    menu.addItem(["file out module...", function(evt) {
+      var modulesMenu = new MenuMorph([], this);
+      Transporter.eachModule(function(m) {
+        modulesMenu.addItem([m.name(), function(evt) {
+          MessageNotifierMorph.showIfErrorDuring(function() { m.fileOut(); }, evt);
+        }.bind(this)]);
+      }.bind(this));
+      modulesMenu.openIn(this, evt.point());
+    }.bind(this)]);
+
     if (debugMode) {
       menu.addSection([
         periodicArrowUpdatingProcess.isRunning() ? [ "stop updating arrows", function() {periodicArrowUpdatingProcess.stop();}]
