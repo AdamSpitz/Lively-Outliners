@@ -40,9 +40,6 @@ Morph.subclass("ArrowMorph", {
     return this;
   },
 
-       addToWorld: function() { WorldMorph.current().   addMorph(this); },
-  removeFromWorld: function() { WorldMorph.current().removeMorph(this); },
-
   // Optimization suggested by Dan Ingalls: slow down ticking when things are pretty quiet.
   tickQuickly: function() { this.shouldUpdateOnEveryTick = true;  /* this.periodicalExecuter.changeFrequency(this.frequencyWhenStuffIsHappening  ); */ },
   tickSlowly:  function() { this.shouldUpdateOnEveryTick = false; /* this.periodicalExecuter.changeFrequency(this.frequencyWhenStuffIsPrettyQuiet); */ },
@@ -54,14 +51,14 @@ Morph.subclass("ArrowMorph", {
       this.endpoint1.attachToTheRightPlace();
       this.endpoint2.attachToTheRightPlace();
       if (! this.owner) {
-        this.addToWorld();
+        WorldMorph.current().addMorph(this);
       }
       this.changeVerticesIfNecessary();
     } else {
       this.endpoint1.noLongerNeedsToBeVisibleAsArrowEndpoint();
       this.endpoint2.noLongerNeedsToBeVisibleAsArrowEndpoint();
       if (this.owner) {
-        this.removeFromWorld();
+        this.remove();
         this.tickSlowly();
       }
     }

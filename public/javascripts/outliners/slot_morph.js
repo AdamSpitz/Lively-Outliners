@@ -27,26 +27,24 @@ ArrowMorph.subclass("SlotContentsPointerArrow", {
 
 
 TwoModeTextMorph.subclass("SlotNameMorph", {
-  initialize: function($super, slot) {
-    this._slot = slot;
-    $super(pt(5, 10).extent(pt(140, 20)), slot.name());
-    // aaa - taken out, fix it the proper way: if (this.isReadOnly) {this.ignoreEvents();}
+  initialize: function($super, slotMorph) {
+    this._slotMorph = slotMorph;
+    $super(pt(5, 10).extent(pt(140, 20)), this.slot().name());
     this.extraMenuItemAdders = [];
     this.normalBorderWidth = 1;
     this.setBorderColor(Color.black);
     this.setFill(null);
-    // aaa do we need this for outliners? this._slot.notifier.add_observer(function() {this.updateAppearance();}.bind(this));
     this.updateAppearance();
     this.normalBorderWidth = 0;
     this.nameOfEditCommand = "rename";
     this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
   },
 
-  slot: function() {return this._slot;},
-  inspect:  function() {return this.slot().name();},
+     slot: function() { return this._slotMorph.slot(); },
+  inspect: function() { return this.slot().name(); },
 
   outliner: function() {
-    return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
+    return this._slotMorph.outliner();
   },
 
   // aaa onMouseDown: function(evt) { return false; },  // don't allow selection
@@ -54,10 +52,6 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
   canBecomeWritable: function() { return true; },
 
   updateAppearance: function() {
-    this.updateLabel();
-  },
-
-  updateLabel: function() {
     if (! this.isInWritableMode) {
       var newText = this.slot().name();
       if (newText != this.getText()) {
@@ -67,11 +61,7 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
   },
 
   morphMenu: function(evt) {
-    var menu = new MenuMorph([], this);
-    if (!this.isInWritableMode) { // aaa is this right for outliners?
-      this.extraMenuItemAdders.each(function(mia) {mia(menu, evt);});
-    }
-    return menu;
+    return this._slotMorph.morphMenu(evt);
   },
 
   returnKeyShouldAccept: function() { return true; },
@@ -83,7 +73,7 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
   setSavedText: function(text) {
     if (text !== this.getSavedText()) {
       this.slot().rename(text);
-      this.outliner().updateEverything();
+      this.outliner().updateAppearance();
     }
   },
 
@@ -94,9 +84,9 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
 });
 
 TwoModeTextMorph.subclass("MethodSourceMorph", {
-  initialize: function($super, slot) {
-    this._slot = slot;
-    $super(pt(5, 10).extent(pt(140, 80)), slot.contents().source());
+  initialize: function($super, slotMorph) {
+    this._slotMorph = slotMorph;
+    $super(pt(5, 10).extent(pt(140, 80)), slotMorph.slot().contents().source());
     // aaa - taken out, fix it the proper way: if (this.isReadOnly) {this.ignoreEvents();}
     this.extraMenuItemAdders = [];
     this.normalBorderWidth = 1;
@@ -110,8 +100,8 @@ TwoModeTextMorph.subclass("MethodSourceMorph", {
     this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
   },
 
-  slot: function() {return this._slot;},
-  inspect:  function() {return this.slot().name() + " source";},
+     slot: function() { return this._slotMorph.slot(); },
+  inspect: function() { return this.slot().name() + " source"; },
 
   outliner: function() {
     return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
@@ -122,10 +112,6 @@ TwoModeTextMorph.subclass("MethodSourceMorph", {
   canBecomeWritable: function() { return true; },
 
   updateAppearance: function() {
-    this.updateLabel();
-  },
-
-  updateLabel: function() {
     if (! this.isInWritableMode) {
       var newText = this.slot().contents().source();
       if (newText != this.getText()) {
@@ -152,7 +138,7 @@ TwoModeTextMorph.subclass("MethodSourceMorph", {
     if (text !== this.getSavedText()) {
       var newContents = new Mirror(eval("(" + text + ")"));
       this.slot().setContents(newContents);
-      this.outliner().updateEverything();
+      this.outliner().updateAppearance();
     }
   },
 
@@ -164,11 +150,11 @@ TwoModeTextMorph.subclass("MethodSourceMorph", {
 
 
 ColumnMorph.subclass("SlotAnnotationMorph", {
-  initialize: function($super, slot) {
+  initialize: function($super, slotMorph) {
     $super();
-    this._slot = slot;
+    this._slotMorph = slotMorph;
     this.beInvisible();
-    this._moduleLabel = createLabel(function() {var m = this._slot.module(); return m ? m.name() : "";}.bind(this));
+    this._moduleLabel = createLabel(function() {var m = this._slotMorph.slot().module(); return m ? m.name() : "";}.bind(this));
     this.addRow(createLabelledNode("Module", this._moduleLabel));
   },
 
@@ -189,7 +175,7 @@ ColumnMorph.subclass("SlotMorph", {
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
     this.beUngrabbable();
-    this.labelMorph = new SlotNameMorph(slot);
+    this.labelMorph = new SlotNameMorph(this);
 
     this.signatureRow = new RowMorph().beInvisible();
 
@@ -209,12 +195,13 @@ ColumnMorph.subclass("SlotMorph", {
     var arrow;
     m = this._contentsPointer = this.createButton(function() {
       if (arrow.noLongerNeedsToBeUpdated) {
-        WorldMorph.current().outlinerFor(slot.contents()).ensureIsInWorld(m.worldPoint(pt(150,0)));
+        var w = this.world();
+        w.outlinerFor(slot.contents()).ensureIsInWorld(w, m.worldPoint(pt(150,0)));
         arrow.needsToBeVisible();
       } else {
         arrow.noLongerNeedsToBeVisible();
       }
-    });
+    }.bind(this));
     arrow = new SlotContentsPointerArrow(slot, m);
     arrow.noLongerNeedsToBeUpdated = true;
 
@@ -248,14 +235,14 @@ ColumnMorph.subclass("SlotMorph", {
   sourceMorph: function() {
     var m = this._sourceMorph;
     if (m) { return m; }
-    m = this._sourceMorph = new MethodSourceMorph(this.slot());
+    m = this._sourceMorph = new MethodSourceMorph(this);
     return m;
   },
 
   annotationMorph: function() {
     var m = this._annotationMorph;
     if (m) { return m; }
-    m = this._annotationMorph = new SlotAnnotationMorph(this.slot());
+    m = this._annotationMorph = new SlotAnnotationMorph(this);
     return m;
   },
 
@@ -291,7 +278,7 @@ ColumnMorph.subclass("SlotMorph", {
     this.slot().copyTo(outliner.mirror());
     outliner.expander().expand();
     this.remove();
-    outliner.updateEverything();
+    outliner.updateAppearance();
   },
 
   wasJustDroppedOnWorld: function(world) {
@@ -299,6 +286,11 @@ ColumnMorph.subclass("SlotMorph", {
     world.addMorphAt(outliner, this.position());
     outliner.expander().expand();
     this.remove();
+  },
+
+  setModule: function(m, evt) {
+    this.slot().setModule(m);
+    this.updateAppearance();
   },
 
   morphMenu: function(evt) {
@@ -318,7 +310,7 @@ ColumnMorph.subclass("SlotMorph", {
         var newSlot = this.slot().copyTo(new Mirror({}));
         this.slot().remove();
         evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
-        this.outliner().updateEverything();
+        this.outliner().updateAppearance();
       }.bind(this)]);
     }
 
@@ -328,9 +320,9 @@ ColumnMorph.subclass("SlotMorph", {
         menu.addItem(["be creator", function(evt) {
           this.slot().beCreator();
           var contentsOutliner = this.world().existingOutlinerFor(this.slot().contents());
-          if (contentsOutliner) contentsOutliner.updateEverything();
+          if (contentsOutliner) contentsOutliner.updateAppearance();
           this.updateAppearance();
-          this.outliner().updateEverything();
+          this.outliner().updateAppearance();
         }.bind(this)]);
       }
     }
@@ -340,17 +332,13 @@ ColumnMorph.subclass("SlotMorph", {
         var modulesMenu = new MenuMorph([], this);
         modulesMenu.addItem(["new module...", function(evt) {
           evt.hand.world().prompt("Module name?", function(name) {
-            if (name) {
-              this.slot().setModule(new Module(name));
-              this.updateAppearance();
-            }
+            if (name) { this.setModule(new Module(name), evt); }
           }.bind(this));
         }.bind(this)]);
         modulesMenu.addLine();
         Transporter.eachModule(function(m) {
           modulesMenu.addItem([m.name(), function(evt) {
-            this.slot().setModule(m);
-            this.updateAppearance();
+            this.setModule(m, evt);
           }.bind(this)]);
         }.bind(this));
         modulesMenu.openIn(this.world(), evt.point());

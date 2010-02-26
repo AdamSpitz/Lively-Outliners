@@ -20,7 +20,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.evaluatorButton.relayToModel(this, {HelpText: "-EvaluatorHelp", Trigger: "=openEvaluator"});
 
     this.dismissButton = new WindowControlMorph(new Rectangle(0, 0, 22, 22), 3, Color.primary.yellow);
-    this.dismissButton.relayToModel(this, {HelpText: "-DismissHelp", Trigger: "=removeFromWorld"});
+    this.dismissButton.relayToModel(this, {HelpText: "-DismissHelp", Trigger: "=ensureIsNotInWorld"});
 
     this.create_header_row();
     this.addRow(this._evaluatorsPanel);
@@ -54,9 +54,9 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
 
-  // updating    // aaa - maybe make a standard method name ("updateAppearance" or something) for all this updating stuff
+  // updating    // aaa - now, can I make this happen automatically? maybe an update process?
 
-  updateEverything: function() {
+  updateAppearance: function() {
     this.populateSlotsPanel();
     if (! this.world()) {return;}
     this.refillWithAppropriateColor();
@@ -141,29 +141,23 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   // adding and removing to/from the world
 
-  ensureIsInWorld: function(p) {
+  ensureIsInWorld: function(w, p) {
     this.stopZoomingOuttaHere();
     var shallBeAdded = this.world() == null;
-    if (shallBeAdded) {this.addToWorld(p);}
+    if (shallBeAdded) {
+      if (p) {
+        w.addMorphAt(this, p);
+      } else {
+        w.addMorph(this);
+      }
+    }
     return shallBeAdded;
   },
 
   ensureIsNotInWorld: function() {
     var shallBeRemoved = this.world() != null;
-    if (shallBeRemoved) {this.removeFromWorld();}
+    if (shallBeRemoved) {this.startZoomingOuttaHere();}
     return shallBeRemoved;
-  },
-
-  addToWorld: function(p) {
-    if (p) {
-      WorldMorph.current().addMorphAt(this, p);
-    } else {
-      WorldMorph.current().addMorph(this);
-    }
-  },
-
-  removeFromWorld: function() {
-    this.startZoomingOuttaHere();
   },
 
   destinationForZoomingOuttaHere: function() { return WorldMorph.current().dock; },
@@ -183,7 +177,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   addSlot: function(evt) {
     var name = this.mirror().findUnusedSlotName("slot");
     this.mirror().reflectee()[name] = null;
-    this.updateEverything();
+    this.updateAppearance();
     this.expander().expand();
     this.slotPanelFor(this.mirror().slotAt(name)).labelMorph.beWritableAndSelectAll();
   },
