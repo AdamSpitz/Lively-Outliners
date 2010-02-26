@@ -78,7 +78,7 @@ AbstractSlot.subclass("Slot", {
   },
 
   fileOutTo: function(buffer) {
-    buffer.append("_addSlot_(").append("'").append(this.name()).append("', ");
+    buffer.append("addSlot(").append("'").append(this.name()).append("', ");
     var m = this.contents();
     var isCreator = false;
     var array = null;
@@ -104,8 +104,7 @@ AbstractSlot.subclass("Slot", {
         }
       }
     }
-    buffer.append(", {module: thisModule}");
-    if (isCreator) { buffer.append(", true"); }
+    if (isCreator) { buffer.append(", {}, true"); }
     buffer.append(");\n\n");
 
     if (array) {

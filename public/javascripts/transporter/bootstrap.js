@@ -1,6 +1,10 @@
 // Bootstrap the module system.
 
-function newObjectAnnotation() { return {slotAnnotations: {}}; }
+function annotationOf(o) {
+  var a = o.__annotation__;
+  if (a) { return a; }
+  return o.__annotation__ = {slotAnnotations: {}};
+}
 
 var lobby = Object.create(window);
 
@@ -21,15 +25,22 @@ lobby.transporter.module.named = function(n) {
   return m;
 };
 
+lobby.transporter.module.create = function(n, block) {
+  if (lobby.modules[n]) { throw 'The ' + n + ' module is already loaded.'; }
+  block(this.named(n));
+};
+
 lobby.transporter.module.addSlots = function(holder, block) {
+  var thisModule = this;
   lobby.transporter.module.cache[this._name].push(holder);
 
   block(function(name, contents, annotation, isCreatorSlot) {
+    if (! annotation) { annotation = {}; }
     holder[name] = contents;
-    if (! holder.__annotation__) { holder.__annotation__ = newObjectAnnotation(); }
-    holder.__annotation__.slotAnnotations[name] = annotation;
+    annotation.module = thisModule;
+    annotationOf(holder).slotAnnotations[name] = annotation;
     if (isCreatorSlot) {
-      var a = contents.__annotation__ = newObjectAnnotation();
+      var a = annotationOf(contents);
       a.creatorSlotName   = name;
       a.creatorSlotHolder = holder;
     }

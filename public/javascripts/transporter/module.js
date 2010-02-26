@@ -19,11 +19,9 @@ Object.extend(lobby.transporter.module, {
   },
 
   fileOut: function() {
-    var buffer = new StringBuffer("(function() {\n\n");
-    buffer.append("if (lobby.modules.").append(this.name()).append(") { throw 'The ").append(this.name()).append(" module is already loaded.'; }\n");
-    buffer.append("var thisModule = lobby.transporter.module.named('").append(this.name()).append("');\n\n");
+    var buffer = new StringBuffer("lobby.transporter.module.create('").append(this.name()).append("', function(thisModule) {\n\n\n");
     this.fileOutSlots(buffer);
-    buffer.append("\n})();");
+    buffer.append("\n});");
 
     var url = this.urlForModuleName(this.name());
     var doc = buffer.toString();
@@ -36,13 +34,13 @@ Object.extend(lobby.transporter.module, {
   fileOutSlots: function(buffer) {
     var mirs = this.mirrorsInOrderForFilingOut();
     mirs.each(function(mir) {
-      buffer.append("thisModule.addSlots(").append(mir.creatorSlotChainExpression()).append(", function(_addSlot_) {\n\n");
+      buffer.append("thisModule.addSlots(").append(mir.creatorSlotChainExpression()).append(", function(addSlot) {\n\n");
       mir.eachSlot(function(s) {
         if (s.module && s.module() === this) {
           s.fileOutTo(buffer);
         }
       }.bind(this));
-      buffer.append("});\n\n");
+      buffer.append("});\n\n\n");
     }.bind(this));
   },
 
