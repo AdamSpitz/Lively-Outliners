@@ -83,7 +83,7 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
   },
 });
 
-TwoModeTextMorph.subclass("MethodSourceMorph", {
+TextMorphRequiringExplicitAcceptance.subclass("MethodSourceMorph", {
   initialize: function($super, slotMorph) {
     this._slotMorph = slotMorph;
     $super(pt(5, 10).extent(pt(140, 80)), slotMorph.slot().contents().source());
@@ -112,20 +112,10 @@ TwoModeTextMorph.subclass("MethodSourceMorph", {
   canBecomeWritable: function() { return true; },
 
   updateAppearance: function() {
-    if (! this.isInWritableMode) {
-      var newText = this.slot().contents().source();
-      if (newText != this.getText()) {
-        this.setText(newText);
-      }
+    var newText = this.slot().contents().source();
+    if (newText != this.getText()) {
+      this.setText(newText);
     }
-  },
-
-  morphMenu: function(evt) {
-    var menu = new MenuMorph([], this);
-    if (!this.isInWritableMode) { // aaa is this right for outliners?
-      this.extraMenuItemAdders.each(function(mia) {mia(menu, evt);});
-    }
-    return menu;
   },
 
   returnKeyShouldAccept: function() { return false; },
@@ -136,15 +126,13 @@ TwoModeTextMorph.subclass("MethodSourceMorph", {
 
   setSavedText: function(text) {
     if (text !== this.getSavedText()) {
-      var newContents = new Mirror(eval("(" + text + ")"));
-      this.slot().setContents(newContents);
-      this.outliner().updateAppearance();
+      MessageNotifierMorph.showIfErrorDuring(function() {
+        var newObject = eval("(" + text + ")");
+        var newContents = new Mirror(newObject);
+        this.slot().setContents(newContents);
+        this.outliner().updateAppearance();
+      }.bind(this), createFakeEvent());
     }
-  },
-
-  captureMouseEvent: function($super, evt, hasFocus) {
-    if (evt.type == "MouseDown" && !this.isInWritableMode) {return false;}
-    return $super(evt, hasFocus);
   },
 });
 
@@ -176,6 +164,7 @@ ColumnMorph.subclass("SlotMorph", {
     this.setBorderColor(Color.black);
     this.beUngrabbable();
     this.labelMorph = new SlotNameMorph(this);
+    this.labelMorph.layoutUpdatingFunctionToCallAfterSettingTextString = function() {this.rejiggerTheLayoutIncludingSubmorphs();}.bind(this);
 
     this.signatureRow = new RowMorph().beInvisible();
 
@@ -236,6 +225,7 @@ ColumnMorph.subclass("SlotMorph", {
     var m = this._sourceMorph;
     if (m) { return m; }
     m = this._sourceMorph = new MethodSourceMorph(this);
+    m.layoutUpdatingFunctionToCallAfterSettingTextString = function() {this.rejiggerTheLayoutIncludingSubmorphs();}.bind(this);
     return m;
   },
 
@@ -261,6 +251,13 @@ ColumnMorph.subclass("SlotMorph", {
 
   outliner: function() {
     return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
+  },
+
+  rejiggerTheLayoutIncludingSubmorphs: function() { // aaa hmm, and owner morph, apparently, sort of - what a mess
+    this.signatureRow.rejiggerTheLayout();
+    this.rejiggerTheLayout();
+    var o = this.outliner();
+    if (o) { o.rejiggerTheLayoutIncludingSubmorphs(); }
   },
 
   updateAppearance: function() {

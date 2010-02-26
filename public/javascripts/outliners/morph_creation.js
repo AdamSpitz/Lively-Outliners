@@ -497,6 +497,109 @@ TextMorph.addMethods({
   },
 });
 
+/// aaa - A lot of duplication with TwoModeTextMorph.
+TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
+  initialize: function($super, rect, textString, modelPlugSpec) {
+    $super(rect, textString);
+    this.dontNotifyUntilTheActualModelChanges = true;
+    this.connectModel(modelPlugSpec || {model: this, getText: "getSavedText", setText: "setSavedText"});
+    this.acceptInput = true;
+    this.setFill(this.backgroundColorWhenWritable || Color.white);
+    this.setWrapStyle(lively.Text.WrapStyle.Shrink);
+    this.changed();
+    this.beUngrabbable();
+    this.setSavedText(textString);
+    return this;
+  },
+
+  getSavedText: function( )  {
+    return this.savedTextString;
+  },
+
+  setSavedText: function(t)  {
+    this.savedTextString = t;
+    if (this.notifier != null) {this.notifier.notify_all_observers();}
+  },
+
+  setTextString: function($super, replacement, delayComposition, justMoreTyping) {
+    var x = $super(replacement, delayComposition, justMoreTyping);
+    this.updateLayoutIfNecessary();
+    return x;
+  },
+
+  updateLayoutIfNecessary: function() {
+    var f = this.layoutUpdatingFunctionToCallAfterSettingTextString;
+    if (f) {
+      this.adjustForNewBounds(); // makes the focus halo look right   // aaa should probably be outside the conditional, or even in the Core code
+      f();
+    }
+  },
+
+  onKeyDown: function($super, evt) {
+    if (evt.getKeyCode() == Event.KEY_ESC) {
+      this.cancelChanges();
+      evt.stop();
+      return;
+    }
+    $super(evt);
+  },
+
+  onKeyPress: function($super, evt) {
+    if (evt.getKeyCode() == Event.KEY_ESC) {
+      this.cancelChanges();
+      evt.stop();
+      return;
+    }
+    if (evt.getKeyCode() == Event.KEY_RETURN && (this.returnKeyShouldAccept() || evt.isAltDown() || evt.isMetaDown() || evt.isCtrlDown())) {
+      this.acceptChanges();
+      evt.stop();
+      return;
+    }
+    return $super(evt);
+  },
+
+  changed: function($super) {
+    if (this.getText() == this.getSavedText()) {
+      this.setBorderWidth(this.normalBorderWidth || 0);
+    } else {
+      this.setBorderColor(Color.red);
+      this.setBorderWidth(this.borderWidthWhenModified || 2);
+    }
+    $super();
+  },
+
+  acceptChanges: function() {
+    this.setSavedText(this.getText());
+    this.changed();
+  },
+
+  cancelChanges: function() {
+    this.setText(this.getSavedText());
+    this.changed();
+    this.updateLayoutIfNecessary();
+  },
+
+  handlesMouseDown: function(evt) { return true; },
+
+  returnKeyShouldAccept: function() { return false; },
+
+  morphMenu: function(evt) {
+    var menu = new MenuMorph([], this);
+    this.addEditingMenuItemsTo(menu, evt);
+    this.addOtherMenuItemsTo(menu, evt);
+    return menu.items.size() > 0 ? menu : null;
+  },
+
+  addEditingMenuItemsTo: function(menu, evt) {
+    menu.addSection([["accept    [alt+enter]", this.acceptChanges.bind(this)],
+                     ["cancel    [escape]"   , this.cancelChanges.bind(this)]]);
+  },
+
+  addOtherMenuItemsTo: function(menu, evt) {
+    // override in children
+  },
+});
+
 TextMorph.subclass("TwoModeTextMorph", {
   initialize: function($super, rect, textString, modelPlugSpec) {
     $super(rect, textString);
@@ -564,7 +667,7 @@ TextMorph.subclass("TwoModeTextMorph", {
       evt.stop();
       return;
     }
-    if (this.isInWritableMode && evt.getKeyCode() == Event.KEY_RETURN && (this.returnKeyShouldAccept() || evt.isAltDown() || evt.isCmdDown())) {
+    if (this.isInWritableMode && evt.getKeyCode() == Event.KEY_RETURN && (this.returnKeyShouldAccept() || evt.isAltDown() || evt.isMetaDown() || evt.isCtrlDown())) {
       this.acceptChanges();
       evt.stop();
       return;
@@ -634,9 +737,9 @@ TextMorph.subclass("TwoModeTextMorph", {
   addEditingMenuItemsTo: function(menu, evt) {
     if (this.isInWritableMode) {
       menu.addSection([["accept    [alt+enter]", this.acceptChanges.bind(this)],
-                       ["cancel    [escape]"   , this.cancelChanges.bind(this)]])
+                       ["cancel    [escape]"   , this.cancelChanges.bind(this)]]);
     } else if (this.canBecomeWritable()) {
-      menu.addSection([[this.nameOfEditCommand || "edit", function() {this.beWritableAndSelectAll(evt);}.bind(this)]])
+      menu.addSection([[this.nameOfEditCommand || "edit", function() {this.beWritableAndSelectAll(evt);}.bind(this)]]);
     }
   },
 
