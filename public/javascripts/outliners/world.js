@@ -10,14 +10,14 @@ WorldMorph.addMethods({
     menu.addItem(["file in module...", function(evt) {
       this.prompt("Module name?", function(name) {
         if (name) {
-          MessageNotifierMorph.showIfErrorDuring(function() { Module.fileIn(name); }, evt);
+          MessageNotifierMorph.showIfErrorDuring(function() { lobby.transporter.module.fileIn(name); }, evt);
         }
       }.bind(this));
     }.bind(this)]);
 
     menu.addItem(["file out module...", function(evt) {
       var modulesMenu = new MenuMorph([], this);
-      Module.eachModule(function(m) {
+      lobby.transporter.module.eachModule(function(m) {
         modulesMenu.addItem([m.name(), function(evt) {
           MessageNotifierMorph.showIfErrorDuring(function() { m.fileOut(); }, evt);
         }.bind(this)]);
@@ -40,7 +40,8 @@ WorldMorph.addMethods({
         }],
 
         ["aaaaa", function(evt) {
-            PromptDialog.test();
+            alert( new URL("http://localhost/~adam/uploads/whatever.js") );
+            alert( URL.source.withPath("/~adam/uploads/whatever.js") );
         }],
       ]);
     }

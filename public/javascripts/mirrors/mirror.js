@@ -159,6 +159,10 @@ Object.subclass("Mirror", {
     return ! this.isReflecteePrimitive();
   },
 
+  canHaveChildren: function() {
+    return ! this.isReflecteePrimitive(); // aaa - is this correct?
+  },
+
   isReflecteeNull:      function() { return this.reflectee() === null;      },
   isReflecteeUndefined: function() { return this.reflectee() === undefined; },
   isReflecteeString:    function() { return typeof this.reflectee() === 'string';  },
@@ -183,11 +187,16 @@ Object.subclass("Mirror", {
   },
   
   creatorSlot: function() {
-    return this.hasAnnotation() ? this.annotation().creatorSlot : null;
+    if (! this.hasAnnotation()) { return null; }
+    var a = this.annotation();
+    // could cache it if it's slow to keep recreating the Mirror and Slot objects.
+    return new Mirror(a.creatorSlotHolder).slotAt(a.creatorSlotName);
   },
   
   setCreatorSlot: function(s) {
-    this.annotation().creatorSlot = s;
+    var a = this.annotation();
+    a.creatorSlotName   = s.name();
+    a.creatorSlotHolder = s.holder().reflectee();
   },
 
   canHaveAnnotation: function() {
@@ -201,7 +210,7 @@ Object.subclass("Mirror", {
   annotation: function() {
     if (! this.hasAnnotation()) {
       if (! this.canHaveAnnotation()) { throw this.name() + " cannot have an annotation"; }
-      return this.reflectee().__annotation__ = new ObjectAnnotation();
+      return this.reflectee().__annotation__ = {slotAnnotations: {}};
     }
     return this.reflectee().__annotation__;
   },

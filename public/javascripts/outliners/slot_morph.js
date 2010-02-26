@@ -329,11 +329,16 @@ ColumnMorph.subclass("SlotMorph", {
         var modulesMenu = new MenuMorph([], this);
         modulesMenu.addItem(["new module...", function(evt) {
           evt.hand.world().prompt("Module name?", function(name) {
-            if (name) { this.setModule(new Module(name), evt); }
+            if (name) {
+              if (lobby.modules[name]) {
+                throw "There is already a module named " + name;
+              }
+              this.setModule(lobby.transporter.module.named(name), evt);
+            }
           }.bind(this));
         }.bind(this)]);
         modulesMenu.addLine();
-        Module.eachModule(function(m) {
+        lobby.transporter.module.eachModule(function(m) {
           modulesMenu.addItem([m.name(), function(evt) {
             this.setModule(m, evt);
           }.bind(this)]);

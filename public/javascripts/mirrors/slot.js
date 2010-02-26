@@ -53,14 +53,14 @@ AbstractSlot.subclass("Slot", {
   },
   
   hasAnnotation: function() {
-    return this.holder().hasAnnotation() && this.holder().annotation().slotAnnotations()[this.name()];
+    return this.holder().hasAnnotation() && this.holder().annotation().slotAnnotations[this.name()];
   },
 
   annotation: function() {
     var oa = this.holder().annotation();
-    var sa = oa.slotAnnotations()[this.name()];
+    var sa = oa.slotAnnotations[this.name()];
     if (sa) {return sa;}
-    return oa.slotAnnotations()[this.name()] = new SlotAnnotation();
+    return oa.slotAnnotations[this.name()] = {};
   },
 
   beCreator: function() {
@@ -74,12 +74,13 @@ AbstractSlot.subclass("Slot", {
 
   setModule: function(m) {
     this.annotation().module = m;
-    m.mirrorsThatMightContainSlotsInMe().push(this.holder()); // aaa - there'll be a lot of duplicates; fix the performance later
+    m.objectsThatMightContainSlotsInMe().push(this.holder().reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later
   },
 
   fileOutTo: function(buffer) {
-    buffer.append("thisModule.loadSlot(").append(this.holder().creatorSlotChainExpression()).append(", '").append(this.name()).append("', ");
+    buffer.append("lobby.transporter.loadSlot(").append(this.holder().creatorSlotChainExpression()).append(", '").append(this.name()).append("', ");
     var m = this.contents();
+    var isCreator = false;
     var array = null;
     if (m.isReflecteePrimitive()) {
       buffer.append("" + m.reflectee());
@@ -92,6 +93,7 @@ AbstractSlot.subclass("Slot", {
         buffer.append(m.creatorSlotChainExpression());
       } else {
         // This is the object's creator slot; gotta create it.
+        isCreator = true;
         if (m.isReflecteeFunction()) {
           buffer.append(m.reflectee().toString());
         } else if (m.isReflecteeArray()) {
@@ -100,9 +102,10 @@ AbstractSlot.subclass("Slot", {
         } else {
           buffer.append("{}");
         }
-        buffer.append(", {isCreatorSlot: true}");
       }
     }
+    buffer.append(", {module: thisModule}");
+    if (isCreator) { buffer.append(", true"); }
     buffer.append(");\n\n");
 
     if (array) {

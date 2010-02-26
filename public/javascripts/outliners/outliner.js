@@ -169,8 +169,12 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   morphMenu: function(evt) {
     var menu = new MenuMorph([], this);
-    menu.addSection([["add slot",     function(evt) { this.    addSlot(evt); }.bind(this)]]);
-    menu.addSection([["create child", function(evt) { this.createChild(evt); }.bind(this)]]);
+    if (this.mirror().canHaveSlots()) {
+      menu.addSection([["add slot",     function(evt) { this.    addSlot(evt); }.bind(this)]]);
+    }
+    if (this.mirror().canHaveChildren()) {
+      menu.addSection([["create child", function(evt) { this.createChild(evt); }.bind(this)]]);
+    }
     return menu;
   },
 
