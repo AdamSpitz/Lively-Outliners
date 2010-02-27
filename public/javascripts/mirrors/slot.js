@@ -78,34 +78,36 @@ AbstractSlot.subclass("Slot", {
   },
 
   fileOutTo: function(buffer) {
-    buffer.append("    addSlot(").append("'").append(this.name()).append("', ");
+    var creationMethod = "data";
+    var contentsExpr;
     var m = this.contents();
-    var isCreator = false;
     var array = null;
     if (m.isReflecteePrimitive()) {
-      buffer.append("" + m.reflectee());
+      contentsExpr = "" + m.reflectee();
     } else {
       var cs = m.creatorSlot();
       if (! cs) {
         throw "Cannot file out a reference to " + m.name();
       } else if (! cs.equals(this)) {
         // This is just a reference to some well-known object that's created elsewhere.
-        buffer.append(m.creatorSlotChainExpression());
+        contentsExpr = m.creatorSlotChainExpression();
       } else {
         // This is the object's creator slot; gotta create it.
-        isCreator = true;
         if (m.isReflecteeFunction()) {
-          buffer.append(m.reflectee().toString());
-        } else if (m.isReflecteeArray()) {
-          buffer.append("[]");
-          array = m.reflectee();
+          creationMethod = "method";
+          contentsExpr = m.reflectee().toString();
         } else {
-          buffer.append("{}");
+          creationMethod = "creator";
+          if (m.isReflecteeArray()) {
+            contentsExpr = "[]";
+            array = m.reflectee();
+          } else {
+            contentsExpr = "{}";
+          }
         }
       }
     }
-    if (isCreator) { buffer.append(", {}, true"); }
-    buffer.append(");\n\n");
+    buffer.append("    add.").append(creationMethod).append("('").append(this.name()).append("', ").append(contentsExpr).append(");\n\n");
 
     if (array) {
       for (var i = 0, n = array.length; i < n; i += 1) {

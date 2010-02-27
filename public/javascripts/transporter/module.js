@@ -34,7 +34,7 @@ Object.extend(lobby.transporter.module, {
   fileOutSlots: function(buffer) {
     var mirs = this.mirrorsInOrderForFilingOut();
     mirs.each(function(mir) {
-      buffer.append("  thisModule.addSlots(").append(mir.creatorSlotChainExpression()).append(", function(addSlot) {\n\n");
+      buffer.append("  thisModule.addSlots(").append(mir.creatorSlotChainExpression()).append(", function(add) {\n\n");
       mir.eachSlot(function(s) {
         if (s.module && s.module() === this) {
           s.fileOutTo(buffer);

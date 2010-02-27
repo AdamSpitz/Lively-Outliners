@@ -30,19 +30,32 @@ lobby.transporter.module.create = function(n, block) {
   block(this.named(n));
 };
 
-lobby.transporter.module.addSlots = function(holder, block) {
-  var thisModule = this;
-  lobby.transporter.module.cache[this._name].push(holder);
-
-  block(function(name, contents, annotation, isCreatorSlot) {
+lobby.transporter.module.slotAdder = {
+  data: function(name, contents, annotation, isCreatorSlot) {
     if (! annotation) { annotation = {}; }
-    holder[name] = contents;
-    annotation.module = thisModule;
-    annotationOf(holder).slotAnnotations[name] = annotation;
+    this.holder[name] = contents;
+    annotation.module = this.module;
+    annotationOf(this.holder).slotAnnotations[name] = annotation;
     if (isCreatorSlot) {
       var a = annotationOf(contents);
       a.creatorSlotName   = name;
-      a.creatorSlotHolder = holder;
+      a.creatorSlotHolder = this.holder;
     }
-  });
+  },
+  
+  creator: function(name, contents) {
+    this.data(name, contents, {}, true);
+  },
+
+  method: function(name, contents) {
+    this.creator(name, contents);
+  }
+};
+
+lobby.transporter.module.addSlots = function(holder, block) {
+  lobby.transporter.module.cache[this._name].push(holder);
+  var slotAdder = Object.create(this.slotAdder);
+  slotAdder.module = this;
+  slotAdder.holder = holder;
+  block(slotAdder);
 };
