@@ -28,14 +28,19 @@ thisModule.addSlots(lobby.mirror, function(add) {
 
   add.method('reflecteeToString', function () {
     try {
-      return "" + this.reflectee();
+      if (this.reflecteeIsPrimitive()) { return "" + this.reflectee(); }
+
+      // Ignore the default toString because it just says [object Object] all the time and it's annoying.
+      if (this.reflectee().toString === Object.prototype.toString) { return ""; } 
+      
+      return this.reflectee().toString();
     } catch (ex) {
       return "";
     }
   });
 
   add.method('toString', function () {
-    return "on " + this.reflecteeToString();
+    return "on " + this.name();
   });
 
   add.method('inspect', function () {
