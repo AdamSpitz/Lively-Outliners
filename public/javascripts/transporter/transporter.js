@@ -14,7 +14,7 @@ thisModule.addSlots(lobby.transporter.module, function(add) {
   add.method('mirrorsInOrderForFilingOut', function (f) {
     var alreadySeen = new BloodyHashTable(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
     this.objectsThatMightContainSlotsInMe().each(function(obj) {
-      var mir = new Mirror(obj);
+      var mir = reflect(obj);
       if (! alreadySeen.containsKey(mir)) {
         alreadySeen.put(mir, mir);
       }
@@ -63,7 +63,7 @@ thisModule.addSlots(lobby.transporter.module, function(add) {
   });
 
   add.method('eachModule', function (f) {
-    new Mirror(lobby.modules).eachNonParentSlot(function(s) { f(s.contents().reflectee()); });
+    reflect(lobby.modules).eachNonParentSlot(function(s) { f(s.contents().reflectee()); });
   });
 
 });

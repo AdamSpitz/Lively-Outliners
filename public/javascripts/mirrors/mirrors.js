@@ -1,25 +1,35 @@
-Object.subclass("Mirror", {
-  initialize: function(o) {
+lobby.transporter.module.create('mirrors', function(thisModule) {
+
+
+thisModule.addSlots(lobby, function(add) {
+
+  add.creator('mirror', {});
+
+});
+
+
+thisModule.addSlots(lobby.mirror, function(add) {
+
+  add.method('initialize', function (o) {
     this._reflectee = o;
-    if (this.reflectee() !== o) { throw "Jesus Christ."; }
-  },
+  });
 
-  reflectee: function() { return this._reflectee; },
+  add.method('reflectee', function () { return this._reflectee; });
 
-  equals: function(m) {
+  add.method('equals', function (m) {
     return this.reflectee() === m.reflectee();
-  },
+  });
 
-  toString: function() {
-    return "a mirror"; // aaa - crap, hash tables will be linear time now; can I get an object ID somehow?
-  },
+  add.method('toString', function () {
+    return "a mirror"; // aaa - crap, hash tables will be linear time now; can I get an object ID somehow?;
+  });
 
-  inspect: function() {
+  add.method('inspect', function () {
     if (this.reflectee() === lobby) {return "lobby";} // aaa - just a hack for now, until I can make it come out right for real
-    return this.name(); // later can add the concept of complete objects, so I can do a toString()
-  },
+    return this.name(); // later can add the concept of complete objects, so I can do a toString();
+  });
 
-  name: function() {
+  add.method('name', function () {
     if (this.isReflecteePrimitive()) {return "" + this.reflectee();}
 
     var chain = this.creatorSlotChain();
@@ -35,9 +45,9 @@ Object.subclass("Mirror", {
     } else {
       return this.isReflecteeFunction() ? "a function" : "an object";
     }
-  },
+  });
 
-  creatorSlotChainExpression: function() {
+  add.method('creatorSlotChainExpression', function () {
     if (this.isReflecteePrimitive()) {throw this.reflectee() + " does not have a creator slot chain.";}
 
     var chain = this.creatorSlotChain();
@@ -48,13 +58,13 @@ Object.subclass("Mirror", {
       s.append(".").append(chain[i].name());
     }
     return s.toString();
-  },
+  });
 
-  creatorSlotChain: function() {
+  add.method('creatorSlotChain', function () {
     if (this.isReflecteePrimitive()) {return null;}
 
     var chain = [];
-    var lobbyMir = new Mirror(lobby);
+    var lobbyMir = reflect(lobby);
     var mir = this;
     var cs;
 
@@ -65,18 +75,18 @@ Object.subclass("Mirror", {
       chain.push(cs);
       mir = cs.holder();
     }
-  },
+  });
 
-  reflecteeToString: function() {
+  add.method('reflecteeToString', function () {
     return "" + this.reflectee();
-  },
+  });
 
-  eachSlot: function(f) {
+  add.method('eachSlot', function (f) {
     f(new ParentSlot(this));
     this.eachNonParentSlot(f);
-  },
+  });
 
-  eachNonParentSlot: function(f) {
+  add.method('eachNonParentSlot', function (f) {
     if (! this.canHaveSlots()) {return;} // aaa - should this go one line up? Do primitives have a parent? Or maybe numbers do but null doesn't or something?
     var o = this.reflectee();
     for (var name in o) {
@@ -86,33 +96,33 @@ Object.subclass("Mirror", {
         }
       }
     }
-  },
+  });
 
-  slotAt: function(n) {
+  add.method('slotAt', function (n) {
     return new Slot(n, this);
-  },
+  });
 
-  contentsAt: function(n) {
-    return new Mirror(this.primitiveContentsAt(n));
-  },
+  add.method('contentsAt', function (n) {
+    return reflect(this.primitiveContentsAt(n));
+  });
 
-  primitiveContentsAt: function(n) {
+  add.method('primitiveContentsAt', function (n) {
     return this.reflectee()[n];
-  },
+  });
 
-  setContentsAt: function(n, m) {
+  add.method('setContentsAt', function (n, m) {
     this.primitiveSetContentsAt(n, m.reflectee());
-  },
+  });
 
-  primitiveSetContentsAt: function(n, o) {
+  add.method('primitiveSetContentsAt', function (n, o) {
     return this.reflectee()[n] = o;
-  },
+  });
 
-  removeSlotAt: function(n) {
+  add.method('removeSlotAt', function (n) {
     delete this.reflectee()[n];
-  },
+  });
 
-  findUnusedSlotName: function(prefix) {
+  add.method('findUnusedSlotName', function (prefix) {
     if (! this.canHaveSlots()) { throw this.name() + " cannot have slots"; }
     var pre = prefix || "slot";
     var i = 0;
@@ -122,103 +132,113 @@ Object.subclass("Mirror", {
       name = pre + i;
     } while (this.reflectee().hasOwnProperty(name));
     return name;
-  },
+  });
 
-  reflecteeHasOwnProperty: function(n) {
+  add.method('reflecteeHasOwnProperty', function (n) {
     if (! this.canHaveSlots()) { return false; }
     return this.reflectee().hasOwnProperty(name);
-  },
+  });
 
-  parent: function() {
+  add.method('parent', function () {
     var o = this.reflectee();
     if (! is_proto_property_supported) {
-      return new Mirror(o.__parent_slot_that_does_not_actually_mean_anything_but_is_here_for_reflective_purposes__);
+      return reflect(o.__parent_slot_that_does_not_actually_mean_anything_but_is_here_for_reflective_purposes__);
     } else {
-      return new Mirror(o.__proto__);
+      return reflect(o.__proto__);
     }
-  },
+  });
 
-  canSetParent: function() { return is_proto_property_supported; },
+  add.method('canSetParent', function () { return is_proto_property_supported; });
 
-  setParent: function(pMir) {
+  add.method('setParent', function (pMir) {
     if (! this.canSetParent()) { throw "Sorry, you can't change an object's parent in this browser. Try Firefox or Safari."; }
     this.reflectee().__proto__ = pMir.reflectee();
-  },
+  });
 
-  createChild: function() {
+  add.method('createChild', function () {
     var parent = this.reflectee();
     var ChildConstructor = is_proto_property_supported ? function() {} : function() {this.__parent_slot_that_does_not_actually_mean_anything_but_is_here_for_reflective_purposes__ = parent;};
     ChildConstructor.prototype = parent;
     var child = new ChildConstructor();
-    return new Mirror(child);
-  },
+    return reflect(child);
+  });
 
-  source: function() {
+  add.method('source', function () {
     if (! this.isReflecteeFunction()) { throw "not a function"; }
     return this.reflectee().toString();
-  },
+  });
 
-  canHaveSlots: function() {
+  add.method('canHaveSlots', function () {
     return ! this.isReflecteePrimitive();
-  },
+  });
 
-  canHaveChildren: function() {
-    return ! this.isReflecteePrimitive(); // aaa - is this correct?
-  },
+  add.method('canHaveChildren', function () {
+    return ! this.isReflecteePrimitive(); // aaa - is this correct?;
+  });
 
-  isReflecteeNull:      function() { return this.reflectee() === null;      },
-  isReflecteeUndefined: function() { return this.reflectee() === undefined; },
-  isReflecteeString:    function() { return typeof this.reflectee() === 'string';  },
-  isReflecteeNumber:    function() { return typeof this.reflectee() === 'number';  },
-  isReflecteeBoolean:   function() { return typeof this.reflectee() === 'boolean'; },
-  isReflecteeArray:     function() { return typeof this.reflectee() === 'object' && this.reflectee() instanceof Array; },
-  isReflecteePrimitive: function() { return ! (this.isReflecteeObject() || this.isReflecteeFunction()); },
+  add.method('isReflecteeNull', function () { return this.reflectee() === null;      });
 
-  isReflecteeObject: function() {
+  add.method('isReflecteeUndefined', function () { return this.reflectee() === undefined; });
+
+  add.method('isReflecteeString', function () { return typeof this.reflectee() === 'string';  });
+
+  add.method('isReflecteeNumber', function () { return typeof this.reflectee() === 'number';  });
+
+  add.method('isReflecteeBoolean', function () { return typeof this.reflectee() === 'boolean'; });
+
+  add.method('isReflecteeArray', function () { return typeof this.reflectee() === 'object' && this.reflectee() instanceof Array; });
+
+  add.method('isReflecteePrimitive', function () { return ! (this.isReflecteeObject() || this.isReflecteeFunction()); });
+
+  add.method('isReflecteeObject', function () {
     var o = this.reflectee();
     var t = typeof o;
     return t === 'object' && o !== null;
-  },
+  });
 
-  isReflecteeFunction: function() {
+  add.method('isReflecteeFunction', function () {
     return typeof(this.reflectee()) === 'function';
-  },
+  });
 
-  canHaveCreatorSlot: function() {
+  add.method('canHaveCreatorSlot', function () {
     // aaa - is this right?
     return this.isReflecteeObject() || this.isReflecteeFunction();
-  },
-  
-  creatorSlot: function() {
+  });
+
+  add.method('creatorSlot', function () {
     if (! this.hasAnnotation()) { return null; }
     var a = this.annotation();
     if (a.hasOwnProperty('creatorSlotHolder') && a.hasOwnProperty('creatorSlotName')) {
       // could cache it if it's slow to keep recreating the Mirror and Slot objects.
-      return new Mirror(a.creatorSlotHolder).slotAt(a.creatorSlotName);
+      return reflect(a.creatorSlotHolder).slotAt(a.creatorSlotName);
     } else {
       return null;
     }
-  },
-  
-  setCreatorSlot: function(s) {
+  });
+
+  add.method('setCreatorSlot', function (s) {
     var a = this.annotation();
     a.creatorSlotName   = s.name();
     a.creatorSlotHolder = s.holder().reflectee();
-  },
+  });
 
-  canHaveAnnotation: function() {
+  add.method('canHaveAnnotation', function () {
     return this.isReflecteeObject() || this.isReflecteeFunction();
-  },
+  });
 
-  hasAnnotation: function() {
+  add.method('hasAnnotation', function () {
     return this.canHaveAnnotation() && this.reflectee().hasOwnProperty("__annotation__");
-  },
+  });
 
-  annotation: function() {
+  add.method('annotation', function () {
     if (! this.hasAnnotation()) {
       if (! this.canHaveAnnotation()) { throw this.name() + " cannot have an annotation"; }
       return this.reflectee().__annotation__ = {slotAnnotations: {}};
     }
     return this.reflectee().__annotation__;
-  },
+  });
+
+});
+
+
 });

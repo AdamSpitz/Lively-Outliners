@@ -4,7 +4,7 @@ WorldMorph.addMethods({
   morphMenu: function(evt) {
     var menu = new MenuMorph([], this);
     menu.addItem(["create new object", function(evt) {
-      this.outlinerFor(new Mirror({})).grabMe(evt);
+      this.outlinerFor(reflect({})).grabMe(evt);
     }]);
 
     menu.addLine();
@@ -37,11 +37,11 @@ WorldMorph.addMethods({
 
         ["create new weirdo test object", function(evt) {
           var o = {anObject: {}, anArray: ['zero', 1, 'two'], aNull: null, fortyTwo: 42, aString: 'here is a string', aBoolean: true, aFunction: function(a, b) {argleBargle();}};
-          this.outlinerFor(new Mirror(o)).grabMe(evt);
+          this.outlinerFor(reflect(o)).grabMe(evt);
         }],
 
         ["get the lobby", function(evt) {
-          this.outlinerFor(new Mirror(lobby)).grabMe(evt);
+          this.outlinerFor(reflect(lobby)).grabMe(evt);
         }],
 
         ["aaaaa", function(evt) {

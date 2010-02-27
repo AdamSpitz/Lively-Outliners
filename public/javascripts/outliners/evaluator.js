@@ -26,7 +26,7 @@ ColumnMorph.subclass("EvaluatorMorph", {
   },
 
    doIt: function(evt) { MessageNotifierMorph.showIfErrorDuring(function() {                                         this.runTheCode()              ; }.bind(this), evt); },
-  getIt: function(evt) { MessageNotifierMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(new Mirror(this.runTheCode())).grabMe(evt); }.bind(this), evt); },
+  getIt: function(evt) { MessageNotifierMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(reflect(this.runTheCode())).grabMe(evt); }.bind(this), evt); },
 
   close: function(evt) {
     this.remove();

@@ -128,7 +128,7 @@ TextMorphRequiringExplicitAcceptance.subclass("MethodSourceMorph", {
     if (text !== this.getSavedText()) {
       MessageNotifierMorph.showIfErrorDuring(function() {
         var newObject = eval("(" + text + ")");
-        var newContents = new Mirror(newObject);
+        var newContents = reflect(newObject);
         this.slot().setContents(newContents);
         if (newContents.isReflecteeFunction()) { this.slot().beCreator(); }
         this.outliner().updateAppearance();
@@ -298,14 +298,14 @@ ColumnMorph.subclass("SlotMorph", {
 
     if (this.slot().copyTo) {
       menu.addItem(["copy", function(evt) {
-        var newSlot = this.slot().copyTo(new Mirror({}));
+        var newSlot = this.slot().copyTo(reflect({}));
         evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
       }.bind(this)]);
     }
 
     if (this.slot().remove) {
       menu.addItem(["move", function(evt) {
-        var newSlot = this.slot().copyTo(new Mirror({}));
+        var newSlot = this.slot().copyTo(reflect({}));
         this.slot().remove();
         evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
         this.outliner().updateAppearance();
