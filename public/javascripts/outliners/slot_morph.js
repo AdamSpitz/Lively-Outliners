@@ -1,163 +1,9 @@
-ArrowMorph.subclass("SlotContentsPointerArrow", {
-  initialize: function($super, slot, fep) {
-    this._slot = slot;
-    this._fixedEndpoint = fep;
-    $super();
-    allArrows.push(this);
-  },
-
-  createEndpoints: function() {
-    this.endpoint1 = this._fixedEndpoint;
-    this.endpoint2 = new ArrowEndpoint(this._slot, this);
-  },
-
-  noLongerNeedsToBeVisible: function() {
-    this.noLongerNeedsToBeUpdated = true;
-    this.remove();
-  },
-
-  needsToBeVisible: function() {
-    this.noLongerNeedsToBeUpdated = false;
-  },
-
-  rankAmongArrowsWithSameEndpoints: function() {return 0;},
-});
-
-
-
-TwoModeTextMorph.subclass("SlotNameMorph", {
-  initialize: function($super, slotMorph) {
-    this._slotMorph = slotMorph;
-    $super(pt(5, 10).extent(pt(140, 20)), this.slot().name());
-    this.extraMenuItemAdders = [];
-    this.normalBorderWidth = 1;
-    this.setBorderColor(Color.black);
-    this.setFill(null);
-    this.updateAppearance();
-    this.normalBorderWidth = 0;
-    this.nameOfEditCommand = "rename";
-    this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
-  },
-
-     slot: function() { return this._slotMorph.slot(); },
-  inspect: function() { return this.slot().name(); },
-
-  outliner: function() {
-    return this._slotMorph.outliner();
-  },
-
-  // aaa onMouseDown: function(evt) { return false; },  // don't allow selection
-
-  canBecomeWritable: function() { return true; },
-
-  updateAppearance: function() {
-    if (! this.isInWritableMode) {
-      var newText = this.slot().name();
-      if (newText != this.getText()) {
-        this.setText(newText);
-      }
-    }
-  },
-
-  morphMenu: function(evt) {
-    return this._slotMorph.morphMenu(evt);
-  },
-
-  returnKeyShouldAccept: function() { return true; },
-
-  getSavedText: function() {
-    return this.slot().name();
-  },
-
-  setSavedText: function(text) {
-    if (text !== this.getSavedText()) {
-      this.slot().rename(text);
-      this.outliner().updateAppearance();
-    }
-  },
-
-  captureMouseEvent: function($super, evt, hasFocus) {
-    if (evt.type == "MouseDown" && !this.isInWritableMode) {return false;}
-    return $super(evt, hasFocus);
-  },
-});
-
-TextMorphRequiringExplicitAcceptance.subclass("MethodSourceMorph", {
-  initialize: function($super, slotMorph) {
-    this._slotMorph = slotMorph;
-    $super(pt(5, 10).extent(pt(140, 80)), slotMorph.slot().contents().source());
-    // aaa - taken out, fix it the proper way: if (this.isReadOnly) {this.ignoreEvents();}
-    this.extraMenuItemAdders = [];
-    this.normalBorderWidth = 1;
-    this.setBorderColor(Color.black);
-    this.closeDnD();
-    this.setFill(null);
-    // aaa do we need this for outliners? this.slot().notifier.add_observer(function() {this.updateAppearance();}.bind(this));
-    this.updateAppearance();
-    this.normalBorderWidth = 0;
-    this.nameOfEditCommand = "edit source";
-    this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
-  },
-
-     slot: function() { return this._slotMorph.slot(); },
-  inspect: function() { return this.slot().name() + " source"; },
-
-  outliner: function() {
-    return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
-  },
-
-  // aaa onMouseDown: function(evt) { return false; },  // don't allow selection
-
-  canBecomeWritable: function() { return true; },
-
-  updateAppearance: function() {
-    var newText = this.slot().contents().source();
-    if (newText != this.getText()) {
-      this.setText(newText);
-    }
-  },
-
-  returnKeyShouldAccept: function() { return false; },
-
-  getSavedText: function() {
-    return this.slot().contents().source();
-  },
-
-  setSavedText: function(text) {
-    if (text !== this.getSavedText()) {
-      MessageNotifierMorph.showIfErrorDuring(function() {
-        var newObject = eval("(" + text + ")");
-        var newContents = reflect(newObject);
-        this.slot().setContents(newContents);
-        if (newContents.isReflecteeFunction()) { this.slot().beCreator(); }
-        this.outliner().updateAppearance();
-      }.bind(this), createFakeEvent());
-    }
-  },
-});
-
-
-ColumnMorph.subclass("SlotAnnotationMorph", {
-  initialize: function($super, slotMorph) {
-    $super();
-    this._slotMorph = slotMorph;
-    this.beInvisible();
-    this._moduleLabel = createLabel(function() {var m = this._slotMorph.slot().module(); return m ? m.name() : "";}.bind(this));
-    this.addRow(createLabelledNode("Module", this._moduleLabel));
-  },
-
-  updateAppearance: function() {
-    this._moduleLabel.refreshText();
-    this.rejiggerTheLayout();
-  },
-});
-
 ColumnMorph.subclass("SlotMorph", {
   initialize: function($super, slot) {
     $super();
     this._slot = slot;
-    this.sPadding = 1;
-    this.fPadding = 1;
+    this.sPadding = 0;
+    this.fPadding = 0;
     this.setFill(defaultFillWithColor(Color.gray));
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
@@ -359,3 +205,158 @@ ColumnMorph.subclass("SlotMorph", {
     return menu;
   },
 });
+
+ArrowMorph.subclass("SlotContentsPointerArrow", {
+  initialize: function($super, slot, fep) {
+    this._slot = slot;
+    this._fixedEndpoint = fep;
+    $super();
+    allArrows.push(this);
+  },
+
+  createEndpoints: function() {
+    this.endpoint1 = this._fixedEndpoint;
+    this.endpoint2 = new ArrowEndpoint(this._slot, this);
+  },
+
+  noLongerNeedsToBeVisible: function() {
+    this.noLongerNeedsToBeUpdated = true;
+    this.remove();
+  },
+
+  needsToBeVisible: function() {
+    this.noLongerNeedsToBeUpdated = false;
+  },
+
+  rankAmongArrowsWithSameEndpoints: function() {return 0;},
+});
+
+
+
+TwoModeTextMorph.subclass("SlotNameMorph", {
+  initialize: function($super, slotMorph) {
+    this._slotMorph = slotMorph;
+    $super(pt(5, 10).extent(pt(140, 20)), this.slot().name());
+    this.extraMenuItemAdders = [];
+    this.normalBorderWidth = 1;
+    this.setBorderColor(Color.black);
+    this.setFill(null);
+    this.updateAppearance();
+    this.normalBorderWidth = 0;
+    this.nameOfEditCommand = "rename";
+    this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
+  },
+
+     slot: function() { return this._slotMorph.slot(); },
+  inspect: function() { return this.slot().name(); },
+
+  outliner: function() {
+    return this._slotMorph.outliner();
+  },
+
+  // aaa onMouseDown: function(evt) { return false; },  // don't allow selection
+
+  canBecomeWritable: function() { return true; },
+
+  updateAppearance: function() {
+    if (! this.isInWritableMode) {
+      var newText = this.slot().name();
+      if (newText != this.getText()) {
+        this.setText(newText);
+      }
+    }
+  },
+
+  morphMenu: function(evt) {
+    return this._slotMorph.morphMenu(evt);
+  },
+
+  returnKeyShouldAccept: function() { return true; },
+
+  getSavedText: function() {
+    return this.slot().name();
+  },
+
+  setSavedText: function(text) {
+    if (text !== this.getSavedText()) {
+      this.slot().rename(text);
+      this.outliner().updateAppearance();
+    }
+  },
+
+  captureMouseEvent: function($super, evt, hasFocus) {
+    if (evt.type == "MouseDown" && !this.isInWritableMode) {return false;}
+    return $super(evt, hasFocus);
+  },
+});
+
+TextMorphRequiringExplicitAcceptance.subclass("MethodSourceMorph", {
+  initialize: function($super, slotMorph) {
+    this._slotMorph = slotMorph;
+    $super(pt(5, 10).extent(pt(140, 80)), slotMorph.slot().contents().source());
+    // aaa - taken out, fix it the proper way: if (this.isReadOnly) {this.ignoreEvents();}
+    this.extraMenuItemAdders = [];
+    this.normalBorderWidth = 1;
+    this.setBorderColor(Color.black);
+    this.closeDnD();
+    this.setFill(null);
+    // aaa do we need this for outliners? this.slot().notifier.add_observer(function() {this.updateAppearance();}.bind(this));
+    this.updateAppearance();
+    this.normalBorderWidth = 0;
+    this.nameOfEditCommand = "edit source";
+    this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
+  },
+
+     slot: function() { return this._slotMorph.slot(); },
+  inspect: function() { return this.slot().name() + " source"; },
+
+  outliner: function() {
+    return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
+  },
+
+  // aaa onMouseDown: function(evt) { return false; },  // don't allow selection
+
+  canBecomeWritable: function() { return true; },
+
+  updateAppearance: function() {
+    var newText = this.slot().contents().source();
+    if (newText != this.getText()) {
+      this.setText(newText);
+    }
+  },
+
+  returnKeyShouldAccept: function() { return false; },
+
+  getSavedText: function() {
+    return this.slot().contents().source();
+  },
+
+  setSavedText: function(text) {
+    if (text !== this.getSavedText()) {
+      MessageNotifierMorph.showIfErrorDuring(function() {
+        var newObject = eval("(" + text + ")");
+        var newContents = reflect(newObject);
+        this.slot().setContents(newContents);
+        if (newContents.isReflecteeFunction()) { this.slot().beCreator(); }
+        this.outliner().updateAppearance();
+      }.bind(this), createFakeEvent());
+    }
+  },
+});
+
+
+ColumnMorph.subclass("SlotAnnotationMorph", {
+  initialize: function($super, slotMorph) {
+    $super();
+    this._slotMorph = slotMorph;
+    this.beInvisible();
+    this._moduleLabel = createLabel(function() {var m = this._slotMorph.slot().module(); return m ? m.name() : "";}.bind(this));
+    this.addRow(createLabelledNode("Module", this._moduleLabel));
+  },
+
+  updateAppearance: function() {
+    this._moduleLabel.refreshText();
+    this.rejiggerTheLayout();
+  },
+});
+

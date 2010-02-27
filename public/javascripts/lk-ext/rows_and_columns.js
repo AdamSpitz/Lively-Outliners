@@ -14,23 +14,26 @@ Morph.subclass("RowOrColumnMorph", {
     this.eachThingy(function(m) {m.bounds();});
 
     var direction = this.direction;
-    var sPadding = this.sPadding;
-    var fPadding = this.fPadding;
+    var sPadding  = this.sPadding;
+    var fPadding  = this.fPadding;
 
     var maxSideways = direction.externallySpecifiedFreeSpaceSideways(this) || sPadding + sPadding;
     this.eachThingy(function(m) {
-      var s = direction.sidewaysDimensionOfRect(m.bounds()) + sPadding + sPadding;
+      var s = direction.sidewaysCoordinateOfPoint(m.getExtent()) + sPadding + sPadding;
       maxSideways = (maxSideways >= s) ? maxSideways : s;
     });
 
-    var name = this.name;
     var forward = fPadding;
+    if (this.aaaDebugMe) { console.log("Starting off, forward: " + forward); }
     this.eachThingy(function(m) {
-      var f = direction.forwardDimensionOfRect(m.bounds());
+      //var f = direction.forwardDimensionOfRect(m.bounds()); // old way, gave me weird extra padding
+      var f = direction.forwardCoordinateOfPoint(m.getExtent());
+      if (this.aaaDebugMe) { console.log("f is: " + f + ", m.extent is " + m.getExtent()); }
       direction.specifyFreeSpaceSideways(m, maxSideways - sPadding - sPadding);
       var p = direction.point(forward, sPadding);
       m.setPosition(p);
       if (f != 0) {forward += f + fPadding;}
+      if (this.aaaDebugMe) { console.log("Added " + m.inspect() + ", forward is now: " + forward); }
     }.bind(this));
 
     var newExtent = direction.point(forward, maxSideways);
@@ -38,6 +41,7 @@ Morph.subclass("RowOrColumnMorph", {
     if (! newExtent.eqPt(shapeBounds.extent())) {
       var b = shapeBounds.topLeft().addPt(this.origin).extent(newExtent.scaleBy(this.getScale()));
       this.setBounds(b);
+      if (this.aaaDebugMe) { console.log("Setting bounds to " + b); }
     }
   },
 
