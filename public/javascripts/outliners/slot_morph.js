@@ -157,9 +157,8 @@ ColumnMorph.subclass("SlotMorph", {
   initialize: function($super, slot) {
     $super();
     this._slot = slot;
-    this.shape.roundEdgesBy(4);
-    this.sPadding = 3;
-    this.fPadding = 3;
+    this.sPadding = 1;
+    this.fPadding = 1;
     this.setFill(defaultFillWithColor(Color.gray));
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
