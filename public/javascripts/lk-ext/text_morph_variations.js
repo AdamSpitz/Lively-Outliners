@@ -61,6 +61,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
 
   changed: function($super) {
     if (this.getText() == this.getSavedText()) {
+      this.setBorderColor(Color.black);
       this.setBorderWidth(this.normalBorderWidth || 1);
     } else {
       this.setBorderColor(Color.red);

@@ -1,4 +1,6 @@
 WorldMorph.addMethods({
+  inspect: function() { return "Lively"; },
+
   morphMenu: function(evt) {
     var menu = new MenuMorph([], this);
     menu.addItem(["create new object", function(evt) {
@@ -8,11 +10,14 @@ WorldMorph.addMethods({
     menu.addLine();
 
     menu.addItem(["file in module...", function(evt) {
-      this.prompt("Module name?", function(name) {
-        if (name) {
-          MessageNotifierMorph.showIfErrorDuring(function() { lobby.transporter.module.fileIn(name); }, evt);
-        }
-      }.bind(this));
+      var filenames = new FileDirectory(lobby.transporter.module.urlForModuleDirectory()).filenames().select(function(n) {return n.endsWith(".js");});
+      
+      var modulesMenu = new MenuMorph(filenames.map(function(n) {return [n, function(evt) {
+        var moduleName = n.substring(0, n.length - 3);
+        MessageNotifierMorph.showIfErrorDuring(function() { lobby.transporter.module.fileIn(moduleName); }, evt);
+      }];}), this);
+      
+      modulesMenu.openIn(this, evt.point());
     }.bind(this)]);
 
     menu.addItem(["file out module...", function(evt) {
@@ -40,8 +45,7 @@ WorldMorph.addMethods({
         }],
 
         ["aaaaa", function(evt) {
-            alert( new URL("http://localhost/~adam/uploads/whatever.js") );
-            alert( URL.source.withPath("/~adam/uploads/whatever.js") );
+            alert(eval("function() {return 3 + 4;}"));
         }],
       ]);
     }

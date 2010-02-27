@@ -21,7 +21,7 @@ Object.extend(lobby.transporter.module, {
   fileOut: function() {
     var buffer = new StringBuffer("lobby.transporter.module.create('").append(this.name()).append("', function(thisModule) {\n\n\n");
     this.fileOutSlots(buffer);
-    buffer.append("\n});");
+    buffer.append("});");
 
     var url = this.urlForModuleName(this.name());
     var doc = buffer.toString();
@@ -34,20 +34,25 @@ Object.extend(lobby.transporter.module, {
   fileOutSlots: function(buffer) {
     var mirs = this.mirrorsInOrderForFilingOut();
     mirs.each(function(mir) {
-      buffer.append("thisModule.addSlots(").append(mir.creatorSlotChainExpression()).append(", function(addSlot) {\n\n");
+      buffer.append("  thisModule.addSlots(").append(mir.creatorSlotChainExpression()).append(", function(addSlot) {\n\n");
       mir.eachSlot(function(s) {
         if (s.module && s.module() === this) {
           s.fileOutTo(buffer);
         }
       }.bind(this));
-      buffer.append("});\n\n\n");
+      buffer.append("  });\n\n\n");
     }.bind(this));
   },
 
 
 
   urlForModuleName: function(name) {
-    return new URL("http://localhost/~adam/uploads/" + name + ".js");
+    // return new URL("http://localhost/~adam/uploads/" + name + ".js");
+    return this.urlForModuleDirectory().withFilename(name + ".js");
+  },
+
+  urlForModuleDirectory: function() {
+    return new URL("http://localhost/~adam/uploads/");
   },
 
   fileIn: function(name) {

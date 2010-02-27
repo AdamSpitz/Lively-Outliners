@@ -130,6 +130,7 @@ TextMorphRequiringExplicitAcceptance.subclass("MethodSourceMorph", {
         var newObject = eval("(" + text + ")");
         var newContents = new Mirror(newObject);
         this.slot().setContents(newContents);
+        if (newContents.isReflecteeFunction()) { this.slot().beCreator(); }
         this.outliner().updateAppearance();
       }.bind(this), createFakeEvent());
     }
@@ -268,7 +269,7 @@ ColumnMorph.subclass("SlotMorph", {
     if (this._shouldShowSource    ) { rows.push(this.    sourceMorph()); }
     if (this._shouldShowAnnotation) { rows.push(this.annotationMorph()); }
     this.replaceThingiesWith(rows);
-    if (this.owner) { this.owner.rejiggerTheLayout(); }
+    this.rejiggerTheLayoutIncludingSubmorphs();
   },
 
   wasJustDroppedOnOutliner: function(outliner) {

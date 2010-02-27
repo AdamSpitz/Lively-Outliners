@@ -78,7 +78,7 @@ AbstractSlot.subclass("Slot", {
   },
 
   fileOutTo: function(buffer) {
-    buffer.append("addSlot(").append("'").append(this.name()).append("', ");
+    buffer.append("    addSlot(").append("'").append(this.name()).append("', ");
     var m = this.contents();
     var isCreator = false;
     var array = null;

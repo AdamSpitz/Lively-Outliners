@@ -32,7 +32,7 @@ Object.subclass("Mirror", {
       }
       return s.toString();
     } else {
-      return "an object";
+      return this.isReflecteeFunction() ? "a function" : "an object";
     }
   },
 

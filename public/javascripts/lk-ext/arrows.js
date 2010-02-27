@@ -231,7 +231,11 @@ Morph.subclass("ArrowEndpoint", {
       this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = false;
     }
     this.vectorFromOtherEndpoint = null;
-    this.topicRef.setContents(outliner.mirror());
+
+    // aaaaaaaa
+    var newContents = outliner.mirror();
+    this.topicRef.setContents(newContents);
+    if (newContents.isReflecteeFunction()) { this.topicRef.beCreator(); }
   },
 });
 
