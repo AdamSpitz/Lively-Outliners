@@ -1,5 +1,3 @@
-/// <reference path="../lk/Base.js" />
-
 Object.subclass("ValueHolder", {
   initialize: function(v) {
     this.notifier = new Notifier(this);
@@ -30,17 +28,6 @@ ValueHolder.subclass("BooleanHolder", {
   isChecked:  function( ) { return this.getValue();     },
   setChecked: function(b) { return this.setValue(b);    },
   areValuesDifferent: function(v1, v2) { return (!v1) != (!v2); },
-});
-
-
-// aaa - Get rid of these or move them into another file. Don't belong with the generic stuff.
-ValueHolder.subclass("DirectTopicHolder", {
-  getTopic: function( ) { return this.getValue();  },
-  setTopic: function(t) { return this.setValue(t); },
-});
-ValueHolder.subclass("DirectAssocHolder", {
-  get__association: function( ) { return this.getValue();  },
-  set__association: function(a) { return this.setValue(a); },
 });
 
 

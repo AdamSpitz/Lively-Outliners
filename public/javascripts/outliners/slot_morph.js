@@ -3,7 +3,6 @@ ArrowMorph.subclass("SlotContentsPointerArrow", {
     this._slot = slot;
     this._fixedEndpoint = fep;
     $super();
-    this.initializeUI();
     allArrows.push(this);
   },
 

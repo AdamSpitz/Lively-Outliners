@@ -92,9 +92,9 @@ HandMorph.addMethods({
         this.removeAllMorphs(); // remove any shadows or halos
     },
 
-    // Copied-and-pasted the bottom half of grabMorph. Needed for TopicNames
-    // and Occurrences - stuff that should be able to be explicitly grabbed,
-    // but not through the default "just click to pick it up" mechanism. -- Adam
+    // Copied-and-pasted the bottom half of grabMorph. Needed for
+    // stuff that should be able to be explicitly grabbed, but
+    // not through the default "just click to pick it up" mechanism. -- Adam
     grabMorphWithoutAskingPermission: function(grabbedMorph, evt) {
         if (this.keyboardFocus && grabbedMorph !== this.keyboardFocus) {
             this.keyboardFocus.relinquishKeyboardFocus(this);

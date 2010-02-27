@@ -29,20 +29,19 @@ Morph.subclass("ArrowMorph", {
     this.endpoint2.otherEndpoint = this.endpoint1;
     this.endpoint2.relativeLineEndpoint = pt(0,0);
     this.tickSlowly();
+    this.initializeUI();
   },
 
   initializeUI: function() {
-    // aaa - Wait, is this ever called?
     this.closeDnD();
     this.ignoreEvents();
     this.beUngrabbable();
-
     return this;
   },
 
   // Optimization suggested by Dan Ingalls: slow down ticking when things are pretty quiet.
-  tickQuickly: function() { this.shouldUpdateOnEveryTick = true;  /* this.periodicalExecuter.changeFrequency(this.frequencyWhenStuffIsHappening  ); */ },
-  tickSlowly:  function() { this.shouldUpdateOnEveryTick = false; /* this.periodicalExecuter.changeFrequency(this.frequencyWhenStuffIsPrettyQuiet); */ },
+  tickQuickly: function() { this.shouldUpdateOnEveryTick = true;  },
+  tickSlowly:  function() { this.shouldUpdateOnEveryTick = false; },
   shouldUpdateOnThisTick: function(n) {return this.shouldUpdateOnEveryTick || n == 0;},
 
   putVerticesInTheRightPlace: function() {
@@ -68,7 +67,7 @@ Morph.subclass("ArrowMorph", {
     var m1 = this.endpoint1.determineWhichMorphToAttachTo();
     var m2 = this.endpoint2.determineWhichMorphToAttachTo();
     var w  = WorldMorph.current();
-    return m1 && m2 && (m1 != w || m2 != w);
+    return m1 && m2 && (m1 !== w || m2 !== w);
   },
 
   calculateCenterPoints: function() {
@@ -78,12 +77,11 @@ Morph.subclass("ArrowMorph", {
 
   changeVerticesIfNecessary: function() {
     var oldVertices = this.shape.vertices();
-    // Rounding seems to be necessary because comparing floats doesn't work? Weird.
+    // Rounding seems to be necessary to make sure the floats are precisely equal.
     var newVertices = [this.endpoint1.lineEndpoint().roundTo(1), this.endpoint2.lineEndpoint().roundTo(1)];
     if (oldVertices[0].roundTo(1).eqPt(newVertices[0]) && oldVertices[1].roundTo(1).eqPt(newVertices[1])) {
       this.tickSlowly();
     } else {
-      //alert("aaa: " + oldVertices[0] + " != " + newVertices[0] + " or " + oldVertices[1] + " != " + newVertices[1]);
       this.changeVertices(newVertices);
       this.tickQuickly();
     }
@@ -93,16 +91,9 @@ Morph.subclass("ArrowMorph", {
     this.setVertices(newVertices);
 
     if (! newVertices[0].eqPt(newVertices[1])) {
-      this.endpoint1.setShapeToLookLikeACircle();
-      this.endpoint2.setShapeToLookLikeAnArrow();
       var arrowDirection = newVertices[1].subPt(newVertices[0]);
-      this.endpoint1.setRotation(arrowDirection          .theta());
-      this.endpoint2.setRotation(arrowDirection.negated().theta());
-    }
-
-    var typeRef = this.association && this.association.getAssociationTypeRef && this.association.getAssociationTypeRef();
-    if (typeRef) {
-      typeRef.morph().setPosition(newVertices[0].midPt(newVertices[1]).subPt(typeRef.morph().bounds().extent().scaleBy(0.5)));
+      this.endpoint1.setShapeToLookLikeACircle(arrowDirection          .theta());
+      this.endpoint2.setShapeToLookLikeAnArrow(arrowDirection.negated().theta());
     }
   },
 
@@ -118,7 +109,7 @@ Morph.subclass("ArrowEndpoint", {
     this.isArrowEndpoint = true;
     this.shouldNotBePartOfRowOrColumn = true;
     this.topicRef = tr;
-    this.association = a;
+    this.arrow = a;
     this.setFill(Color.black);
     this.shouldDisappearAfterAttaching = isTransient;
 
@@ -141,7 +132,7 @@ Morph.subclass("ArrowEndpoint", {
     if (this.morphToAttachTo != WorldMorph.current()) {
 
       // aaa - Do outliners need this stuff?
-      var index = this.association.rankAmongArrowsWithSameEndpoints();
+      var index = this.arrow.rankAmongArrowsWithSameEndpoints();
       var offsetFromMidpoint = Math.floor((index + 1) / 2) * (index % 2 == 0 ? 1 : -1);
       //console.log("Index thingy:" + index + ", offsetFromMidpoint: " + offsetFromMidpoint);
 
@@ -177,14 +168,15 @@ Morph.subclass("ArrowEndpoint", {
     return localCenter.addPt(vectorFromCenterToPositionToBeClosestTo.scaleBy(s));
   },
 
-  setShapeToLookLikeACircle: function() {
+  setShapeToLookLikeACircle: function(arrowTheta) {
     if (! this.wasAlreadySetToLookLikeACircle) {
       this.setShape(new lively.scene.Ellipse(pt(0,0).extent(pt(10,10))));
       this.wasAlreadySetToLookLikeACircle = true;
     }
+    this.setRotation(arrowTheta);
   },
 
-  setShapeToLookLikeAnArrow: function() {
+  setShapeToLookLikeAnArrow: function(arrowTheta) {
     if (! this.wasAlreadySetToLookLikeAnArrow) {
       var parallelVector = pt(1,0);
       var pointOnTipOfArrow = this.relativeLineEndpoint;
@@ -194,6 +186,7 @@ Morph.subclass("ArrowEndpoint", {
       this.setShape(new lively.scene.Polygon(verticesOfArrow, Color.black, 1, Color.black));
       this.wasAlreadySetToLookLikeAnArrow = true;
     }
+    this.setRotation(arrowTheta);
   },
 
   noLongerNeedsToBeVisibleAsArrowEndpoint: function() {
@@ -208,12 +201,7 @@ Morph.subclass("ArrowEndpoint", {
     return s;
   },
 
-  okToBeGrabbedBy: function(evt) { return this.association.isReadOnly ? null : this; },
-
-  inspect: function() {
-    var topic = this.topicRef ? this.topicRef.getTopic() : null;
-    return topic ? topic.inspect() : "an association endpoint";
-  },
+  okToBeGrabbedBy: function(evt) { return this.arrow.isReadOnly ? null : this; },
 
   morphMenu: function(evt) {
     // This shouldn't really have a menu at all. How do I get rid of it?
@@ -226,7 +214,7 @@ Morph.subclass("ArrowEndpoint", {
     if (this.shouldDisappearAfterAttaching) {
       this.topicRef.setterArrow = null;
       this.noLongerNeedsToBeVisibleAsArrowEndpoint();
-      this.association.noLongerNeedsToBeVisible();
+      this.arrow.noLongerNeedsToBeVisible();
     } else {
       this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = false;
     }
