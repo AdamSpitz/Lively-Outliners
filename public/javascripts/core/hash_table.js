@@ -29,18 +29,17 @@ Object.extend(BloodyHashTable.prototype, {
 
   bucketForKey: function(k) {
     var bucketName = "" + k;
-    if (bucketName === 'constructor') { bucketName = 'constructor_key_hack'; }
-
     var b = this._buckets[bucketName];
     if (typeof b === "undefined") {
       b = new BloodyHashTable.Bucket();
       this._buckets[bucketName] = b;
     }
-    //else {
-    //  if (! this._buckets.hasOwnProperty(bucketName)) {
-    //    console.log("Bad bucket name: " + bucketName);
-    //  }
-    //}
+    else {
+      if (! this._buckets.hasOwnProperty(bucketName)) {
+        // console.log("Bad bucket name: " + bucketName);
+        return this.bucketForKey("bucketKeyHack");
+      }
+    }
     return b;
   },
 

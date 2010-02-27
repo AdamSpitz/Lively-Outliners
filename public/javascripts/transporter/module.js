@@ -46,13 +46,12 @@ Object.extend(lobby.transporter.module, {
 
 
 
-  urlForModuleName: function(name) {
-    // return new URL("http://localhost/~adam/uploads/" + name + ".js");
-    return this.urlForModuleDirectory().withFilename(name + ".js");
-  },
-
   urlForModuleDirectory: function() {
     return new URL("http://localhost/~adam/uploads/");
+  },
+
+  urlForModuleName: function(name) {
+    return this.urlForModuleDirectory().withFilename(name + ".js");
   },
 
   fileIn: function(name) {
