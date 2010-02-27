@@ -225,8 +225,8 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('creatorSlot', function () {
-    if (! this.hasAnnotation()) { return null; }
     var a = this.annotation();
+    if (! a) { return null; }
     if (a.hasOwnProperty('creatorSlotHolder') && a.hasOwnProperty('creatorSlotName')) {
       // could cache it if it's slow to keep recreating the Mirror and Slot objects.
       return reflect(a.creatorSlotHolder).slotAt(a.creatorSlotName);
@@ -236,7 +236,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('setCreatorSlot', function (s) {
-    var a = this.annotation();
+    var a = this.annotationForWriting();
     a.creatorSlotName   = s.name();
     a.creatorSlotHolder = s.holder().reflectee();
   });
@@ -250,6 +250,11 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('annotation', function () {
+    if (! this.canHaveAnnotation()) { throw this.name() + " cannot have an annotation"; }
+    return this.reflectee().__annotation__;
+  });
+
+  add.method('annotationForWriting', function () {
     if (! this.hasAnnotation()) {
       if (! this.canHaveAnnotation()) { throw this.name() + " cannot have an annotation"; }
       return this.reflectee().__annotation__ = {slotAnnotations: {}};
@@ -362,8 +367,9 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
   });
 
   add.method('module', function () {
-    if (! this.hasAnnotation()) { return null; }
-    return this.annotation().module;
+    var a = this.annotation();
+    if (! a) { return null; }
+    return a.module;
   });
 
   add.method('setModule', function (m) {
