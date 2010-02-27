@@ -22,13 +22,29 @@ thisModule.addSlots(lobby.mirror, function(add) {
     return this.reflectee() === m.reflectee();
   });
 
-  add.method('toString', function () {
+  add.method('hashCode', function () {
     return "a mirror"; // aaa - crap, hash tables will be linear time now; can I get an object ID somehow?;
   });
 
+  add.method('reflecteeToString', function () {
+    try {
+      return "" + this.reflectee();
+    } catch (ex) {
+      return "";
+    }
+  });
+
+  add.method('toString', function () {
+    return "on " + this.reflecteeToString();
+  });
+
   add.method('inspect', function () {
-    if (this.reflectee() === lobby) {return "lobby";} // aaa - just a hack for now, until I can make it come out right for real
-    return this.name(); // later can add the concept of complete objects, so I can do a toString();
+    if (this.reflectee() === lobby) {return "lobby";}
+    if (this.isReflecteePrimitive() || this.isReflecteeArray()) {return Object.inspect(this.reflectee());}
+    var s = new StringBuffer(this.name());
+    var toString = this.reflecteeToString();
+    if (typeof toString === 'string' && toString) { s.append("(").append(toString).append(")"); }
+    return s.toString();
   });
 
   add.method('name', function () {
@@ -38,14 +54,14 @@ thisModule.addSlots(lobby.mirror, function(add) {
     if (chain) {
       if (chain.length === 0) {return "";}
       var isThePrototype = chain[0].contents().equals(this);
-      var s = new StringBuffer(isThePrototype ? "" : (/^[AEIOUaeiou]/).exec(chain[chain.length - 1].name()) ? "an " : "a ");
+      var s = new StringBuffer(isThePrototype ? "" : chain[chain.length - 1].name().startsWithVowel() ? "an " : "a ");
       for (var i = chain.length - 1; i >= 0; i -= 1) {
         s.append(chain[i].name());
         if (i > 0) {s.append(" ");}
       }
       return s.toString();
     } else {
-      return this.isReflecteeFunction() ? "a function" : "an object";
+      return this.isReflecteeFunction() ? "a function" : this.isReflecteeArray() ? "an array" : "an object";
     }
   });
 
@@ -77,10 +93,6 @@ thisModule.addSlots(lobby.mirror, function(add) {
       chain.push(cs);
       mir = cs.holder();
     }
-  });
-
-  add.method('reflecteeToString', function () {
-    return "" + this.reflectee();
   });
 
   add.method('eachSlot', function (f) {

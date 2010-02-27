@@ -27,8 +27,14 @@ Object.extend(BloodyHashTable.prototype, {
     }
   },
 
+  // Blecch, why does JS not support identity hashes?
+  hashCodeForKey: function(k) {
+    if (k.hashCode) { return k.hashCode(); }
+    return 42;
+  },
+
   bucketForKey: function(k) {
-    var bucketName = "" + k;
+    var bucketName = "" + this.hashCodeForKey(k);
     var b = this._buckets[bucketName];
     if (typeof b === "undefined") {
       b = new BloodyHashTable.Bucket();
@@ -47,7 +53,6 @@ Object.extend(BloodyHashTable.prototype, {
     var b = this.bucketForKey(k);
     for (var i = 0, n = b.length; i < n; ++i) {
       var pair = b[i];
-      //if (!pair) {console.log("Huh? b.length is " + b.length + ", b itself is " + b + ", hasOwnProperty is " + this._buckets.hasOwnProperty(k));}
       if (this.keysAreEqual(k, pair.key)) {
         return pair;
       }

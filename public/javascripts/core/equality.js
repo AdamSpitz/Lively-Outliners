@@ -27,15 +27,15 @@ Object.extend(Array.prototype, {
   },
 
   hashCode: function() {
-    return "array " + this.length.toString();
+    return "array";
   },
 });
 
 
 Object.extend(String.prototype, {
-  hashCode: function() {console.log("BBBBBBBBBBBB" + this); return this;},
+  hashCode: function() {return this;},
 });
 
 Object.extend(Number.prototype, {
-  hashCode: function() {console.log("CCCCCCCCCCCC" + this); return this.toString();},
+  hashCode: function() {return this;},
 });
