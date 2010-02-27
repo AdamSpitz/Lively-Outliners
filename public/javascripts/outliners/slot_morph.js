@@ -48,7 +48,7 @@ ColumnMorph.subclass("SlotMorph", {
     m.determineWhichMorphToAttachTo = function() {return true;};
     m.attachToTheRightPlace = function() {};
     m.noLongerNeedsToBeVisibleAsArrowEndpoint = function() {};
-    m.relativeLineEndpoint = pt(70,10);
+    m.relativeLineEndpoint = pt(5, 5);
     m.setShapeToLookLikeACircle = function() {};
 
     return m;
@@ -222,13 +222,12 @@ ArrowMorph.subclass("SlotContentsPointerArrow", {
   noLongerNeedsToBeVisible: function() {
     this.noLongerNeedsToBeUpdated = true;
     this.remove();
+    this.endpoint2.remove();
   },
 
   needsToBeVisible: function() {
     this.noLongerNeedsToBeUpdated = false;
   },
-
-  rankAmongArrowsWithSameEndpoints: function() {return 0;},
 });
 
 

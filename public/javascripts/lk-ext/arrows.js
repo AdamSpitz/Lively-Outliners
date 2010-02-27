@@ -136,17 +136,10 @@ Morph.subclass("ArrowEndpoint", {
     if (this.morphToAttachTo != WorldMorph.current()) {
 
       // aaa - Do outliners need this stuff?
-      var index = this.arrow.rankAmongArrowsWithSameEndpoints();
-      var offsetFromMidpoint = Math.floor((index + 1) / 2) * (index % 2 == 0 ? 1 : -1);
-      //console.log("Index thingy:" + index + ", offsetFromMidpoint: " + offsetFromMidpoint);
-
       var localCenter = this.ownerRelativeCenterpoint();
       var vectorFromHereToMidpoint = this.otherEndpoint.ownerCenterpoint().subPt(this.ownerCenterpoint()).scaleBy(0.5);
-      var normal = vectorFromHereToMidpoint.perpendicularVector().unitVector() || pt(0,0);
-      var vectorFromMidpointToOffsetPlaceThingamajig = normal.scaleBy(offsetFromMidpoint * 100);
-      var localPositionToBeClosestTo = localCenter.addPt(vectorFromHereToMidpoint.addPt(vectorFromMidpointToOffsetPlaceThingamajig));
+      var localPositionToBeClosestTo = localCenter.addPt(vectorFromHereToMidpoint);
       var localNewLoc = this.localPositionClosestTo(localPositionToBeClosestTo, localCenter).roundTo(1);
-      //console.log("aaa x:" + localNewLoc.x + ", y: " + localNewLoc.y);
 
       // aaa - shouldn't really be necessary, but might be faster.
       if (this.owner == this.morphToAttachTo) {
