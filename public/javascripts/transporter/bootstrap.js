@@ -1,8 +1,7 @@
 // Bootstrap the module system.
 
 function annotationOf(o) {
-  var a = o.__annotation__;
-  if (a) { return a; }
+  if (o.hasOwnProperty('__annotation__')) { return o.__annotation__; }
   return o.__annotation__ = {slotAnnotations: {}};
 }
 

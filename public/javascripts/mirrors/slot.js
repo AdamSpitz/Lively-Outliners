@@ -80,29 +80,34 @@ AbstractSlot.subclass("Slot", {
   fileOutTo: function(buffer) {
     var creationMethod = "data";
     var contentsExpr;
-    var m = this.contents();
+    var contents = this.contents();
     var array = null;
-    if (m.isReflecteePrimitive()) {
-      contentsExpr = "" + m.reflectee();
+    if (contents.isReflecteePrimitive()) {
+      contentsExpr = "" + contents.reflectee();
     } else {
-      var cs = m.creatorSlot();
+      var cs = contents.creatorSlot();
       if (! cs) {
-        throw "Cannot file out a reference to " + m.name();
+        throw "Cannot file out a reference to " + contents.name();
       } else if (! cs.equals(this)) {
         // This is just a reference to some well-known object that's created elsewhere.
-        contentsExpr = m.creatorSlotChainExpression();
+        contentsExpr = contents.creatorSlotChainExpression();
       } else {
         // This is the object's creator slot; gotta create it.
-        if (m.isReflecteeFunction()) {
+        if (contents.isReflecteeFunction()) {
           creationMethod = "method";
-          contentsExpr = m.reflectee().toString();
+          contentsExpr = contents.reflectee().toString();
         } else {
           creationMethod = "creator";
-          if (m.isReflecteeArray()) {
+          if (contents.isReflecteeArray()) {
             contentsExpr = "[]";
-            array = m.reflectee();
+            array = contents.reflectee();
           } else {
-            contentsExpr = "{}";
+            var contentsParent = contents.parent();
+            if (contentsParent.equals(reflect(Object.prototype))) {
+              contentsExpr = "{}";
+            } else {
+              contentsExpr = "Object.create(" + contentsParent.creatorSlotChainExpression() + ")";
+            }
           }
         }
       }
@@ -111,7 +116,7 @@ AbstractSlot.subclass("Slot", {
 
     if (array) {
       for (var i = 0, n = array.length; i < n; i += 1) {
-        m.slotAt(i.toString()).fileOutTo(buffer);
+        contents.slotAt(i.toString()).fileOutTo(buffer);
       }
     }
   },
