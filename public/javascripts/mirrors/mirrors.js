@@ -46,7 +46,9 @@ thisModule.addSlots(lobby.mirror, function(add) {
   add.method('inspect', function () {
     if (this.reflectee() === lobby) {return "lobby";}
     if (this.isReflecteePrimitive() || this.isReflecteeArray()) {return Object.inspect(this.reflectee());}
-    var s = new StringBuffer(this.name());
+    var n = this.name();
+    if (this.isReflecteeFunction()) { return n; } // the code will be visible through the *code* fake-slot
+    var s = new StringBuffer(n);
     var toString = this.reflecteeToString();
     if (typeof toString === 'string' && toString) { s.append("(").append(toString).append(")"); }
     return s.toString();
@@ -101,6 +103,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('eachSlot', function (f) {
+    if (this.isReflecteeFunction()) { f(Object.create(lobby.slots.functionBody).initialize(this)); } // not sure this really makes sense here
     f(Object.create(lobby.slots.parent).initialize(this));
     this.eachNonParentSlot(f);
   });
@@ -273,6 +276,8 @@ thisModule.addSlots(lobby.slots, function(add) {
 
   add.creator('parent', Object.create(lobby.slots.abstract));
 
+  add.creator('functionBody', Object.create(lobby.slots.abstract));
+
 });
 
 
@@ -299,6 +304,17 @@ thisModule.addSlots(lobby.slots.parent, function(add) {
   add.method('setContents', function (m) { return this._mirror.setParent(m); });
 
   add.method('isMethod', function () { return false; });
+
+});
+
+
+thisModule.addSlots(lobby.slots.functionBody, function(add) {
+
+  add.method('name', function () { return "*body*"; });
+
+  add.method('contents', function () { return this._mirror; });
+
+  add.method('isMethod', function () { return true; });
 
 });
 

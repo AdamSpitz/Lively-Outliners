@@ -5,7 +5,7 @@ thisModule.addSlots(lobby.transporter.module, function(add) {
 
   add.method('name', function () { return this._name; });
 
-  add.method('toString', function () { return "the " + this.name() + " module"; });
+  add.method('toString', function () { return this.name(); });
 
   add.method('objectsThatMightContainSlotsInMe', function () {
     return lobby.transporter.module.cache[this.name()];
