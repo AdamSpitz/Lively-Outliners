@@ -1,5 +1,7 @@
 // Just an experiment to see if I can get decent names.
 
+var aaa_number_of_external_objects = 0;
+
 var namesToIgnore = ['__annotation__'];
 namesToIgnore.push('enabledPlugin'); // aaa just a hack for now - what's this clientInformation thing, and what are these arrays that aren't really arrays?
 
@@ -23,11 +25,13 @@ function shouldIgnoreObject(o) {
 }
 
 function annotateEverythingReachableFrom(currentObj, nesting) {
-  console.log("Now at: " + reflect(currentObj).name());
+  // console.log("Now at: " + reflect(currentObj).name());
   if (nesting > 10) {
     console.log("Nesting level is " + nesting + "; something might be wrong. Not going any deeper.");
     return;
   }
+
+  aaa_number_of_external_objects += 1;
 
   for (var name in currentObj) {
     if (currentObj.hasOwnProperty(name) && ! namesToIgnore.include(name)) {

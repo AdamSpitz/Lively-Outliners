@@ -44,8 +44,14 @@ WorldMorph.addMethods({
           this.outlinerFor(reflect(lobby)).grabMe(evt);
         }],
 
-        ["aaaaa", function(evt) {
+        ["annotate external objects", function(evt) {
+            var t1 = new Date().getTime();
             annotateEverythingReachableFrom(lobby, 0);
+            var t2 = new Date().getTime();
+            console.log("Whoa, done annotating external stuff! It took " + (t2 - t1) + " ms to annotate " + aaa_number_of_external_objects + " objects.");
+        }],
+
+        ["aaaaa", function(evt) {
         }],
       ]);
     }
