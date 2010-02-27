@@ -107,7 +107,7 @@ AbstractSlot.subclass("Slot", {
         }
       }
     }
-    buffer.append("    add.").append(creationMethod).append("('").append(this.name()).append("', ").append(contentsExpr).append(");\n\n");
+    buffer.append("  add.").append(creationMethod).append("('").append(this.name()).append("', ").append(contentsExpr).append(");\n\n");
 
     if (array) {
       for (var i = 0, n = array.length; i < n; i += 1) {

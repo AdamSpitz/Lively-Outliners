@@ -6,13 +6,21 @@ function annotationOf(o) {
   return o.__annotation__ = {slotAnnotations: {}};
 }
 
-var lobby = Object.create(window);
+function setCreatorSlot(annotation, name, holder) {
+  annotation.creatorSlotName   = name;
+  annotation.creatorSlotHolder = holder;
+}
+
+var lobby = {}; //Object.create(window);
 
 lobby.modules = {};
+setCreatorSlot(annotationOf(lobby.modules), 'modules', lobby);
 
 lobby.transporter = {};
+setCreatorSlot(annotationOf(lobby.transporter), 'transporter', lobby);
 
 lobby.transporter.module = {};
+setCreatorSlot(annotationOf(lobby.transporter.module), 'module', lobby.transporter);
 
 lobby.transporter.module.cache = {};
 

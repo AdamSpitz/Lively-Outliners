@@ -1,6 +1,7 @@
 Object.subclass("Mirror", {
   initialize: function(o) {
     this._reflectee = o;
+    if (this.reflectee() !== o) { throw "Jesus Christ."; }
   },
 
   reflectee: function() { return this._reflectee; },
@@ -55,7 +56,7 @@ Object.subclass("Mirror", {
     var chain = [];
     var lobbyMir = new Mirror(lobby);
     var mir = this;
-        var cs;
+    var cs;
 
     while (true) {
       if (mir.equals(lobbyMir)) { return chain; }
@@ -191,8 +192,12 @@ Object.subclass("Mirror", {
   creatorSlot: function() {
     if (! this.hasAnnotation()) { return null; }
     var a = this.annotation();
-    // could cache it if it's slow to keep recreating the Mirror and Slot objects.
-    return new Mirror(a.creatorSlotHolder).slotAt(a.creatorSlotName);
+    if (a.hasOwnProperty('creatorSlotHolder') && a.hasOwnProperty('creatorSlotName')) {
+      // could cache it if it's slow to keep recreating the Mirror and Slot objects.
+      return new Mirror(a.creatorSlotHolder).slotAt(a.creatorSlotName);
+    } else {
+      return null;
+    }
   },
   
   setCreatorSlot: function(s) {
