@@ -5,6 +5,8 @@ thisModule.addSlots(lobby, function(add) {
 
   add.creator('mirror', {});
 
+  add.creator('slots', {});
+
 });
 
 
@@ -82,7 +84,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('eachSlot', function (f) {
-    f(new ParentSlot(this));
+    f(Object.create(lobby.slots.parent).initialize(this));
     this.eachNonParentSlot(f);
   });
 
@@ -99,7 +101,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('slotAt', function (n) {
-    return new Slot(n, this);
+    return Object.create(lobby.slots.plain).initialize(this, n);
   });
 
   add.method('contentsAt', function (n) {
@@ -236,6 +238,164 @@ thisModule.addSlots(lobby.mirror, function(add) {
       return this.reflectee().__annotation__ = {slotAnnotations: {}};
     }
     return this.reflectee().__annotation__;
+  });
+
+});
+
+
+thisModule.addSlots(lobby.slots, function(add) {
+
+  add.creator('abstract', {});
+
+  add.creator('plain', Object.create(lobby.slots.abstract));
+
+  add.creator('parent', Object.create(lobby.slots.abstract));
+
+});
+
+
+thisModule.addSlots(lobby.slots.abstract, function(add) {
+
+  add.method('initialize', function (m) {
+    this._mirror = m;
+    return this;
+  });
+
+  add.method('mirror', function () { return this._mirror; });
+
+  add.method('holder', function () { return this._mirror; });
+
+});
+
+
+thisModule.addSlots(lobby.slots.parent, function(add) {
+
+  add.method('name', function () { return "*parent*"; });
+
+  add.method('contents', function () { return this._mirror.parent(); });
+
+  add.method('setContents', function (m) { return this._mirror.setParent(m); });
+
+  add.method('isMethod', function () { return false; });
+
+});
+
+
+thisModule.addSlots(lobby.slots.plain, function(add) {
+
+  add.method('initialize', function (m, n) {
+    this._mirror = m;
+    this._name = n;
+    return this;
+  });
+
+  add.method('name', function () { return this._name; });
+
+  add.method('contents', function () { return this._mirror.   contentsAt(this.name()   ); });
+
+  add.method('setContents', function (m) { return this._mirror.setContentsAt(this.name(), m); });
+
+  add.method('equals', function (s) {
+    return this.name() === s.name() && this.mirror().equals(s.mirror());
+  });
+
+  add.method('toString', function () {
+    return this.name() + " slot";
+  });
+
+  add.method('copyTo', function (newMir) {
+    newMir.setContentsAt(this.name(), this.contents());
+    return newMir.slotAt(this.name());
+  });
+
+  add.method('remove', function () {
+    this.mirror().removeSlotAt(this.name());
+  });
+
+  add.method('isMethod', function () { return this.contents().isReflecteeFunction(); });
+
+  add.method('rename', function (newName) {
+    var oldName = this.name();
+    if (oldName === newName) {return;}
+    var contentsMir = this.contents();
+    var o = this.holder().reflectee();
+    if (  o.hasOwnProperty(newName)) { throw o + " already has a slot named " + newName; }
+    if (! o.hasOwnProperty(oldName)) { throw o + " has no slot named "        + oldName; }
+    var cs = contentsMir.creatorSlot();
+    var isCreator = cs && cs.equals(this);
+    var contents = o[oldName];
+    delete o[oldName];
+    o[newName] = contents;
+    if (isCreator) {this.holder().slotAt(newName).beCreator();}
+  });
+
+  add.method('hasAnnotation', function () {
+    return this.holder().hasAnnotation() && this.holder().annotation().slotAnnotations[this.name()];
+  });
+
+  add.method('annotation', function () {
+    var oa = this.holder().annotation();
+    var sa = oa.slotAnnotations[this.name()];
+    if (sa) {return sa;}
+    return oa.slotAnnotations[this.name()] = {};
+  });
+
+  add.method('beCreator', function () {
+    this.contents().setCreatorSlot(this);
+  });
+
+  add.method('module', function () {
+    if (! this.hasAnnotation()) { return null; }
+    return this.annotation().module;
+  });
+
+  add.method('setModule', function (m) {
+    this.annotation().module = m;
+    m.objectsThatMightContainSlotsInMe().push(this.holder().reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later;
+  });
+
+  add.method('fileOutTo', function (buffer) {
+    var creationMethod = "data";
+    var contentsExpr;
+    var contents = this.contents();
+    var array = null;
+    if (contents.isReflecteePrimitive()) {
+      contentsExpr = "" + contents.reflectee();
+    } else {
+      var cs = contents.creatorSlot();
+      if (! cs) {
+        throw "Cannot file out a reference to " + contents.name();
+      } else if (! cs.equals(this)) {
+        // This is just a reference to some well-known object that's created elsewhere.
+        contentsExpr = contents.creatorSlotChainExpression();
+      } else {
+        // This is the object's creator slot; gotta create it.
+        if (contents.isReflecteeFunction()) {
+          creationMethod = "method";
+          contentsExpr = contents.reflectee().toString();
+        } else {
+          creationMethod = "creator";
+          if (contents.isReflecteeArray()) {
+            contentsExpr = "[]";
+            array = contents.reflectee();
+          } else {
+            var contentsParent = contents.parent();
+            if (contentsParent.equals(reflect(Object.prototype))) {
+              contentsExpr = "{}";
+            } else {
+              contentsExpr = "Object.create(" + contentsParent.creatorSlotChainExpression() + ")";
+            }
+          }
+        }
+      }
+    }
+    buffer.append("  add.").append(creationMethod).append("('").append(this.name()).append("', ").append(contentsExpr).append(");\n\n");
+
+    if (array) {
+      for (var i = 0, n = array.length; i < n; i += 1) {
+        contents.slotAt(i.toString()).fileOutTo(buffer);
+      }
+    }
   });
 
 });
