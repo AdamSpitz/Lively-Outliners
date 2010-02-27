@@ -109,7 +109,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('eachNonParentSlot', function (f) {
-    if (! this.canHaveSlots()) {return;} // aaa - should this go one line up? Do primitives have a parent? Or maybe numbers do but null doesn't or something?
+    if (! this.canHaveSlots()) {return;} // aaa - Do primitives have a parent? Or maybe numbers do but null doesn't or something?
     var o = this.reflectee();
     for (var name in o) {
       if (o.hasOwnProperty(name)) {
@@ -350,7 +350,9 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     this.mirror().removeSlotAt(this.name());
   });
 
-  add.method('isMethod', function () { return this.contents().isReflecteeFunction(); });
+  add.method('isMethod', function () {
+    return this.contents().isReflecteeFunction();
+  });
 
   add.method('rename', function (newName) {
     var oldName = this.name();

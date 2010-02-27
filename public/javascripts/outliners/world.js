@@ -45,7 +45,7 @@ WorldMorph.addMethods({
         }],
 
         ["aaaaa", function(evt) {
-            alert(eval("function() {return 3 + 4;}"));
+            annotateEverythingReachableFrom(lobby, 0);
         }],
       ]);
     }

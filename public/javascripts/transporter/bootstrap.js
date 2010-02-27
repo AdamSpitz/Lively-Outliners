@@ -10,7 +10,7 @@ function setCreatorSlot(annotation, name, holder) {
   annotation.creatorSlotHolder = holder;
 }
 
-var lobby = {}; //Object.create(window);
+var lobby = window; // still not sure whether I want this to be window, or Object.create(window), or {}
 
 lobby.modules = {};
 setCreatorSlot(annotationOf(lobby.modules), 'modules', lobby);

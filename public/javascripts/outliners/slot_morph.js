@@ -168,13 +168,19 @@ ColumnMorph.subclass("SlotMorph", {
 
     this.signatureRow = new RowMorph().beInvisible();
 
-    if (slot.isMethod()) {
+    if (this.isMethodThatShouldBeShownAsPartOfTheBox()) {
       this.signatureRow.addThingies([this.labelMorph, this.sourceButton()]);
     } else {
       this.signatureRow.addThingies([this.labelMorph, this.contentsPointer()]);
     }
 
     this.updateAppearance();
+  },
+
+  isMethodThatShouldBeShownAsPartOfTheBox: function() {
+      if (! this.slot().isMethod()) { return false; }
+      if (this.slot().contents().iterator('eachNonParentSlot').find(function(s) { return true; })) { return false; }
+      return true;
   },
 
   contentsPointer: function() {
