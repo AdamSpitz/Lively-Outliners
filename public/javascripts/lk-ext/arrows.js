@@ -121,9 +121,13 @@ Morph.subclass("ArrowEndpoint", {
 
   determineWhichMorphToAttachTo: function() {
     if (this.owner instanceof HandMorph) {return this.morphToAttachTo = this.owner;}
+    return this.morphToAttachTo = this.whichMorphToAttachTo();
+  },
+
+  whichMorphToAttachTo: function() {
     var slotContents = this.topicRef.contents();
     var outliner = WorldMorph.current().existingOutlinerFor(slotContents);
-    return this.morphToAttachTo = outliner ? (outliner.world() ? outliner : null) : null;
+    return outliner ? (outliner.world() ? outliner : null) : null;
   },
 
   attachToTheRightPlace: function() {
@@ -209,8 +213,7 @@ Morph.subclass("ArrowEndpoint", {
     return menu;
   },
 
-  // aaa - make this cleaner, so that ArrowEndpoint can be more general, not just for outliners
-  wasJustDroppedOnOutliner: function(outliner) {
+  wasJustDroppedOn: function(m) {
     if (this.shouldDisappearAfterAttaching) {
       this.topicRef.setterArrow = null;
       this.noLongerNeedsToBeVisibleAsArrowEndpoint();
@@ -219,7 +222,11 @@ Morph.subclass("ArrowEndpoint", {
       this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = false;
     }
     this.vectorFromOtherEndpoint = null;
+  },
 
+  // aaa - make this cleaner, so that ArrowEndpoint can be more general, not just for outliners
+  wasJustDroppedOnOutliner: function(outliner) {
+    this.wasJustDroppedOn(outliner);
     // aaaaaaaa
     var newContents = outliner.mirror();
     this.topicRef.setContents(newContents);
@@ -228,10 +235,10 @@ Morph.subclass("ArrowEndpoint", {
 });
 
 Object.extend(ArrowEndpoint, {
-  createForSetting: function(evt, tr, fep) {
+  createForSetting: function(evt, tr, fep, arrowClass) {
     var arrow = tr.setterArrow;
     if (arrow == null) {
-      arrow = tr.setterArrow = new TopicRefArrow(tr, fep || tr.morph());
+      arrow = tr.setterArrow = new arrowClass(tr, fep || tr.morph());
       WorldMorph.current().addMorph(arrow);
     } else {
       arrow.endpoint2.setPosition(evt.hand.position());
