@@ -28,7 +28,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
 
   add.method('reflecteeToString', function () {
     try {
-      if (this.reflecteeIsPrimitive()) { return "" + this.reflectee(); }
+      if (this.isReflecteePrimitive()) { return "" + this.reflectee(); }
 
       // Ignore the default toString because it just says [object Object] all the time and it's annoying.
       if (this.reflectee().toString === Object.prototype.toString) { return ""; } 
