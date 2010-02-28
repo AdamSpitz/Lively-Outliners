@@ -126,6 +126,7 @@ TextMorph.subclass("TwoModeTextMorph", {
     var f = this.layoutUpdatingFunctionToCallAfterSettingTextString;
     if (f) {
       this.adjustForNewBounds(); // makes the focus halo look right   // aaa should probably be outside the conditional, or even in the Core code
+      this.minimumExtentChanged();
       f();
     }
     return x;

@@ -295,13 +295,16 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
 
   setSavedText: function(newName) {
     if (newName !== this.getSavedText()) {
-      this.slot().rename(newName);
-      this.outliner().updateAppearance();
-      var newSlot = this.outliner().mirror().slotAt(newName);
-      var newSlotMorph = this.outliner().slotMorphFor(newSlot);
-      this._slotMorph.transferUIStateTo(newSlotMorph);
-      createFakeEvent().hand.setKeyboardFocus(newSlotMorph.sourceMorph());
-      newSlotMorph.sourceMorph().selectAll();
+      var evt = createFakeEvent();
+      MessageNotifierMorph.showIfErrorDuring(function() {
+        this.slot().rename(newName);
+        this.outliner().updateAppearance();
+        var newSlot = this.outliner().mirror().slotAt(newName);
+        var newSlotMorph = this.outliner().slotMorphFor(newSlot);
+        this._slotMorph.transferUIStateTo(newSlotMorph);
+        evt.hand.setKeyboardFocus(newSlotMorph.sourceMorph());
+        newSlotMorph.sourceMorph().selectAll();
+      }.bind(this), evt);
     }
   },
 
