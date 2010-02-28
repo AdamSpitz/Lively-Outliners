@@ -253,7 +253,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('annotation', function () {
-    if (! this.canHaveAnnotation()) { throw this.name() + " cannot have an annotation"; }
+    if (! this.canHaveAnnotation()) { return null; }
     return this.reflectee().__annotation__;
   });
 
