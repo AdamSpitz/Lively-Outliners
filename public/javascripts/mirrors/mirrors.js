@@ -45,7 +45,8 @@ thisModule.addSlots(lobby.mirror, function(add) {
 
   add.method('inspect', function () {
     if (this.reflectee() === lobby) {return "lobby";}
-    if (this.isReflecteePrimitive() || this.isReflecteeArray()) {return Object.inspect(this.reflectee());}
+    if (this.isReflecteePrimitive()) {return Object.inspect(this.reflectee());}
+    if (this.isReflecteeArray()) { return this.reflectee().length > 5 ? "an array" : "[" + this.reflectee().map(function(elem) {return reflect(elem).inspect();}).join(", ") + "]"; }
     var n = this.name();
     if (this.isReflecteeFunction()) { return n; } // the code will be visible through the *code* fake-slot
     var s = new StringBuffer(n);
@@ -447,6 +448,12 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
         contents.slotAt(i.toString()).fileOutTo(buffer);
       }
     }
+  });
+
+  add.method('implementors', function() {
+    var finder = new ImplementorsFinder(this.name());
+    finder.walk(lobby);
+    return finder.holders;
   });
 
 });

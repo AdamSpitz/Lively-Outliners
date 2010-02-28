@@ -208,6 +208,14 @@ ColumnMorph.subclass("SlotMorph", {
       this.toggleAnnotation();
     }.bind(this)]);
 
+    menu.addLine();
+    
+    if (this.slot().implementors) {
+      menu.addItem(["implementors", function(evt) {
+        evt.hand.world().outlinerFor(reflect(this.slot().implementors())).grabMe(evt);
+      }.bind(this)]);
+    }
+
     return menu;
   },
 });
