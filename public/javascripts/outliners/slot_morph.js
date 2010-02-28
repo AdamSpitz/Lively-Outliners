@@ -15,13 +15,8 @@ ColumnMorph.subclass("SlotMorph", {
     this.signatureRow = new RowMorph().beInvisible();
     this.signatureRow.horizontalLayoutMode = LayoutModes.SpaceFill;
 
-    var spacer = createSpacer();
-
-    if (this.isMethodThatShouldBeShownAsPartOfTheBox()) {
-      this.signatureRow.addThingies([this.labelMorph, spacer, this.sourceButton()]);
-    } else {
-      this.signatureRow.addThingies([this.labelMorph, spacer, this.contentsPointer()]);
-    }
+    var button = this.isMethodThatShouldBeShownAsPartOfTheBox() ? this.sourceButton() : this.contentsPointer();
+    this.signatureRow.addThingies([this.labelMorph, createSpacer(), button]);
 
     this.updateAppearance();
   },
@@ -37,7 +32,7 @@ ColumnMorph.subclass("SlotMorph", {
     if (m) { return m; }
     var slot = this.slot();
     var arrow;
-    m = this._contentsPointer = this.createButton(function() {
+    m = this._contentsPointer = createButton('D', function() {
       if (arrow.noLongerNeedsToBeUpdated) {
         var w = this.world();
         w.outlinerFor(slot.contents()).ensureIsInWorld(w, m.worldPoint(pt(150,0)));
@@ -45,7 +40,7 @@ ColumnMorph.subclass("SlotMorph", {
       } else {
         arrow.noLongerNeedsToBeVisible();
       }
-    }.bind(this));
+    }.bind(this), 2);
     arrow = new SlotContentsPointerArrow(slot, m);
     arrow.noLongerNeedsToBeUpdated = true;
 
@@ -62,9 +57,9 @@ ColumnMorph.subclass("SlotMorph", {
     var m = this._sourceButton;
     if (m) { return m; }
     var slot = this.slot();
-    m = this._sourceButton = this.createButton(function() {
+    m = this._sourceButton = createButton('M', function(evt) {
       this.toggleSource();
-    }.bind(this));
+    }.bind(this), 2);
 
     return m;
   },

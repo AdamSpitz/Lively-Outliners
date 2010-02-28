@@ -65,7 +65,8 @@ Morph.subclass("RowOrColumnMorph", {
       
       var f = direction.forwardCoordinateOfPoint(m.getExtent());
       if (this.aaaDebugMe) { console.log("f is: " + f + ", m.extent is " + m.getExtent()); }
-      var p = direction.point(forward, sPadding);
+      var unusedSidewaysSpace = direction.sidewaysCoordinateOfPoint(availableSpaceToPassOnToThisChild) - direction.sidewaysCoordinateOfPoint(m.getExtent());
+      var p = direction.point(forward, sPadding + (unusedSidewaysSpace / 2));
       m.setPosition(p);
       if (f != 0) {forward += f + fPadding;}
       if (this.aaaDebugMe) { console.log("Added " + m.inspect() + ", forward is now: " + forward); }
