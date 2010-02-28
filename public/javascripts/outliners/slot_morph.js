@@ -34,7 +34,7 @@ ColumnMorph.subclass("SlotMorph", {
     var slot = this.slot();
     var arrow;
     m = this._contentsPointer = createButton('D', function() {
-      if (arrow.noLongerNeedsToBeUpdated) {
+      if (arrow.noLongerNeedsToBeUpdated || ! arrow.world()) {
         var w = this.world();
         w.outlinerFor(slot.contents()).ensureIsInWorld(w, m.worldPoint(pt(150,0)));
         arrow.needsToBeVisible();
@@ -80,7 +80,11 @@ ColumnMorph.subclass("SlotMorph", {
   annotationMorph: function() {
     var m = this._annotationMorph;
     if (m) { return m; }
-    m = this._annotationMorph = new SlotAnnotationMorph(this);
+    m = this._annotationMorph = new ColumnMorph(this).beInvisible();
+    this._moduleLabel = createLabel(function() {var m = this.slot().module(); 
+        console.log("aaa - moduleLabel being set to " + (m ? m.name() : ""));
+        return m ? m.name() : "";}.bind(this));
+    m.addRow(createLabelledNode("Module", this._moduleLabel));
     return m;
   },
 
@@ -110,8 +114,8 @@ ColumnMorph.subclass("SlotMorph", {
 
   updateAppearance: function() {
     this.labelMorph.updateAppearance();
-    if (this._sourceMorph)     { this._sourceMorph    .updateAppearance(); }
-    if (this._annotationMorph) { this._annotationMorph.updateAppearance(); }
+    if (this._sourceMorph)     { this._sourceMorph.refreshText(); }
+    if (this._moduleLabel)     { this._moduleLabel.refreshText(); }
     var rows = [this.signatureRow];
     if (this._shouldShowSource    ) { rows.push(this.    sourceMorph()); }
     if (this._shouldShowAnnotation) { rows.push(this.annotationMorph()); }
@@ -139,15 +143,15 @@ ColumnMorph.subclass("SlotMorph", {
 
   setContents: function(c, evt) {
     this.slot().setContents(c);
+    if (c.isReflecteeFunction()) { this.beCreator(); }
     this.updateAppearance();
   },
 
   beCreator: function() {
     this.slot().beCreator();
     var contentsOutliner = this.world().existingOutlinerFor(this.slot().contents());
-    if (contentsOutliner) contentsOutliner.updateAppearance();
+    if (contentsOutliner) { contentsOutliner.updateAppearance(); }
     this.updateAppearance();
-    this.outliner().updateAppearance();
   },
 
   morphMenu: function(evt) {
@@ -239,9 +243,7 @@ ArrowMorph.subclass("SlotContentsPointerArrow", {
     var slotMorph = this._slotMorph;
     this.endpoint2.wasJustDroppedOnOutliner = function(outliner) {
       this.wasJustDroppedOn(outliner);
-      var newContents = outliner.mirror();
-      slotMorph.setContents(newContents);
-      if (newContents.isReflecteeFunction()) { slotMorph.beCreator(); }
+      slotMorph.setContents(outliner.mirror());
     };
   },
 
@@ -327,66 +329,22 @@ TextMorphRequiringExplicitAcceptance.subclass("SlotContentsMorph", {
   initialize: function($super, slotMorph) {
     this._slotMorph = slotMorph;
     $super(pt(5, 10).extent(pt(140, 80)), this.getSavedText());
-    this.extraMenuItemAdders = [];
-    this.normalBorderWidth = 1;
-    this.setBorderColor(Color.black);
+    this.nameOfEditCommand = "edit source";
+    this.extraMenuItemAdders = [function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this)];
     this.closeDnD();
     this.setFill(null);
-    this.updateAppearance();
-    this.normalBorderWidth = 0;
-    this.nameOfEditCommand = "edit source";
-    this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
-  },
-
-     slot: function() { return this._slotMorph.slot(); },
-  inspect: function() { return this.slot().name() + " source"; },
-  outliner: function() { return WorldMorph.current().existingOutlinerFor(this.slot().mirror()); },
-  returnKeyShouldAccept: function() { return false; },
-
-  updateAppearance: function() {
-    var newText = this.getSavedText();
-    if (newText != this.getText()) {
-      this.setText(newText);
-    }
+    this.refreshText();
   },
 
   getSavedText: function() {
-    return this.slot().contents().expressionEvaluatingToMe();
+    return this._slotMorph.slot().contents().expressionEvaluatingToMe();
   },
 
   setSavedText: function(text) {
     if (text !== this.getSavedText()) {
       MessageNotifierMorph.showIfErrorDuring(function() {
-        var newObject = eval("(" + text + ")");
-        var newContents = reflect(newObject);
-        this.slot().setContents(newContents);
-        if (newContents.isReflecteeFunction()) { this.slot().beCreator(); }
-        this.outliner().updateAppearance();
+        this._slotMorph.setContents(reflect(eval("(" + text + ")")));
       }.bind(this), createFakeEvent());
     }
   },
 });
-
-
-ColumnMorph.subclass("SlotAnnotationMorph", {
-  initialize: function($super, slotMorph) {
-    $super();
-    this._slotMorph = slotMorph;
-    this.beInvisible();
-    this._moduleLabel = createLabel(function() {var m = this._slotMorph.slot().module(); return m ? m.name() : "";}.bind(this));
-    this.addRow(createLabelledNode("Module", this._moduleLabel));
-  },
-
-     slot: function() { return this._slotMorph.slot(); },
-  inspect: function() { return this.slot().name() + " annotation"; },
-
-  outliner: function() {
-    return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
-  },
-
-  updateAppearance: function() {
-    this._moduleLabel.refreshText();
-    this.outliner().updateAppearance();
-  },
-});
-

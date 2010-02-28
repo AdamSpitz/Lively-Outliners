@@ -58,7 +58,6 @@ Morph.addMethods({
 
   startZoomingOuttaHere: function() {
     if (!this.zoomerProcess) {
-      // I don't like the destinationMorph. Let's just zoom them off to the top right.   var destinationMorph = this.destinationForZoomingOuttaHere();
       var zoomer = new Zoomer(this, pt(WorldMorph.current().getExtent().x + 300, -300), this.doneZoomingOuttaHere.bind(this));
       // This scaling thing isn't working nicely:   var scaler = new Scaler(this, destinationMorph.getExtent(), zoomer.estimatedNumberOfSteps(), function() {});
       this.zoomerProcess = new PeriodicalExecuter(function(pe) {

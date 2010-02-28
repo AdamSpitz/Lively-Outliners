@@ -76,6 +76,14 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     $super();
   },
 
+  refreshText: function() {
+    var newText = this.getSavedText();
+    if (newText != this.getText()) {
+      this.setText(newText);
+      this.changed();
+    }
+  },
+
   acceptChanges: function() {
     this.setSavedText(this.getText());
     this.changed();

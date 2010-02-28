@@ -13,6 +13,8 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.     _slotsPanel.inspect = function() {return "the slots panel";};
     this._evaluatorsPanel.inspect = function() {return "the evaluators panel";};
 
+    // this._commentMorph = new TextMorphRequiringExplicitAcceptance();
+
     this._highlighter = new BooleanHolder(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
     this._highlighter.setChecked(false);
 
@@ -138,14 +140,10 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   ensureIsNotInWorld: function() {
-    var shallBeRemoved = this.world() != null;
+    var shallBeRemoved = !! this.world();
     if (shallBeRemoved) {this.startZoomingOuttaHere();}
     return shallBeRemoved;
   },
-
-  destinationForZoomingOuttaHere: function() { return WorldMorph.current().dock; },
-
-  getDismissHelp: function() {return "Hide";}, // aaa - I don't think this works but I don't know why.
 
 
   // menu
@@ -208,16 +206,6 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   onMouseOut: function(evt) {
     this.highlighter().setChecked(false);
-  },
-
-  handlesMouseDown: function(evt) { return true; },
-
-  onMouseDown: function(evt) {
-    if (evt.isRightMouseButton()) {
-      this.showMorphMenu(evt);
-      return true;
-    }
-    return false;
   },
 });
 Object.extend(OutlinerMorph.prototype, CanHaveArrowsAttachedToIt);

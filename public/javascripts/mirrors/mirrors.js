@@ -255,6 +255,17 @@ thisModule.addSlots(lobby.mirror, function(add) {
     a.creatorSlotHolder = s.holder().reflectee();
   });
 
+  add.method('comment', function () {
+    var a = this.annotation();
+    if (! a) { return null; }
+    return a.comment;
+  });
+
+  add.method('setComment', function (c) {
+    var a = this.annotationForWriting();
+    a.comment = c;
+  });
+
   add.method('canHaveAnnotation', function () {
     return this.isReflecteeObject() || this.isReflecteeFunction();
   });
@@ -398,7 +409,7 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
   });
 
   add.method('annotation', function () {
-    var oa = this.holder().annotation();
+    var oa = this.holder().annotationForWriting();
     var sa = oa.slotAnnotations[this.name()];
     if (sa) {return sa;}
     return oa.slotAnnotations[this.name()] = {};
@@ -418,6 +429,17 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     this.annotation().module = m;
     m.objectsThatMightContainSlotsInMe().push(this.holder().reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later;
   });
+
+  add.method('comment', function () {
+    var a = this.annotation();
+    if (! a) { return null; }
+    return a.comment;
+  });
+
+  add.method('setComment', function (c) {
+    this.annotation().comment = c;
+  });
+
 
   add.method('fileOutTo', function (buffer) {
     var creationMethod = "data";
