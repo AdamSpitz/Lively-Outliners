@@ -4,6 +4,7 @@ ColumnMorph.subclass("SlotMorph", {
     this._slot = slot;
     this.sPadding = 0;
     this.fPadding = 0;
+    this.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.setFill(defaultFillWithColor(Color.gray));
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
@@ -12,11 +13,17 @@ ColumnMorph.subclass("SlotMorph", {
     this.labelMorph.layoutUpdatingFunctionToCallAfterSettingTextString = function() {this.rejiggerTheLayoutIncludingSubmorphs();}.bind(this);
 
     this.signatureRow = new RowMorph().beInvisible();
+    this.signatureRow.horizontalLayoutMode = LayoutModes.SpaceFill;
+
+    var spacer = new RowMorph().beInvisible();
+    spacer.horizontalLayoutMode = LayoutModes.SpaceFill;
+    spacer.  verticalLayoutMode = LayoutModes.SpaceFill;
+    spacer.aaaDebugMe = true;
 
     if (this.isMethodThatShouldBeShownAsPartOfTheBox()) {
-      this.signatureRow.addThingies([this.labelMorph, this.sourceButton()]);
+      this.signatureRow.addThingies([this.labelMorph, spacer, this.sourceButton()]);
     } else {
-      this.signatureRow.addThingies([this.labelMorph, this.contentsPointer()]);
+      this.signatureRow.addThingies([this.labelMorph, spacer, this.contentsPointer()]);
     }
 
     this.updateAppearance();
@@ -105,8 +112,9 @@ ColumnMorph.subclass("SlotMorph", {
   },
 
   rejiggerTheLayoutIncludingSubmorphs: function() { // aaa hmm, and owner morph, apparently, sort of - what a mess
-    this.signatureRow.rejiggerTheLayout();
-    this.rejiggerTheLayout();
+      // aaa trying the new layout system
+      //this.signatureRow.rejiggerTheLayout();
+      //this.rejiggerTheLayout();
     var o = this.outliner();
     if (o) { o.rejiggerTheLayoutIncludingSubmorphs(); }
   },

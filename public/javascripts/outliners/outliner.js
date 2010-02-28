@@ -8,6 +8,8 @@ ColumnMorph.subclass("OutlinerMorph", {
 
     this.     _slotsPanel = new ColumnMorph().beInvisible();
     this._evaluatorsPanel = new ColumnMorph().beInvisible();
+    this.     _slotsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
+    this._evaluatorsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
 
     this._highlighter = new BooleanHolder(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
     this._highlighter.setChecked(false);
@@ -32,6 +34,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   create_header_row: function() {
     var r = this._headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
     r.fPadding = 3;
+    this._headerRow.horizontalLayoutMode = LayoutModes.SpaceFill;
     r.replaceThingiesWith([this._expander, this.titleLabel, this.evaluatorButton, this.dismissButton]);
     this.addRow(r);
     return r;
@@ -44,8 +47,13 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.dontBotherRejiggeringTheLayoutUntilTheEndOf(f);
   },
 
-  // aaa - can I have a well-known method name for this, too? and maybe find a way to generalize it, so this method can live up in RowOrColumnMorph?
   rejiggerTheLayoutIncludingSubmorphs: function() {
+    this.calculateMinimumExtent();
+    this.new_rejiggerTheLayout(pt(100000, 100000));
+  },
+
+  // aaa - can I have a well-known method name for this, too? and maybe find a way to generalize it, so this method can live up in RowOrColumnMorph?
+  old_rejiggerTheLayoutIncludingSubmorphs: function() {
     var hr = this._headerRow;
     if (hr) {hr.rejiggerTheLayout();}
     this._slotsPanel.rejiggerTheLayout();
