@@ -276,6 +276,18 @@ thisModule.addSlots(lobby.mirror, function(add) {
     return this.reflectee().__annotation__;
   });
 
+  add.method('wellKnownChildren', function() {
+    var finder = new ChildFinder(this.reflectee());
+    finder.walk(lobby);
+    return finder.children;
+  });
+
+  add.method('wellKnownReferences', function() {
+    var finder = new ReferenceFinder(this.reflectee());
+    finder.walk(lobby);
+    return finder.holders;
+  });
+
 });
 
 
@@ -349,6 +361,7 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
   });
 
   add.method('toString', function () {
+    if (this.name() === undefined) { return ""; }
     return this.name() + " slot";
   });
 
@@ -450,7 +463,7 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     }
   });
 
-  add.method('implementors', function() {
+  add.method('wellKnownImplementors', function() {
     var finder = new ImplementorsFinder(this.name());
     finder.walk(lobby);
     return finder.holders;

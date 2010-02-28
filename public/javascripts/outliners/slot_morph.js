@@ -210,9 +210,9 @@ ColumnMorph.subclass("SlotMorph", {
 
     menu.addLine();
     
-    if (this.slot().implementors) {
+    if (this.slot().wellKnownImplementors) {
       menu.addItem(["implementors", function(evt) {
-        evt.hand.world().outlinerFor(reflect(this.slot().implementors())).grabMe(evt);
+        evt.hand.world().outlinerFor(reflect(this.slot().wellKnownImplementors())).grabMe(evt);
       }.bind(this)]);
     }
 

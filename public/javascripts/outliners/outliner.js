@@ -158,6 +158,17 @@ ColumnMorph.subclass("OutlinerMorph", {
     if (this.mirror().canHaveChildren()) {
       menu.addSection([["create child", function(evt) { this.createChild(evt); }.bind(this)]]);
     }
+    
+    menu.addLine();
+
+    menu.addItem(["well-known references", function(evt) {
+      evt.hand.world().outlinerFor(reflect(this.mirror().wellKnownReferences())).grabMe(evt);
+    }.bind(this)]);
+    
+    menu.addItem(["well-known children", function(evt) {
+      evt.hand.world().outlinerFor(reflect(this.mirror().wellKnownChildren())).grabMe(evt);
+    }.bind(this)]);
+
     return menu;
   },
 

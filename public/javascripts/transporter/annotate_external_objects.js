@@ -103,6 +103,8 @@ ObjectGraphWalker.subclass("CreatorSlotMarker", {
   },
 });
 
+// aaa - these guys below probably belong in another module, and should be returning a list of slots rather than holders
+
 ObjectGraphWalker.subclass("ImplementorsFinder", {
   initialize: function($super, slotName) {
     $super();
@@ -113,6 +115,40 @@ ObjectGraphWalker.subclass("ImplementorsFinder", {
   reachedSlot: function(holder, slotName, contents) {
     if (slotName === this.slotNameToSearchFor && reflect(holder).creatorSlotChain()) {
       this.holders.push(holder);
+    }
+  },
+});
+
+ObjectGraphWalker.subclass("ReferenceFinder", {
+  initialize: function($super, o) {
+    $super();
+    this.objectToSearchFor = o;
+    this.holders = [];
+  },
+
+  reachedSlot: function(holder, slotName, contents) {
+    if (contents === this.objectToSearchFor && reflect(holder).creatorSlotChain()) {
+      this.holders.push(holder);
+    }
+  },
+
+  reachedObject: function(o) {
+    if (reflect(o).parent().reflectee() === this.objectToSearchFor && reflect(o).creatorSlotChain()) {
+      this.holders.push(o);
+    }
+  },
+});
+
+ObjectGraphWalker.subclass("ChildFinder", {
+  initialize: function($super, o) {
+    $super();
+    this.objectToSearchFor = o;
+    this.children = [];
+  },
+
+  reachedObject: function(o) {
+    if (reflect(o).parent().reflectee() === this.objectToSearchFor && reflect(o).creatorSlotChain()) {
+      this.children.push(o);
     }
   },
 });

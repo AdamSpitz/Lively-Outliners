@@ -5,13 +5,22 @@ ColumnMorph.subclass("EvaluatorMorph", {
     
     var tm = this._textMorph = createTextField();
     tm.setExtent(pt(150,60));
-    this.addThingy(tm);
+    var thisEvaluator = this;
+    tm.onKeyPress = function(evt) {
+      if (evt.getKeyCode() == Event.KEY_RETURN && (evt.isAltDown() || evt.isMetaDown() || evt.isCtrlDown())) {
+        thisEvaluator.getIt(evt);
+        evt.stop();
+        return;
+      }
+      return TextMorph.prototype.onKeyPress.call(this, evt);
+    };
+    this.addRow(tm);
     
     var bp = this.buttonsPanel = new RowMorph().beInvisible();
     bp.addThingy(createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)));
     bp.addThingy(createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)));
     bp.addThingy(createButton("Close",  function(evt) {this.close(evt);}.bind(this)));
-    this.addThingy(bp);
+    this.addRow(bp);
 
     this.setFill(Color.gray);
     this.beUngrabbable();

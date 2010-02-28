@@ -42,7 +42,13 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
       evt.stop();
       return;
     }
-    $super(evt);
+
+    if (evt.getKeyCode() == Event.KEY_RETURN && (this.returnKeyShouldAccept() || evt.isAltDown() || evt.isMetaDown() || evt.isCtrlDown())) {
+      this.acceptChanges();
+      evt.stop();
+      return;
+    }
+    return $super(evt);
   },
 
   onKeyPress: function($super, evt) {
