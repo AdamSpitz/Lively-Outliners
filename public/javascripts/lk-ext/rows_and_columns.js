@@ -5,12 +5,13 @@ Morph.subclass("RowOrColumnMorph", {
     this.fPadding = 10;
     this.horizontalLayoutMode = LayoutModes.ShrinkWrap;
     this.  verticalLayoutMode = LayoutModes.ShrinkWrap;
-    this.rejiggerer = new BatcherUpper(this.rejiggerTheLayout.bind(this));
     $super(new lively.scene.Rectangle(pt(0, 0).extent(pt(10, 10))));
     return this;
   },
 
-  calculateMinimumExtent: function() {
+  minimumExtent: function() {
+    if (this._cachedMinimumExtent) { return this._cachedMinimumExtent; }
+
     var direction = this.direction;
     var sPadding  = this.sPadding;
     var fPadding  = this.fPadding;
@@ -18,7 +19,7 @@ Morph.subclass("RowOrColumnMorph", {
     var biggestSideways = sPadding + sPadding;
     var totalForwards   = fPadding;
     this.eachThingy(function(m) {
-      var mMinExt = m.calculateMinimumExtent();
+      var mMinExt = m.minimumExtent();
       biggestSideways = Math.max(biggestSideways, direction.sidewaysCoordinateOfPoint(mMinExt) + sPadding + sPadding);
         totalForwards =          totalForwards  + direction. forwardCoordinateOfPoint(mMinExt) + fPadding;
     });
@@ -27,9 +28,7 @@ Morph.subclass("RowOrColumnMorph", {
   },
 
   new_rejiggerTheLayout: function(availableSpace) {
-    if (this.rejiggerer.should_not_bother_yet()) {return;}
-
-    if (availableSpace.x === 0) {throw "Hey, what's up with the no space?";}
+    console.log(this.inspect() + " has asked for at least " + this._cachedMinimumExtent + " and received " + availableSpace);
     
     var direction = this.direction;
     var sPadding  = this.sPadding;
@@ -38,7 +37,7 @@ Morph.subclass("RowOrColumnMorph", {
     var availableSpaceToUse = pt(this.horizontalLayoutMode === LayoutModes.ShrinkWrap ? this._cachedMinimumExtent.x : availableSpace.x,
                                  this.  verticalLayoutMode === LayoutModes.ShrinkWrap ? this._cachedMinimumExtent.y : availableSpace.y);
 
-    var availableSpaceToPassOn = availableSpaceToUse.addXY(0, -sPadding - sPadding);
+    var availableSpaceToPassOn = availableSpaceToUse.addPt(direction.point(0, -sPadding - sPadding));
 
     var extraForwardSpace = this.direction.forwardCoordinateOfPoint(availableSpaceToPassOn) - this.direction.forwardCoordinateOfPoint(this._cachedMinimumExtent);
     
@@ -82,49 +81,12 @@ Morph.subclass("RowOrColumnMorph", {
     }
   },
 
-  rejiggerTheLayout: function() {
-    if (this.rejiggerer.should_not_bother_yet()) {return;}
-
-    this.eachThingy(function(m) {m.bounds();});
-
-    var direction = this.direction;
-    var sPadding  = this.sPadding;
-    var fPadding  = this.fPadding;
-
-    var maxSideways = direction.externallySpecifiedFreeSpaceSideways(this) || sPadding + sPadding;
-    this.eachThingy(function(m) {
-      var s = direction.sidewaysCoordinateOfPoint(m.getExtent()) + sPadding + sPadding;
-      maxSideways = (maxSideways >= s) ? maxSideways : s;
-    });
-
-    var forward = fPadding;
-    if (this.aaaDebugMe) { console.log("Starting off, forward: " + forward); }
-    this.eachThingy(function(m) {
-      //var f = direction.forwardDimensionOfRect(m.bounds()); // old way, gave me weird extra padding
-      var f = direction.forwardCoordinateOfPoint(m.getExtent());
-      if (this.aaaDebugMe) { console.log("f is: " + f + ", m.extent is " + m.getExtent()); }
-      direction.specifyFreeSpaceSideways(m, maxSideways - sPadding - sPadding);
-      var p = direction.point(forward, sPadding);
-      m.setPosition(p);
-      if (f != 0) {forward += f + fPadding;}
-      if (this.aaaDebugMe) { console.log("Added " + m.inspect() + ", forward is now: " + forward); }
-    }.bind(this));
-
-    var newExtent = direction.point(forward, maxSideways);
-    var shapeBounds = this.shape.bounds();
-    if (! newExtent.eqPt(shapeBounds.extent())) {
-      var b = shapeBounds.topLeft().addPt(this.origin).extent(newExtent.scaleBy(this.getScale()));
-      this.setBounds(b);
-      if (this.aaaDebugMe) { console.log("Setting bounds to " + b); }
-    }
-  },
-
   dontBotherRejiggeringTheLayoutUntilTheEndOf: function(f) {
-    this.rejiggerer.dont_bother_until_the_end_of(f);
+    if (this.owner) { return this.owner.dontBotherRejiggeringTheLayoutUntilTheEndOf(f); } else {return f();}
   },
 
-     addThingy: function(m) {this.   addMorph(m); this.rejiggerTheLayout();},
-  removeThingy: function(m) {this.removeMorph(m); this.rejiggerTheLayout();},
+     addThingy: function(m) {this.   addMorph(m); this.minimumExtentChanged();},
+  removeThingy: function(m) {this.removeMorph(m); this.minimumExtentChanged();},
 
   addThingies: function(ms) {
     this.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
@@ -157,7 +119,7 @@ Morph.subclass("RowOrColumnMorph", {
 
   removeThingies: function(ms) {
     ms.each(function(m) {this.removeMorph(m);}.bind(this));
-    this.rejiggerTheLayout();
+    this.minimumExtentChanged();
     return ms;
   },
 
@@ -219,3 +181,10 @@ var HorizontalDirection = {
 HandMorph.addMethods({
   shouldNotBePartOfRowOrColumn: true
 });
+
+function createSpacer(klass) {
+  var spacer = new RowMorph().beInvisible();
+  spacer.horizontalLayoutMode = LayoutModes.SpaceFill;
+  spacer.  verticalLayoutMode = LayoutModes.SpaceFill;
+  return spacer;
+}

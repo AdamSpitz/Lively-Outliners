@@ -3,6 +3,8 @@ ColumnMorph.subclass("OutlinerMorph", {
     $super();
     this._mirror = m;
 
+    this.rejiggerer = new BatcherUpper(this.rejiggerTheLayoutIncludingSubmorphs.bind(this));
+
     this.sPadding = this.fPadding = 5;
     this.shape.roundEdgesBy(10);
 
@@ -10,6 +12,8 @@ ColumnMorph.subclass("OutlinerMorph", {
     this._evaluatorsPanel = new ColumnMorph().beInvisible();
     this.     _slotsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
     this._evaluatorsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
+    this.     _slotsPanel.inspect = function() {return "the slots panel";};
+    this._evaluatorsPanel.inspect = function() {return "the evaluators panel";};
 
     this._highlighter = new BooleanHolder(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
     this._highlighter.setChecked(false);
@@ -33,9 +37,11 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   create_header_row: function() {
     var r = this._headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
+    this._headerRow.aaaDebugMe = true;
     r.fPadding = 3;
     this._headerRow.horizontalLayoutMode = LayoutModes.SpaceFill;
-    r.replaceThingiesWith([this._expander, this.titleLabel, this.evaluatorButton, this.dismissButton]);
+    this._headerRow.inspect = function() {return "the header row";};
+    r.replaceThingiesWith([this._expander, this.titleLabel, createSpacer(), this.evaluatorButton, this.dismissButton]);
     this.addRow(r);
     return r;
   },
@@ -47,18 +53,14 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.dontBotherRejiggeringTheLayoutUntilTheEndOf(f);
   },
 
-  rejiggerTheLayoutIncludingSubmorphs: function() {
-    this.calculateMinimumExtent();
-    this.new_rejiggerTheLayout(pt(100000, 100000));
+  dontBotherRejiggeringTheLayoutUntilTheEndOf: function(f) {
+    this.rejiggerer.dont_bother_until_the_end_of(f);
   },
 
-  // aaa - can I have a well-known method name for this, too? and maybe find a way to generalize it, so this method can live up in RowOrColumnMorph?
-  old_rejiggerTheLayoutIncludingSubmorphs: function() {
-    var hr = this._headerRow;
-    if (hr) {hr.rejiggerTheLayout();}
-    this._slotsPanel.rejiggerTheLayout();
-    this._evaluatorsPanel.rejiggerTheLayout();
-    this.rejiggerTheLayout();
+  rejiggerTheLayoutIncludingSubmorphs: function() {
+    if (this.rejiggerer.should_not_bother_yet()) {return;}
+    this.minimumExtent();
+    this.new_rejiggerTheLayout(pt(100000, 100000));
   },
 
 
@@ -124,13 +126,13 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   populateSlotsPanel: function() {
-    var op = this._slotsPanel;
-    op.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
+    this.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
+      var op = this._slotsPanel;
       var sps = [];
       this.mirror().eachSlot(function(s) { sps.push(this.slotPanelFor(s)); }.bind(this));
       sps.sort(function(sp1, sp2) {return sp1.slot().name() < sp2.slot().name() ? -1 : 1});
       op.replaceThingiesWith(sps);
-      this.rejiggerTheLayout();
+      this.rejiggerTheLayoutIncludingSubmorphs();
     }.bind(this));
   },
 
@@ -140,7 +142,6 @@ ColumnMorph.subclass("OutlinerMorph", {
   openEvaluator: function(evt) {
     var e = new EvaluatorMorph(this);
     this._evaluatorsPanel.addRow(e);
-    this.rejiggerTheLayoutIncludingSubmorphs();
     evt.hand.setKeyboardFocus(e.textMorph());
   },
 

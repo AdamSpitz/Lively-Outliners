@@ -10,15 +10,12 @@ ColumnMorph.subclass("SlotMorph", {
     this.setBorderColor(Color.black);
     this.beUngrabbable();
     this.labelMorph = new SlotNameMorph(this);
-    this.labelMorph.layoutUpdatingFunctionToCallAfterSettingTextString = function() {this.rejiggerTheLayoutIncludingSubmorphs();}.bind(this);
+    this.labelMorph.layoutUpdatingFunctionToCallAfterSettingTextString = function() {this.minimumExtentChanged();}.bind(this);
 
     this.signatureRow = new RowMorph().beInvisible();
     this.signatureRow.horizontalLayoutMode = LayoutModes.SpaceFill;
 
-    var spacer = new RowMorph().beInvisible();
-    spacer.horizontalLayoutMode = LayoutModes.SpaceFill;
-    spacer.  verticalLayoutMode = LayoutModes.SpaceFill;
-    spacer.aaaDebugMe = true;
+    var spacer = createSpacer();
 
     if (this.isMethodThatShouldBeShownAsPartOfTheBox()) {
       this.signatureRow.addThingies([this.labelMorph, spacer, this.sourceButton()]);
@@ -83,7 +80,7 @@ ColumnMorph.subclass("SlotMorph", {
     var m = this._sourceMorph;
     if (m) { return m; }
     m = this._sourceMorph = new MethodSourceMorph(this);
-    m.layoutUpdatingFunctionToCallAfterSettingTextString = function() {this.rejiggerTheLayoutIncludingSubmorphs();}.bind(this);
+    m.layoutUpdatingFunctionToCallAfterSettingTextString = function() {this.minimumExtentChanged();}.bind(this);
     return m;
   },
 
@@ -111,14 +108,6 @@ ColumnMorph.subclass("SlotMorph", {
     return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
   },
 
-  rejiggerTheLayoutIncludingSubmorphs: function() { // aaa hmm, and owner morph, apparently, sort of - what a mess
-      // aaa trying the new layout system
-      //this.signatureRow.rejiggerTheLayout();
-      //this.rejiggerTheLayout();
-    var o = this.outliner();
-    if (o) { o.rejiggerTheLayoutIncludingSubmorphs(); }
-  },
-
   updateAppearance: function() {
     this.labelMorph.updateAppearance();
     if (this._sourceMorph)     { this._sourceMorph    .updateAppearance(); }
@@ -127,7 +116,6 @@ ColumnMorph.subclass("SlotMorph", {
     if (this._shouldShowSource    ) { rows.push(this.    sourceMorph()); }
     if (this._shouldShowAnnotation) { rows.push(this.annotationMorph()); }
     this.replaceThingiesWith(rows);
-    this.rejiggerTheLayoutIncludingSubmorphs();
   },
 
   wasJustDroppedOnOutliner: function(outliner) {
@@ -361,9 +349,16 @@ ColumnMorph.subclass("SlotAnnotationMorph", {
     this.addRow(createLabelledNode("Module", this._moduleLabel));
   },
 
+     slot: function() { return this._slotMorph.slot(); },
+  inspect: function() { return this.slot().name() + " annotation"; },
+
+  outliner: function() {
+    return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
+  },
+
   updateAppearance: function() {
     this._moduleLabel.refreshText();
-    this.rejiggerTheLayout();
+    this.outliner().updateAppearance();
   },
 });
 

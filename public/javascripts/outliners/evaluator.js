@@ -29,7 +29,8 @@ ColumnMorph.subclass("EvaluatorMorph", {
   getIt: function(evt) { MessageNotifierMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(reflect(this.runTheCode())).grabMe(evt); }.bind(this), evt); },
 
   close: function(evt) {
+    var owner = this.owner;
     this.remove();
-    this.outliner().rejiggerTheLayoutIncludingSubmorphs();
+    owner.minimumExtentChanged();
   },
 });
