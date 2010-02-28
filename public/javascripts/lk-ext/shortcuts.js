@@ -35,7 +35,7 @@ function createLabel(textOrFunction, pos, extent) {
 function createLabelledNode(text, n, helpText, container) {
   var m = (container || new RowMorph()).beInvisible();
   var lbl = createLabel(text + ": ");
-  m.addThingies([lbl, n]);
+  m.replaceThingiesWith([lbl, n]);
   m.labelMorph = lbl;
   m.labelledMorph = n;
   m.inspect = function() {return "a labelled node(" + text + ")";};
@@ -66,7 +66,7 @@ function createTextBoxWithButton(buttonText, textBoxText, f) {
   m.fPadding = 0;
   m.setFill(Color.white);
   m.textBox = createTextField(false, textBoxText || "");
-  m.addThingies([m.textBox, createButton(buttonText, function() {f(m.textBox.getText());})]);
+  m.replaceThingiesWith([m.textBox, createButton(buttonText, function() {f(m.textBox.getText());})]);
   m.inspect = function() {return "a text box with button(" + buttonText + ")";};
   return m;
 }

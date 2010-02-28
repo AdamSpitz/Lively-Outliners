@@ -3,8 +3,6 @@ ColumnMorph.subclass("OutlinerMorph", {
     $super();
     this._mirror = m;
 
-    this.rejiggerer = new BatcherUpper(this.rejiggerTheLayoutIncludingSubmorphs.bind(this));
-
     this.sPadding = this.fPadding = 5;
     this.shape.roundEdgesBy(10);
 
@@ -30,7 +28,6 @@ ColumnMorph.subclass("OutlinerMorph", {
 
     this.create_header_row();
     this.addRow(this._evaluatorsPanel);
-    this.rejiggerTheLayoutIncludingSubmorphs();
   },
 
   mirror: function() { return this._mirror; },
@@ -46,23 +43,6 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
 
-  // rejiggering the layout
-
-  makingManyChangesDuring: function(f) {
-    this.dontBotherRejiggeringTheLayoutUntilTheEndOf(f);
-  },
-
-  dontBotherRejiggeringTheLayoutUntilTheEndOf: function(f) {
-    this.rejiggerer.dont_bother_until_the_end_of(f);
-  },
-
-  rejiggerTheLayoutIncludingSubmorphs: function() {
-    if (this.rejiggerer.should_not_bother_yet()) {return;}
-    this.minimumExtent();
-    this.new_rejiggerTheLayout(pt(100000, 100000));
-  },
-
-
   // updating    // aaa - now, can I make this happen automatically? maybe an update process?
 
   updateAppearance: function() {
@@ -70,7 +50,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     if (! this.world()) {return;}
     this.refillWithAppropriateColor();
     this.titleLabel.refreshText();
-    this.rejiggerTheLayoutIncludingSubmorphs();
+    this.minimumExtentChanged();
   },
 
 
@@ -99,17 +79,15 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   updateExpandedness: function() {
     if (! this.world()) {return;}
-    this.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
-      var isExpanded = this.expander().isExpanded();
-      if (isExpanded && !this.wasAlreadyExpanded) {
-        this.populateSlotsPanel();
-        this.replaceThingiesWith([this._headerRow, this._slotsPanel, this._evaluatorsPanel]);
-      } else if (!isExpanded && this.wasAlreadyExpanded) {
-        this.replaceThingiesWith([this._headerRow, this._evaluatorsPanel]);
-      }
-      this.wasAlreadyExpanded = isExpanded;
-      this.rejiggerTheLayoutIncludingSubmorphs();
-    }.bind(this));
+    var isExpanded = this.expander().isExpanded();
+    if (isExpanded && !this.wasAlreadyExpanded) {
+      this.populateSlotsPanel();
+      this.replaceThingiesWith([this._headerRow, this._slotsPanel, this._evaluatorsPanel]);
+    } else if (!isExpanded && this.wasAlreadyExpanded) {
+      this.replaceThingiesWith([this._headerRow, this._evaluatorsPanel]);
+    }
+    this.wasAlreadyExpanded = isExpanded;
+    this.minimumExtentChanged();
   },
 
 
@@ -125,14 +103,11 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   populateSlotsPanel: function() {
-    this.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
-      var op = this._slotsPanel;
-      var sps = [];
-      this.mirror().eachSlot(function(s) { sps.push(this.slotPanelFor(s)); }.bind(this));
-      sps.sort(function(sp1, sp2) {return sp1.slot().name() < sp2.slot().name() ? -1 : 1});
-      op.replaceThingiesWith(sps);
-      this.rejiggerTheLayoutIncludingSubmorphs();
-    }.bind(this));
+    var op = this._slotsPanel;
+    var sps = [];
+    this.mirror().eachSlot(function(s) { sps.push(this.slotPanelFor(s)); }.bind(this));
+    sps.sort(function(sp1, sp2) {return sp1.slot().name() < sp2.slot().name() ? -1 : 1});
+    op.replaceThingiesWith(sps);
   },
 
 
@@ -212,7 +187,8 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   onMouseOver: function(evt) {
-    if (evt.hand.submorphs.find(function(m) {return this.morphToGrabOrReceiveDroppingMorph(evt, m);}.bind(this))) {
+      //if (evt.hand.submorphs.find(function(m) {return this.morphToGrabOrReceiveDroppingMorph(evt, m);}.bind(this))) {
+    if (evt.hand.submorphs.find(function(m) {return this.acceptsDropping(m);}.bind(this))) {
       this.highlighter().setChecked(true);
     }
   },

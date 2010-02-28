@@ -16,7 +16,7 @@ ColumnMorph.subclass("SlotMorph", {
     this.signatureRow.horizontalLayoutMode = LayoutModes.SpaceFill;
 
     var button = this.isMethodThatShouldBeShownAsPartOfTheBox() ? this.sourceButton() : this.contentsPointer();
-    this.signatureRow.addThingies([this.labelMorph, createSpacer(), button]);
+    this.signatureRow.replaceThingiesWith([this.labelMorph, createSpacer(), button]);
 
     this.updateAppearance();
   },

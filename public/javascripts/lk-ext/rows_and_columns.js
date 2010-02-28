@@ -41,7 +41,8 @@ Morph.subclass("RowOrColumnMorph", {
 
     var extraForwardSpace = this.direction.forwardCoordinateOfPoint(availableSpaceToPassOn) - this.direction.forwardCoordinateOfPoint(this._cachedMinimumExtent);
     
-    var allChildren = this.getThingies();
+    var allChildren = $A(this.submorphs).reject(function(m) {return m.shouldNotBePartOfRowOrColumn;});
+
     var forwardSpaceFillingChildren = allChildren.select(function(m) {return direction.forwardLayoutModeOf(m) === LayoutModes.SpaceFill;});
     var extraForwardSpacePerSpaceFillingChild = 0;
     if (forwardSpaceFillingChildren.size() === 0) {
@@ -82,46 +83,20 @@ Morph.subclass("RowOrColumnMorph", {
     }
   },
 
-  dontBotherRejiggeringTheLayoutUntilTheEndOf: function(f) {
-    if (this.owner) { return this.owner.dontBotherRejiggeringTheLayoutUntilTheEndOf(f); } else {return f();}
-  },
-
      addThingy: function(m) {this.   addMorph(m); this.minimumExtentChanged();},
   removeThingy: function(m) {this.removeMorph(m); this.minimumExtentChanged();},
 
-  addThingies: function(ms) {
-    this.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
-      for (var i = 0, n = ms.length; i < n; ++i) {
-        this.addThingy(ms[i]);
-      }
-    }.bind(this));
-  },
-
   replaceThingiesWith: function(ms) {
-    this.dontBotherRejiggeringTheLayoutUntilTheEndOf(function() {
-      this.removeAllThingies();
-      this.addThingies(ms);
-    }.bind(this));
+    var old = $A(this.submorphs);
+    for (var i = 0, n = old.length; i < n; ++i) { var m = old[i]; if (! m.shouldNotBePartOfRowOrColumn) {this.removeMorph(m);}}
+    for (var i = 0, n =  ms.length; i < n; ++i) { this.addMorph(ms[i]); }
+    this.minimumExtentChanged();
   },
 
   eachThingy: function(f) {
     $A(this.submorphs).each(function(m) {
       if (! m.shouldNotBePartOfRowOrColumn) {f(m);}
     });
-  },
-
-  getThingies: function() {
-    return $A(this.submorphs).reject(function(m) {return m.shouldNotBePartOfRowOrColumn;});
-  },
-
-  removeAllThingies: function() {
-    return this.removeThingies(this.getThingies());
-  },
-
-  removeThingies: function(ms) {
-    ms.each(function(m) {this.removeMorph(m);}.bind(this));
-    this.minimumExtentChanged();
-    return ms;
   },
 
   beInvisible: function() {
