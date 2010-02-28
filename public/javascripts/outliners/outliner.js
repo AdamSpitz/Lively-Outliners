@@ -35,8 +35,8 @@ ColumnMorph.subclass("OutlinerMorph", {
   create_header_row: function() {
     var r = this._headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
     r.fPadding = 3;
-    this._headerRow.horizontalLayoutMode = LayoutModes.SpaceFill;
-    this._headerRow.inspect = function() {return "the header row";};
+    r.horizontalLayoutMode = LayoutModes.SpaceFill;
+    r.inspect = function() {return "the header row";};
     r.replaceThingiesWith([this._expander, this.titleLabel, createSpacer(), this.evaluatorButton, this.dismissButton]);
     this.addRow(r);
     return r;

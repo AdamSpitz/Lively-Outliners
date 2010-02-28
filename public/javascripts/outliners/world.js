@@ -51,6 +51,7 @@ WorldMorph.addMethods({
         }],
 
         ["aaaaa", function(evt) {
+            console.log("minimumExtentTime: " + minimumExtentTime + ", rejiggeringTime: " + rejiggeringTime);
         }],
       ]);
     }

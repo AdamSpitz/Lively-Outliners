@@ -14,6 +14,7 @@ ColumnMorph.subclass("SlotMorph", {
 
     this.signatureRow = new RowMorph().beInvisible();
     this.signatureRow.horizontalLayoutMode = LayoutModes.SpaceFill;
+    this.signatureRow.inspect = function() { return "signature row"; };
 
     var button = this.isMethodThatShouldBeShownAsPartOfTheBox() ? this.sourceButton() : this.contentsPointer();
     this.signatureRow.replaceThingiesWith([this.labelMorph, createSpacer(), button]);
@@ -101,7 +102,7 @@ ColumnMorph.subclass("SlotMorph", {
   },
 
      slot: function() { return this._slot; },
-  inspect: function() { return "a slot morph"; },
+  inspect: function() { return "the " + this.slot().name() + " slot morph"; },
 
   outliner: function() {
     return WorldMorph.current().existingOutlinerFor(this.slot().mirror());

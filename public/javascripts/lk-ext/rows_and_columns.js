@@ -24,7 +24,9 @@ Morph.subclass("RowOrColumnMorph", {
         totalForwards =          totalForwards  + direction. forwardCoordinateOfPoint(mMinExt) + fPadding;
     });
 
-    return this._cachedMinimumExtent = direction.point(totalForwards, biggestSideways);
+    var p = this._cachedMinimumExtent = direction.point(totalForwards, biggestSideways);
+
+    return p;
   },
 
   new_rejiggerTheLayout: function(availableSpace) {
@@ -160,6 +162,7 @@ HandMorph.addMethods({
 
 function createSpacer(klass) {
   var spacer = new RowMorph().beInvisible();
+  spacer.inspect = function() { return "a spacer"; };
   spacer.horizontalLayoutMode = LayoutModes.SpaceFill;
   spacer.  verticalLayoutMode = LayoutModes.SpaceFill;
   return spacer;

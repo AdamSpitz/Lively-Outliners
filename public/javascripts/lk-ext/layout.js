@@ -1,4 +1,5 @@
 // aaa - does LK already have a mechanism for this?
+// aaa - Hey, look at that LayoutManager thing.
 
 LayoutModes = {
  Rigid: {name: "rigid"},
@@ -19,8 +20,10 @@ Morph.addMethods({
   },
 
   minimumExtentChanged: function() {
+    var old_cachedMinimumExtent = this._cachedMinimumExtent;
     this._cachedMinimumExtent = null;
     this.minimumExtent();
+    if (old_cachedMinimumExtent && old_cachedMinimumExtent.eqPt(this._cachedMinimumExtent)) { return; }
     var o = this.owner;
     if (!o || o instanceof WorldMorph || o instanceof HandMorph) {
       this.rejiggerTheLayoutIncludingSubmorphs();
@@ -29,8 +32,8 @@ Morph.addMethods({
     }
   },
 
-
   rejiggerTheLayoutIncludingSubmorphs: function() {
+    // console.log("Rejiggering the layout of " + this.inspect());
     this.minimumExtent();
     this.new_rejiggerTheLayout(pt(100000, 100000));
   },
