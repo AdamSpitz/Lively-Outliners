@@ -91,21 +91,21 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
 
-  // slot panels
+  // slots
 
-  slotPanels: function() {
-    if (! this._slotPanels) { this._slotPanels = new BloodyHashTable(); }
-    return this._slotPanels;
+  slotMorphs: function() {
+    if (! this._slotMorphs) { this._slotMorphs = new BloodyHashTable(); }
+    return this._slotMorphs;
   },
 
-  slotPanelFor: function(s) {
-    return this.slotPanels().getOrIfAbsentPut(s.name(), function() { return new SlotMorph(s); });
+  slotMorphFor: function(s) {
+    return this.slotMorphs().getOrIfAbsentPut(s.name(), function() { return new SlotMorph(s); });
   },
 
   populateSlotsPanel: function() {
     var op = this._slotsPanel;
     var sps = [];
-    this.mirror().eachSlot(function(s) { sps.push(this.slotPanelFor(s)); }.bind(this));
+    this.mirror().eachSlot(function(s) { sps.push(this.slotMorphFor(s)); }.bind(this));
     sps.sort(function(sp1, sp2) {return sp1.slot().name() < sp2.slot().name() ? -1 : 1});
     op.replaceThingiesWith(sps);
   },
@@ -166,7 +166,9 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.mirror().reflectee()[name] = null;
     this.updateAppearance();
     this.expander().expand();
-    this.slotPanelFor(this.mirror().slotAt(name)).labelMorph.beWritableAndSelectAll();
+    var sm = this.slotMorphFor(this.mirror().slotAt(name));
+    sm.toggleSource();
+    sm.labelMorph.beWritableAndSelectAll();
   },
 
   createChild: function(evt) {

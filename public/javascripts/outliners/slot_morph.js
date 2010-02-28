@@ -93,6 +93,13 @@ ColumnMorph.subclass("SlotMorph", {
     this.updateAppearance();
   },
 
+  transferUIStateTo: function(otherSlotMorph) {
+    // used after renaming, since it's actually a whole nother slot and slotMorph but we want it to feel like the same one
+    otherSlotMorph._shouldShowSource     = this._shouldShowSource;
+    otherSlotMorph._shouldShowAnnotation = this._shouldShowAnnotation;
+    otherSlotMorph.updateAppearance();
+  },
+
      slot: function() { return this._slot; },
   inspect: function() { return "a slot morph"; },
 
@@ -286,10 +293,15 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
     return this.slot().name();
   },
 
-  setSavedText: function(text) {
-    if (text !== this.getSavedText()) {
-      this.slot().rename(text);
+  setSavedText: function(newName) {
+    if (newName !== this.getSavedText()) {
+      this.slot().rename(newName);
       this.outliner().updateAppearance();
+      var newSlot = this.outliner().mirror().slotAt(newName);
+      var newSlotMorph = this.outliner().slotMorphFor(newSlot);
+      this._slotMorph.transferUIStateTo(newSlotMorph);
+      createFakeEvent().hand.setKeyboardFocus(newSlotMorph.sourceMorph());
+      newSlotMorph.sourceMorph().selectAll();
     }
   },
 
