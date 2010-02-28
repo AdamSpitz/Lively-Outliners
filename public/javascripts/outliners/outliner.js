@@ -37,7 +37,6 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   create_header_row: function() {
     var r = this._headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
-    this._headerRow.aaaDebugMe = true;
     r.fPadding = 3;
     this._headerRow.horizontalLayoutMode = LayoutModes.SpaceFill;
     this._headerRow.inspect = function() {return "the header row";};

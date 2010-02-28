@@ -49,7 +49,7 @@ ColumnMorph.subclass("SlotMorph", {
     arrow = new SlotContentsPointerArrow(slot, m);
     arrow.noLongerNeedsToBeUpdated = true;
 
-    m.determineWhichMorphToAttachTo = function() {return true;};
+    m.determineWhichMorphToAttachTo = function() {return !!this.world();};
     m.attachToTheRightPlace = function() {};
     m.noLongerNeedsToBeVisibleAsArrowEndpoint = function() {};
     m.relativeLineEndpoint = pt(5, 5);

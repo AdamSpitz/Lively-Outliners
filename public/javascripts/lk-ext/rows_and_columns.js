@@ -28,7 +28,7 @@ Morph.subclass("RowOrColumnMorph", {
   },
 
   new_rejiggerTheLayout: function(availableSpace) {
-    console.log(this.inspect() + " has asked for at least " + this._cachedMinimumExtent + " and received " + availableSpace);
+    // console.log(this.inspect() + " has asked for at least " + this._cachedMinimumExtent + " and received " + availableSpace);
     
     var direction = this.direction;
     var sPadding  = this.sPadding;
