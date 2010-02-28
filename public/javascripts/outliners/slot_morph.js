@@ -41,7 +41,7 @@ ColumnMorph.subclass("SlotMorph", {
         arrow.noLongerNeedsToBeVisible();
       }
     }.bind(this), 2);
-    arrow = new SlotContentsPointerArrow(slot, m);
+    arrow = new SlotContentsPointerArrow(this, m);
     arrow.noLongerNeedsToBeUpdated = true;
 
     m.determineWhichMorphToAttachTo = function() {return !!this.world();};
@@ -56,12 +56,9 @@ ColumnMorph.subclass("SlotMorph", {
   sourceButton: function() {
     var m = this._sourceButton;
     if (m) { return m; }
-    var slot = this.slot();
-    m = this._sourceButton = createButton('M', function(evt) {
+    return this._sourceButton = createButton('M', function(evt) {
       this.toggleSource();
     }.bind(this), 2);
-
-    return m;
   },
 
   createButton: function(func) {
@@ -74,7 +71,7 @@ ColumnMorph.subclass("SlotMorph", {
   sourceMorph: function() {
     var m = this._sourceMorph;
     if (m) { return m; }
-    m = this._sourceMorph = new MethodSourceMorph(this);
+    m = this._sourceMorph = new SlotContentsMorph(this);
     m.layoutUpdatingFunctionToCallAfterSettingTextString = function() {this.minimumExtentChanged();}.bind(this);
     return m;
   },
@@ -132,10 +129,27 @@ ColumnMorph.subclass("SlotMorph", {
     this.updateAppearance();
   },
 
+  setContents: function(c, evt) {
+    this.slot().setContents(c);
+    this.updateAppearance();
+  },
+
+  beCreator: function() {
+    this.slot().beCreator();
+    var contentsOutliner = this.world().existingOutlinerFor(this.slot().contents());
+    if (contentsOutliner) contentsOutliner.updateAppearance();
+    this.updateAppearance();
+    this.outliner().updateAppearance();
+  },
+
   morphMenu: function(evt) {
     var menu = new MenuMorph([], this);
 
     this.labelMorph.addEditingMenuItemsTo(menu, evt);
+
+    menu.addItem([this._shouldShowSource ? "hide contents" : "edit contents", function(evt) {
+      this.toggleSource();
+    }.bind(this)]);
 
     if (this.slot().copyTo) {
       menu.addItem(["copy", function(evt) {
@@ -156,13 +170,7 @@ ColumnMorph.subclass("SlotMorph", {
     if (this.slot().beCreator && this.slot().contents().canHaveCreatorSlot()) {
       var cs = this.slot().contents().creatorSlot();
       if (!cs || ! cs.equals(this.slot())) {
-        menu.addItem(["be creator", function(evt) {
-          this.slot().beCreator();
-          var contentsOutliner = this.world().existingOutlinerFor(this.slot().contents());
-          if (contentsOutliner) contentsOutliner.updateAppearance();
-          this.updateAppearance();
-          this.outliner().updateAppearance();
-        }.bind(this)]);
+        menu.addItem(["be creator", function(evt) { this.beCreator(); }.bind(this)]);
       }
     }
 
@@ -198,16 +206,27 @@ ColumnMorph.subclass("SlotMorph", {
 });
 
 ArrowMorph.subclass("SlotContentsPointerArrow", {
-  initialize: function($super, slot, fep) {
-    this._slot = slot;
+  initialize: function($super, slotMorph, fep) {
+    this._slotMorph = slotMorph;
     this._fixedEndpoint = fep;
     $super();
     allArrows.push(this);
   },
 
+  slot: function() {return this._slotMorph.slot();},
+
   createEndpoints: function() {
     this.endpoint1 = this._fixedEndpoint;
-    this.endpoint2 = new ArrowEndpoint(this._slot, this);
+    this.endpoint2 = new ArrowEndpoint(this.slot(), this);
+
+    // aaa - blecch, ugly
+    var slotMorph = this._slotMorph;
+    this.endpoint2.wasJustDroppedOnOutliner = function(outliner) {
+      this.wasJustDroppedOn(outliner);
+      var newContents = outliner.mirror();
+      slotMorph.setContents(newContents);
+      if (newContents.isReflecteeFunction()) { slotMorph.beCreator(); }
+    };
   },
 
   noLongerNeedsToBeVisible: function() {
@@ -280,17 +299,15 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
   },
 });
 
-TextMorphRequiringExplicitAcceptance.subclass("MethodSourceMorph", {
+TextMorphRequiringExplicitAcceptance.subclass("SlotContentsMorph", {
   initialize: function($super, slotMorph) {
     this._slotMorph = slotMorph;
-    $super(pt(5, 10).extent(pt(140, 80)), slotMorph.slot().contents().source());
-    // aaa - taken out, fix it the proper way: if (this.isReadOnly) {this.ignoreEvents();}
+    $super(pt(5, 10).extent(pt(140, 80)), this.getSavedText());
     this.extraMenuItemAdders = [];
     this.normalBorderWidth = 1;
     this.setBorderColor(Color.black);
     this.closeDnD();
     this.setFill(null);
-    // aaa do we need this for outliners? this.slot().notifier.add_observer(function() {this.updateAppearance();}.bind(this));
     this.updateAppearance();
     this.normalBorderWidth = 0;
     this.nameOfEditCommand = "edit source";
@@ -299,26 +316,18 @@ TextMorphRequiringExplicitAcceptance.subclass("MethodSourceMorph", {
 
      slot: function() { return this._slotMorph.slot(); },
   inspect: function() { return this.slot().name() + " source"; },
-
-  outliner: function() {
-    return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
-  },
-
-  // aaa onMouseDown: function(evt) { return false; },  // don't allow selection
-
-  canBecomeWritable: function() { return true; },
+  outliner: function() { return WorldMorph.current().existingOutlinerFor(this.slot().mirror()); },
+  returnKeyShouldAccept: function() { return false; },
 
   updateAppearance: function() {
-    var newText = this.slot().contents().source();
+    var newText = this.getSavedText();
     if (newText != this.getText()) {
       this.setText(newText);
     }
   },
 
-  returnKeyShouldAccept: function() { return false; },
-
   getSavedText: function() {
-    return this.slot().contents().source();
+    return this.slot().contents().expressionEvaluatingToMe();
   },
 
   setSavedText: function(text) {

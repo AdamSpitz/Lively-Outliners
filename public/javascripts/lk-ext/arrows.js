@@ -217,15 +217,6 @@ Morph.subclass("ArrowEndpoint", {
     }
     this.vectorFromOtherEndpoint = null;
   },
-
-  // aaa - make this cleaner, so that ArrowEndpoint can be more general, not just for outliners
-  wasJustDroppedOnOutliner: function(outliner) {
-    this.wasJustDroppedOn(outliner);
-    // aaaaaaaa
-    var newContents = outliner.mirror();
-    this.topicRef.setContents(newContents);
-    if (newContents.isReflecteeFunction()) { this.topicRef.beCreator(); }
-  },
 });
 
 Object.extend(ArrowEndpoint, {

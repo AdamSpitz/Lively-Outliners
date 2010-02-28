@@ -190,6 +190,16 @@ thisModule.addSlots(lobby.mirror, function(add) {
     return this.reflectee().toString();
   });
 
+  add.method('expressionEvaluatingToMe', function () {
+    if (this.isReflecteePrimitive()) { return Object.inspect(this.reflectee()); }
+    if (this.isReflecteeFunction()) { return this.source(); }
+    if (this.isReflecteeArray()) { return "[" + this.reflectee().map(function(elem) {return reflect(elem).expressionEvaluatingToMe();}).join(", ") + "]"; }
+    if (this.size() === 0) { return "{}"; }
+    
+    // aaa - try something like Self's 1 _AsObject, except of course in JS it'll have to be a hack
+    throw "Not implemented yet - not sure how to make an expressionEvaluatingToMe";
+  });
+
   add.method('canHaveSlots', function () {
     return ! this.isReflecteePrimitive();
   });
