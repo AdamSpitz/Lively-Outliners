@@ -257,13 +257,12 @@ thisModule.addSlots(lobby.mirror, function(add) {
 
   add.method('comment', function () {
     var a = this.annotation();
-    if (! a) { return null; }
+    if (! a) { return ""; }
     return a.comment;
   });
 
   add.method('setComment', function (c) {
-    var a = this.annotationForWriting();
-    a.comment = c;
+    this.annotationForWriting().comment = c || "";
   });
 
   add.method('canHaveAnnotation', function () {
@@ -432,12 +431,12 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
 
   add.method('comment', function () {
     var a = this.annotation();
-    if (! a) { return null; }
+    if (! a) { return ""; }
     return a.comment;
   });
 
   add.method('setComment', function (c) {
-    this.annotation().comment = c;
+    this.annotation().comment = c || "";
   });
 
 

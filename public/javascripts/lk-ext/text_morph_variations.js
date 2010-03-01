@@ -29,11 +29,8 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
   },
 
   updateLayoutIfNecessary: function() {
-    var f = this.layoutUpdatingFunctionToCallAfterSettingTextString;
-    if (f) {
-      this.adjustForNewBounds(); // makes the focus halo look right   // aaa should probably be outside the conditional, or even in the Core code
-      f();
-    }
+    this.adjustForNewBounds(); // makes the focus halo look right   // aaa should probably be outside the conditional, or even in the Core code
+    this.minimumExtentChanged();
   },
 
   onKeyDown: function($super, evt) {
@@ -137,12 +134,8 @@ TextMorph.subclass("TwoModeTextMorph", {
 
   setTextString: function($super, replacement, delayComposition, justMoreTyping) {
     var x = $super(replacement, delayComposition, justMoreTyping);
-    var f = this.layoutUpdatingFunctionToCallAfterSettingTextString;
-    if (f) {
-      this.adjustForNewBounds(); // makes the focus halo look right   // aaa should probably be outside the conditional, or even in the Core code
-      this.minimumExtentChanged();
-      f();
-    }
+    this.adjustForNewBounds(); // makes the focus halo look right   // aaa should probably be outside the conditional, or even in the Core code
+    this.minimumExtentChanged();
     return x;
   },
 

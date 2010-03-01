@@ -44,6 +44,16 @@ Morph.subclass("ArrowMorph", {
   tickSlowly:  function() { this.shouldUpdateOnEveryTick = false; },
   shouldUpdateOnThisTick: function(n) {return this.shouldUpdateOnEveryTick || n == 0;},
 
+  noLongerNeedsToBeVisible: function() {
+    this.noLongerNeedsToBeUpdated = true;
+    this.remove();
+    this.endpoint2.remove();
+  },
+
+  needsToBeVisible: function() {
+    this.noLongerNeedsToBeUpdated = false;
+  },
+
   putVerticesInTheRightPlace: function() {
     if (this.shouldBeShown()) {
       this.calculateCenterPoints();

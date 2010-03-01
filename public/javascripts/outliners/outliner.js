@@ -13,8 +13,6 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.     _slotsPanel.inspect = function() {return "the slots panel";};
     this._evaluatorsPanel.inspect = function() {return "the evaluators panel";};
 
-    // this._commentMorph = new TextMorphRequiringExplicitAcceptance();
-
     this._highlighter = new BooleanHolder(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
     this._highlighter.setChecked(false);
 
@@ -42,6 +40,21 @@ ColumnMorph.subclass("OutlinerMorph", {
     r.replaceThingiesWith([this._expander, this.titleLabel, createSpacer(), this.evaluatorButton, this.dismissButton]);
     this.addRow(r);
     return r;
+  },
+
+  commentMorph: function() {
+    var m = this._commentMorph;
+    if (m) { return m; }
+    m = this._commentMorph = new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 80)), "");
+    m.nameOfEditCommand = "edit comment";
+    m.extraMenuItemAdders = [function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this)];
+    m.closeDnD();
+    m.setFill(null);
+    var thisOutliner = this;
+    m.getSavedText = function() { return thisOutliner.mirror().comment(); };
+    m.setSavedText = function(text) { if (text !== this.getSavedText()) { thisOutliner.mirror().setComment(text); } };
+    m.refreshText();
+    return m;
   },
 
 
@@ -81,15 +94,21 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   updateExpandedness: function() {
     if (! this.world()) {return;}
-    var isExpanded = this.expander().isExpanded();
-    if (isExpanded && !this.wasAlreadyExpanded) {
-      this.populateSlotsPanel();
-      this.replaceThingiesWith([this._headerRow, this._slotsPanel, this._evaluatorsPanel]);
-    } else if (!isExpanded && this.wasAlreadyExpanded) {
-      this.replaceThingiesWith([this._headerRow, this._evaluatorsPanel]);
+
+    var thingies = [this._headerRow];
+    
+    if (this._shouldShowComment) {
+      thingies.push(this.commentMorph());
     }
-    this.wasAlreadyExpanded = isExpanded;
-    this.minimumExtentChanged();
+    
+    if (this.expander().isExpanded()) {
+      this.populateSlotsPanel(); // aaa - does this need to be here?
+      thingies.push(this._slotsPanel);
+    }
+
+    thingies.push(this._evaluatorsPanel);
+
+    this.replaceThingiesWith(thingies);
   },
 
 
@@ -110,6 +129,14 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.mirror().eachSlot(function(s) { sps.push(this.slotMorphFor(s)); }.bind(this));
     sps.sort(function(sp1, sp2) {return sp1.slot().name() < sp2.slot().name() ? -1 : 1});
     op.replaceThingiesWith(sps);
+  },
+
+  
+  // comments
+   
+  toggleComment: function() {
+    this._shouldShowComment = !this._shouldShowComment;
+    this.updateExpandedness();
   },
 
 
@@ -157,6 +184,12 @@ ColumnMorph.subclass("OutlinerMorph", {
       menu.addSection([["create child", function(evt) { this.createChild(evt); }.bind(this)]]);
     }
     
+    menu.addLine();
+
+    if (this.mirror().comment) {
+      menu.addItem([this._shouldShowComment ? "hide comment" : "show comment", function(evt) { this.toggleComment(); }.bind(this)]);
+    }
+
     menu.addLine();
 
     menu.addItem(["well-known references", function(evt) {

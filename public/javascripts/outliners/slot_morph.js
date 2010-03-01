@@ -9,9 +9,8 @@ ColumnMorph.subclass("SlotMorph", {
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
     this.beUngrabbable();
-    this.labelMorph = new SlotNameMorph(this);
-    this.labelMorph.layoutUpdatingFunctionToCallAfterSettingTextString = function() {this.minimumExtentChanged();}.bind(this);
 
+    this.labelMorph = new SlotNameMorph(this);
     this.signatureRow = new RowMorph().beInvisible();
     this.signatureRow.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.signatureRow.inspect = function() { return "signature row"; };
@@ -72,8 +71,21 @@ ColumnMorph.subclass("SlotMorph", {
   sourceMorph: function() {
     var m = this._sourceMorph;
     if (m) { return m; }
-    m = this._sourceMorph = new SlotContentsMorph(this);
-    m.layoutUpdatingFunctionToCallAfterSettingTextString = function() {this.minimumExtentChanged();}.bind(this);
+    m = this._sourceMorph = new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 80)), "");
+    m.nameOfEditCommand = "edit source";
+    m.extraMenuItemAdders = [function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this)];
+    m.closeDnD();
+    m.setFill(null);
+    var thisSlotMorph = this;
+    m.getSavedText = function() { return thisSlotMorph.slot().contents().expressionEvaluatingToMe(); };
+    m.setSavedText = function(text) {
+      if (text !== this.getSavedText()) {
+        MessageNotifierMorph.showIfErrorDuring(function() {
+          thisSlotMorph.setContents(reflect(eval("(" + text + ")")));
+        }.bind(this), createFakeEvent());
+      }
+    };
+    m.refreshText();
     return m;
   },
 
@@ -246,16 +258,6 @@ ArrowMorph.subclass("SlotContentsPointerArrow", {
       slotMorph.setContents(outliner.mirror());
     };
   },
-
-  noLongerNeedsToBeVisible: function() {
-    this.noLongerNeedsToBeUpdated = true;
-    this.remove();
-    this.endpoint2.remove();
-  },
-
-  needsToBeVisible: function() {
-    this.noLongerNeedsToBeUpdated = false;
-  },
 });
 
 
@@ -265,11 +267,8 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
     this._slotMorph = slotMorph;
     $super(pt(5, 10).extent(pt(140, 20)), this.slot().name());
     this.extraMenuItemAdders = [];
-    this.normalBorderWidth = 1;
-    this.setBorderColor(Color.black);
     this.setFill(null);
     this.updateAppearance();
-    this.normalBorderWidth = 0;
     this.nameOfEditCommand = "rename";
     this.extraMenuItemAdders.push(function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this));
   },
@@ -280,10 +279,6 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
   outliner: function() {
     return this._slotMorph.outliner();
   },
-
-  // aaa onMouseDown: function(evt) { return false; },  // don't allow selection
-
-  canBecomeWritable: function() { return true; },
 
   updateAppearance: function() {
     if (! this.isInWritableMode) {
@@ -322,29 +317,5 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
   captureMouseEvent: function($super, evt, hasFocus) {
     if (evt.type == "MouseDown" && !this.isInWritableMode) {return false;}
     return $super(evt, hasFocus);
-  },
-});
-
-TextMorphRequiringExplicitAcceptance.subclass("SlotContentsMorph", {
-  initialize: function($super, slotMorph) {
-    this._slotMorph = slotMorph;
-    $super(pt(5, 10).extent(pt(140, 80)), this.getSavedText());
-    this.nameOfEditCommand = "edit source";
-    this.extraMenuItemAdders = [function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this)];
-    this.closeDnD();
-    this.setFill(null);
-    this.refreshText();
-  },
-
-  getSavedText: function() {
-    return this._slotMorph.slot().contents().expressionEvaluatingToMe();
-  },
-
-  setSavedText: function(text) {
-    if (text !== this.getSavedText()) {
-      MessageNotifierMorph.showIfErrorDuring(function() {
-        this._slotMorph.setContents(reflect(eval("(" + text + ")")));
-      }.bind(this), createFakeEvent());
-    }
   },
 });
