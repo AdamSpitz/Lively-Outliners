@@ -30,7 +30,7 @@ ColumnMorph.subclass("SliceMorph", {
     r.fPadding = 3;
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
     r.inspect = function() {return "the header row";};
-    r.replaceThingiesWith([this._expander, this.titleLabel, this._headerRowSpacer, this.dismissButton]);
+    r.replaceThingiesWith([this._expander, this.titleLabel, this._headerRowSpacer, this.redoButton, this.dismissButton]);
     this.addRow(r);
     return r;
   },
@@ -65,8 +65,23 @@ ColumnMorph.subclass("SliceMorph", {
 
   redo: function() {
     var ss = this.searcher().go().sort(function(sp1, sp2) {var n1 = sp1.holder().name(); var n2 = sp2.holder().name(); n1 === n2 ? 0 : n1 < n2 ? -1 : 1});
-    var sms = ss.map(function(s) { return new SlotMorph(s); }.bind(this));
+    var sms = ss.map(function(s) { return this.createRowForSlot(s); }.bind(this));
     this._slotsPanel.replaceThingiesWith(sms);
     this.expander().expand();
+  },
+
+  createRowForSlot: function(s) {
+    var r = new RowMorph().beInvisible();
+    r.horizontalLayoutMode = LayoutModes.SpaceFill;
+    r.fPadding = 3
+      var inSituButton = createButton("in situ", function() { this.showInSitu(s, inSituButton); }.bind(this), 2);
+    var ms = [createLabel(s.holder().name()), createSpacer(), new SlotMorph(s), inSituButton];
+    r.replaceThingiesWith(ms);
+    return r;
+  },
+
+  showInSitu: function(s, inSituButton) {
+    var w = this.world();
+    w.outlinerFor(s.holder()).ensureIsInWorld(w, inSituButton.worldPoint(pt(150,0)));
   },
 });
