@@ -93,7 +93,7 @@ ColumnMorph.subclass("SlotMorph", {
     m.closeDnD();
     m.setFill(null);
     var thisSlotMorph = this;
-    m.getSavedText = function() { return thisSlotMorph.slot().contents().expressionEvaluatingToMe() || "cannot display contents"; };
+    m.getSavedText = function() { try {return thisSlotMorph.slot().contents().expressionEvaluatingToMe();} catch (ex) {return "cannot display contents";} };
     m.setSavedText = function(text) {
       if (text !== this.getSavedText()) {
         MessageNotifierMorph.showIfErrorDuring(function() {

@@ -215,10 +215,18 @@ thisModule.addSlots(lobby.mirror, function(add) {
     if (this.isReflecteePrimitive()) { return Object.inspect(this.reflectee()); }
     if (this.isReflecteeFunction()) { return this.source(); }
     if (this.isReflecteeArray()) { return "[" + this.reflectee().map(function(elem) {return reflect(elem).expressionEvaluatingToMe();}).join(", ") + "]"; }
-    if (this.size() === 0) { return "{}"; }
-    
+
+    var str = new StringBuffer("{");
+    var sep = "";
+    this.eachNonParentSlot(function(slot) {
+        str.append(sep).append(slot.name()).append(": ").append(slot.contents().expressionEvaluatingToMe());
+        sep = ", ";
+    });
+    str.append("}");
+    return str.toString();
+
     // aaa - try something like Self's 1 _AsObject, except of course in JS it'll have to be a hack
-    return null;
+    //throw "Not implemented yet - don't know how to make an expression evaluating to this object: " + this.name();
   });
 
   add.method('size', function () {
@@ -491,6 +499,7 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     var contentsExpr;
     var contents = this.contents();
     var array = null;
+    var isCreator = false;
     if (contents.isReflecteePrimitive()) {
       contentsExpr = "" + contents.reflectee();
     } else {
@@ -501,7 +510,7 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
         // This is just a reference to some well-known object that's created elsewhere.
         contentsExpr = contents.creatorSlotChainExpression();
       } else {
-        // This is the object's creator slot; gotta create it.
+        var isCreator = true;
         if (contents.isReflecteeFunction()) {
           creationMethod = "method";
           contentsExpr = contents.reflectee().toString();
@@ -521,7 +530,25 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
         }
       }
     }
-    buffer.append("  add.").append(creationMethod).append("('").append(this.name()).append("', ").append(contentsExpr).append(");\n\n");
+
+    var slotAnnoToStringify = {};
+    var slotAnno = this.annotation();
+    if (slotAnno.comment ) {slotAnnoToStringify.comment  = slotAnno.comment;}
+    if (slotAnno.category) {slotAnnoToStringify.category = slotAnno.category;}
+
+    buffer.append("  add.").append(creationMethod).append("('").append(this.name()).append("', ").append(contentsExpr);
+    buffer.append(", ").append(reflect(slotAnnoToStringify).expressionEvaluatingToMe());
+
+    if (isCreator) {
+      var objectAnnoToStringify = {};
+      var objectAnno = contents.annotation();
+      if (objectAnno) {
+        if (objectAnno.comment) {objectAnnoToStringify.comment = objectAnno.comment;}
+        buffer.append(", ").append(reflect(objectAnnoToStringify).expressionEvaluatingToMe());
+      }
+    }
+
+    buffer.append(");\n\n");
 
     if (array) {
       for (var i = 0, n = array.length; i < n; i += 1) {

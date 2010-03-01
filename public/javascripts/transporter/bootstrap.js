@@ -10,7 +10,7 @@ function setCreatorSlot(annotation, name, holder) {
   annotation.creatorSlotHolder = holder;
 }
 
-var lobby = window; // still not sure whether I want this to be window, or Object.create(window), or {}
+var lobby = Object.create(window); // still not sure whether I want this to be window, or Object.create(window), or {}
 
 lobby.modules = {};
 setCreatorSlot(annotationOf(lobby.modules), 'modules', lobby);
@@ -38,24 +38,25 @@ lobby.transporter.module.create = function(n, block) {
 };
 
 lobby.transporter.module.slotAdder = {
-  data: function(name, contents, annotation, isCreatorSlot) {
-    if (! annotation) { annotation = {}; }
+  data: function(name, contents, slotAnnotation, contentsAnnotation) {
+    if (! slotAnnotation) { slotAnnotation = {}; }
     this.holder[name] = contents;
-    annotation.module = this.module;
-    annotationOf(this.holder).slotAnnotations[name] = annotation;
-    if (isCreatorSlot) {
+    slotAnnotation.module = this.module;
+    annotationOf(this.holder).slotAnnotations[name] = slotAnnotation;
+    if (contentsAnnotation) { // used for creator slots
       var a = annotationOf(contents);
       a.creatorSlotName   = name;
       a.creatorSlotHolder = this.holder;
+      Object.extend(a, contentsAnnotation);
     }
   },
   
-  creator: function(name, contents) {
-    this.data(name, contents, {}, true);
+  creator: function(name, contents, slotAnnotation, objectAnnotation) {
+    this.data(name, contents, slotAnnotation, objectAnnotation || {});
   },
 
-  method: function(name, contents) {
-    this.creator(name, contents);
+  method: function(name, contents, slotAnnotation) {
+    this.creator(name, contents, slotAnnotation);
   }
 };
 
