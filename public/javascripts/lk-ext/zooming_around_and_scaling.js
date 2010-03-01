@@ -54,7 +54,7 @@ Object.subclass("Scaler", {
 });
 
 Morph.addMethods({
-  // zooming around and scaling
+  // zooming around
 
   startZoomingOuttaHere: function() {
     if (!this.zoomerProcess) {
@@ -78,6 +78,37 @@ Morph.addMethods({
     this.stopZoomingOuttaHere();
     this.remove();
   },
+
+
+  // adding and removing to/from the world
+
+  ensureIsInWorld: function(w, p) {
+    this.stopZoomingOuttaHere();
+    var shallBeAdded = this.world() == null;
+    if (shallBeAdded) {
+      if (p) {
+        w.addMorphAt(this, p);
+      } else {
+        w.addMorph(this);
+      }
+    }
+    return shallBeAdded;
+  },
+
+  ensureIsNotInWorld: function() {
+    var shallBeRemoved = !! this.world();
+    if (shallBeRemoved) {this.startZoomingOuttaHere();}
+    return shallBeRemoved;
+  },
+
+  createDismissButton: function() {
+    var b = new WindowControlMorph(new Rectangle(0, 0, 22, 22), 3, Color.primary.orange);
+    b.relayToModel(this, {Trigger: "=ensureIsNotInWorld"});
+    return b;
+  },
+
+
+  // scaling
 
   smoothlyScaleBackToNormalSize: function() {
     if (Math.abs(1.0 - this.getScale()) > 0.01) {

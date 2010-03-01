@@ -17,16 +17,10 @@ ColumnMorph.subclass("OutlinerMorph", {
     this._highlighter.setChecked(false);
 
     this._expander = new ExpanderMorph(this);
-
     this.titleLabel = createLabel(function() {return m.inspect();});
-    
     this.commentButton = createButton("'...'", function(evt) { this.toggleComment(evt); }.bind(this), 1);
-
-    this.evaluatorButton = new WindowControlMorph(new Rectangle(0, 0, 22, 22), 3, Color.purple);
-    this.evaluatorButton.relayToModel(this, {HelpText: "-EvaluatorHelp", Trigger: "=openEvaluator"});
-
-    this.dismissButton = new WindowControlMorph(new Rectangle(0, 0, 22, 22), 3, Color.primary.yellow);
-    this.dismissButton.relayToModel(this, {HelpText: "-DismissHelp", Trigger: "=ensureIsNotInWorld"});
+    this.evaluatorButton = createButton("E", function(evt) { this.openEvaluator(evt); }.bind(this), 1);
+    this.dismissButton = this.createDismissButton();
 
     this.createHeaderRow();
     this.addRow(this._evaluatorsPanel);
@@ -42,12 +36,13 @@ ColumnMorph.subclass("OutlinerMorph", {
     r.fPadding = 3;
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
     r.inspect = function() {return "the header row";};
-    this.populateHeaderRow();
+    r.refreshContent = function() { this.refreshHeaderRow(); };
+    this.refreshHeaderRow();
     this.addRow(r);
     return r;
   },
 
-  populateHeaderRow: function() {
+  refreshHeaderRow: function() {
     var ms = [this._expander, this.titleLabel];
     if (this._shouldShowComment || (this.mirror().comment && this.mirror().comment())) { ms.push(this.commentButton); }
     ms.push(createSpacer());
@@ -64,7 +59,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.populateSlotsPanel();
     this.refillWithAppropriateColor();
     this.titleLabel.refreshText();
-    this.populateHeaderRow();
+    this._headerRow.refreshContent();
     this.minimumExtentChanged();
   },
 
@@ -163,30 +158,6 @@ ColumnMorph.subclass("OutlinerMorph", {
     var e = new EvaluatorMorph(this);
     this._evaluatorsPanel.addRow(e);
     evt.hand.setKeyboardFocus(e.textMorph());
-  },
-
-  getEvaluatorHelp: function() {return "Open an evaluator";}, // aaa - I don't think this works but I don't know why.
-
-
-  // adding and removing to/from the world
-
-  ensureIsInWorld: function(w, p) {
-    this.stopZoomingOuttaHere();
-    var shallBeAdded = this.world() == null;
-    if (shallBeAdded) {
-      if (p) {
-        w.addMorphAt(this, p);
-      } else {
-        w.addMorph(this);
-      }
-    }
-    return shallBeAdded;
-  },
-
-  ensureIsNotInWorld: function() {
-    var shallBeRemoved = !! this.world();
-    if (shallBeRemoved) {this.startZoomingOuttaHere();}
-    return shallBeRemoved;
   },
 
 
