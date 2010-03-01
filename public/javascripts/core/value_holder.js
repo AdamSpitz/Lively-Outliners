@@ -27,5 +27,5 @@ Object.subclass("ValueHolder", {
 ValueHolder.subclass("BooleanHolder", {
   isChecked:  function( ) { return this.getValue();     },
   setChecked: function(b) { return this.setValue(b);    },
-  areValuesDifferent: function(v1, v2) { return (!v1) != (!v2); },
+  areValuesDifferent: function(v1, v2) { return (!v1) !== (!v2); },
 });

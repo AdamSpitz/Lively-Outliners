@@ -22,23 +22,6 @@ EnumerableExtensions = {
     });
     return result;
   },
-
-  eachWithIndex: function(f) {
-    var i = 0;
-    this.each(function(x) {
-      f(x, i);
-      ++i;
-    });
-  },
-
-  mapWithIndex: function(f) {
-    var i = 0;
-    return this.map(function(x) {
-      var r = f(x, i);
-      ++i;
-      return r;
-    });
-  },
 };
 
 Object.extend(Enumerable,      EnumerableExtensions);
