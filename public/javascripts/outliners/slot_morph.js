@@ -219,7 +219,8 @@ ColumnMorph.subclass("SlotMorph", {
         var newSlot = this.slot().copyTo(reflect({}));
         this.slot().remove();
         evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
-        this.outliner().updateAppearance();
+        var outliner = this.outliner();
+        if (outliner) { outliner.updateAppearance(); }
       }.bind(this)]);
     }
 
@@ -267,7 +268,9 @@ ColumnMorph.subclass("SlotMorph", {
     
     if (this.slot().wellKnownImplementors) {
       menu.addItem(["implementors", function(evt) {
-        evt.hand.world().outlinerFor(reflect(this.slot().wellKnownImplementors())).grabMe(evt);
+        var slice = new SliceMorph(new ImplementorsFinder(this.slot().name()));
+        slice.grabMe(evt);
+        slice.redo();
       }.bind(this)]);
     }
 
@@ -342,12 +345,15 @@ TwoModeTextMorph.subclass("SlotNameMorph", {
       var evt = createFakeEvent();
       MessageNotifierMorph.showIfErrorDuring(function() {
         this.slot().rename(newName);
-        this.outliner().updateAppearance();
-        var newSlot = this.outliner().mirror().slotAt(newName);
-        var newSlotMorph = this.outliner().slotMorphFor(newSlot);
-        this._slotMorph.transferUIStateTo(newSlotMorph);
-        evt.hand.setKeyboardFocus(newSlotMorph.sourceMorph());
-        newSlotMorph.sourceMorph().selectAll();
+        var outliner = this.outliner();
+        if (outliner) {
+          outliner.updateAppearance();
+          var newSlot = outliner.mirror().slotAt(newName);
+          var newSlotMorph = outliner.slotMorphFor(newSlot);
+          this._slotMorph.transferUIStateTo(newSlotMorph);
+          evt.hand.setKeyboardFocus(newSlotMorph.sourceMorph());
+          newSlotMorph.sourceMorph().selectAll();
+        }
       }.bind(this), evt);
     }
   },

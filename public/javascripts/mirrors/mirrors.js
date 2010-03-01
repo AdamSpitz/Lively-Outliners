@@ -287,15 +287,11 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('wellKnownChildren', function() {
-    var finder = new ChildFinder(this.reflectee());
-    finder.walk(lobby);
-    return finder.children;
+    return new ChildFinder(this.reflectee()).go();
   });
 
   add.method('wellKnownReferences', function() {
-    var finder = new ReferenceFinder(this.reflectee());
-    finder.walk(lobby);
-    return finder.holders;
+    return new ReferenceFinder(this.reflectee()).go();
   });
 
 });
@@ -485,9 +481,7 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
   });
 
   add.method('wellKnownImplementors', function() {
-    var finder = new ImplementorsFinder(this.name());
-    finder.walk(lobby);
-    return finder.holders;
+    return new ImplementorsFinder(this.name()).go();
   });
 
 });

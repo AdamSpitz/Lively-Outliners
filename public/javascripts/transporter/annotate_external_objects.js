@@ -19,6 +19,26 @@ Object.subclass("ObjectGraphWalker", {
     'enabledPlugin'    // aaa just a hack for now - what's this clientInformation thing, and what are these arrays that aren't really arrays?
   ],
 
+  go: function() {
+    this.reset();
+    this.walk(lobby, 0);
+    return this.results();
+  },
+
+  reset: function() {
+    // children can override
+    this._results = [];
+  },
+
+  results: function() {
+    // children can override
+    return this._results;
+  },
+
+  inspect: function() {
+    return this.constructor.type.prependAOrAn();
+  },
+
   canHaveSlots: function(o) {
     if (o === null) { return false; }
     var t = typeof o;
@@ -109,12 +129,13 @@ ObjectGraphWalker.subclass("ImplementorsFinder", {
   initialize: function($super, slotName) {
     $super();
     this.slotNameToSearchFor = slotName;
-    this.holders = [];
   },
+
+  inspect: function() { return "Well-known implementors of '" + this.slotNameToSearchFor + "'"; },
 
   reachedSlot: function(holder, slotName, contents) {
     if (slotName === this.slotNameToSearchFor && reflect(holder).creatorSlotChain()) {
-      this.holders.push(holder);
+      this._results.push(reflect(holder).slotAt(slotName));
     }
   },
 });
@@ -123,18 +144,17 @@ ObjectGraphWalker.subclass("ReferenceFinder", {
   initialize: function($super, o) {
     $super();
     this.objectToSearchFor = o;
-    this.holders = [];
   },
 
   reachedSlot: function(holder, slotName, contents) {
     if (contents === this.objectToSearchFor && reflect(holder).creatorSlotChain()) {
-      this.holders.push(holder);
+      this._results.push(holder);
     }
   },
 
   reachedObject: function(o) {
     if (reflect(o).parent().reflectee() === this.objectToSearchFor && reflect(o).creatorSlotChain()) {
-      this.holders.push(o);
+      this._results.push(o);
     }
   },
 });
@@ -143,12 +163,11 @@ ObjectGraphWalker.subclass("ChildFinder", {
   initialize: function($super, o) {
     $super();
     this.objectToSearchFor = o;
-    this.children = [];
   },
 
   reachedObject: function(o) {
     if (reflect(o).parent().reflectee() === this.objectToSearchFor && reflect(o).creatorSlotChain()) {
-      this.children.push(o);
+      this._results.push(o);
     }
   },
 });

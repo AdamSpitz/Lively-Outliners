@@ -24,6 +24,8 @@ ColumnMorph.subclass("OutlinerMorph", {
 
     this.createHeaderRow();
     this.addRow(this._evaluatorsPanel);
+
+    this.populateSlotsPanel();
   },
 
   mirror: function() { return this._mirror; },
@@ -33,6 +35,7 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   createHeaderRow: function() {
     var r = this._headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
+    this._headerRowSpacer = createSpacer();
     r.fPadding = 3;
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
     r.inspect = function() {return "the header row";};
@@ -45,7 +48,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   refreshHeaderRow: function() {
     var ms = [this._expander, this.titleLabel];
     if (this._shouldShowComment || (this.mirror().comment && this.mirror().comment())) { ms.push(this.commentButton); }
-    ms.push(createSpacer());
+    ms.push(this._headerRowSpacer);
     ms.push(this.evaluatorButton);
     ms.push(this.dismissButton);
     this._headerRow.replaceThingiesWith(ms);
@@ -89,20 +92,10 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   updateExpandedness: function() {
     if (! this.world()) {return;}
-
     var thingies = [this._headerRow];
-    
-    if (this._shouldShowComment) {
-      thingies.push(this.commentMorph());
-    }
-    
-    if (this.expander().isExpanded()) {
-      this.populateSlotsPanel(); // aaa - does this need to be here?
-      thingies.push(this._slotsPanel);
-    }
-
+    if (this._shouldShowComment) { thingies.push(this.commentMorph()); }
+    if (this.expander().isExpanded()) { thingies.push(this._slotsPanel); }
     thingies.push(this._evaluatorsPanel);
-
     this.replaceThingiesWith(thingies);
   },
 
@@ -119,11 +112,10 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   populateSlotsPanel: function() {
-    var op = this._slotsPanel;
     var sps = [];
     this.mirror().eachSlot(function(s) { sps.push(this.slotMorphFor(s)); }.bind(this));
     sps.sort(function(sp1, sp2) {return sp1.slot().name() < sp2.slot().name() ? -1 : 1});
-    op.replaceThingiesWith(sps);
+    this._slotsPanel.replaceThingiesWith(sps);
   },
 
   
