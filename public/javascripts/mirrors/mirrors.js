@@ -355,6 +355,8 @@ thisModule.addSlots(lobby.slots.abstract, function(add) {
 
   add.method('holder', function () { return this._mirror; });
 
+  add.method('isFunctionBody', function () { return false; });
+
 });
 
 
@@ -378,6 +380,8 @@ thisModule.addSlots(lobby.slots.functionBody, function(add) {
   add.method('contents', function () { return this._mirror; });
 
   add.method('isMethod', function () { return true; });
+
+  add.method('isFunctionBody', function () { return true; });
 
 });
 
