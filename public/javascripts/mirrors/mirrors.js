@@ -121,6 +121,26 @@ thisModule.addSlots(lobby.mirror, function(add) {
     }
   });
 
+  add.method('eachSlotInCategory', function (c, f) {
+    this.eachNonParentSlot(function(s) {
+      if (categoriesAreEqual(c, s.category())) { f(s); }
+    });
+  });
+
+  add.method('eachImmediateSubcategoryOf', function (c, f) {
+    var subcats = {};
+    this.eachNonParentSlot(function(s) {
+      var sc = s.category();
+      if (isImmediateSubcategoryOf(c, sc)) { subcats[categoryLastPartName(sc)] = sc; }
+    });
+
+    for (var name in subcats) {
+      if (subcats.hasOwnProperty(name)) {
+        f(subcats[name]);
+      }
+    }
+  });
+
   add.method('slotAt', function (n) {
     return Object.create(lobby.slots.plain).initialize(this, n);
   });
@@ -198,7 +218,13 @@ thisModule.addSlots(lobby.mirror, function(add) {
     if (this.size() === 0) { return "{}"; }
     
     // aaa - try something like Self's 1 _AsObject, except of course in JS it'll have to be a hack
-    throw "Not implemented yet - not sure how to make an expressionEvaluatingToMe";
+    return null;
+  });
+
+  add.method('size', function () {
+    var size = 0;
+    this.eachNonParentSlot(function(s) { size += 1; });
+    return size;
   });
 
   add.method('canHaveSlots', function () {
@@ -391,12 +417,26 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     var o = this.holder().reflectee();
     if (  o.hasOwnProperty(newName)) { throw o + " already has a slot named " + newName; }
     if (! o.hasOwnProperty(oldName)) { throw o + " has no slot named "        + oldName; }
+
+    var caaat = this.category();
+
     var cs = contentsMir.creatorSlot();
     var isCreator = cs && cs.equals(this);
+
     var contents = o[oldName];
     delete o[oldName];
     o[newName] = contents;
-    if (isCreator) {this.holder().slotAt(newName).beCreator();}
+    
+    var newSlot = this.holder().slotAt(newName);
+    var holderAnno = this.holder().annotationForWriting();
+    holderAnno.slotAnnotations[newName] = holderAnno.slotAnnotations[oldName];
+    delete holderAnno.slotAnnotations[oldName];
+
+    if (isCreator) {newSlot.beCreator();}
+
+    assert(newSlot.category().inspect() === caaat.inspect(), Object.inspect(newSlot.category()) + " !== " + Object.inspect(caaat));
+
+    return newSlot;
   });
 
   add.method('hasAnnotation', function () {
@@ -433,6 +473,16 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
 
   add.method('setComment', function (c) {
     this.annotation().comment = c || "";
+  });
+
+  add.method('category', function () {
+    var a = this.annotation();
+    if (! a) { return rootCategory(); }
+    return a.category || rootCategory();
+  });
+
+  add.method('setCategory', function (c) {
+    this.annotation().category = c;
   });
 
 

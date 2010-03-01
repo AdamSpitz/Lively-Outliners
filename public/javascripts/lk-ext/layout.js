@@ -32,6 +32,11 @@ Morph.addMethods({
     }
   },
 
+  forceLayoutRejiggering: function() {
+    this._cachedMinimumExtent = null;
+    this.minimumExtentChanged();
+  },
+
   rejiggerTheLayoutIncludingSubmorphs: function() {
     // console.log("Rejiggering the layout of " + this.inspect());
     this.minimumExtent();

@@ -139,6 +139,15 @@ TextMorph.subclass("TwoModeTextMorph", {
     return x;
   },
 
+  refreshText: function() {
+    if (! this.isInWritableMode) {
+      var newText = this.getSavedText();
+      if (newText != this.getText()) {
+        this.setText(newText);
+      }
+    }
+  },
+
   beUnwritable: function() {
     this.acceptInput = false;
     this.setFill(this.backgroundColorWhenUnwritable || null);
@@ -228,7 +237,7 @@ TextMorph.subclass("TwoModeTextMorph", {
 
   canBecomeWritable: function() { return ! this.isReadOnly; },
 
-  returnKeyShouldAccept: function() { return false; },
+  returnKeyShouldAccept: function() { return true; },
 
   onDoubleClick: function(evt) {
     if (this.canBecomeWritable()) {

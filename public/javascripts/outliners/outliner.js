@@ -6,12 +6,13 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.sPadding = this.fPadding = 5;
     this.shape.roundEdgesBy(10);
 
+    this._slotMorphs     = new BloodyHashTable();
+    this._categoryMorphs = new BloodyHashTable();
+
     this.     _slotsPanel = new ColumnMorph().beInvisible();
     this._evaluatorsPanel = new ColumnMorph().beInvisible();
     this.     _slotsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
     this._evaluatorsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
-    this.     _slotsPanel.inspect = function() {return "the slots panel";};
-    this._evaluatorsPanel.inspect = function() {return "the evaluators panel";};
 
     this._highlighter = new BooleanHolder(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
     this._highlighter.setChecked(false);
@@ -23,12 +24,16 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.dismissButton = this.createDismissButton();
 
     this.createHeaderRow();
-    this.addRow(this._evaluatorsPanel);
-
     this.populateSlotsPanel();
+
+    this.replaceThingiesWith([this._headerRow, this._evaluatorsPanel]);
   },
 
   mirror: function() { return this._mirror; },
+
+  // aaa - trying to figure out how to factor this and CategoryMorph
+  outliner: function() { return this; },
+  category: function() { return rootCategory(); },
 
 
   // header row
@@ -39,9 +44,8 @@ ColumnMorph.subclass("OutlinerMorph", {
     r.fPadding = 3;
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
     r.inspect = function() {return "the header row";};
-    r.refreshContent = function() { this.refreshHeaderRow(); };
+    r.refreshContent = function() { this.refreshHeaderRow(); }.bind(this);
     this.refreshHeaderRow();
-    this.addRow(r);
     return r;
   },
 
@@ -60,6 +64,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   updateAppearance: function() {
     if (! this.world()) {return;}
     this.populateSlotsPanel();
+    this.immediateSubcategoryMorphs().each(function(scm) { scm.updateAppearance(); }); // aaa is this gonna cause us to redo a lot of work?
     this.refillWithAppropriateColor();
     this.titleLabel.refreshText();
     this._headerRow.refreshContent();
@@ -69,21 +74,6 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   // inspecting
   inspect: function() {return this.mirror().inspect();},
-
-
-  // color
-
-  calculateAppropriateFill: function() {
-    var color = Color.neutral.gray.lighter();
-    if (this.highlighter().isChecked()) {color = color.lighter().lighter();}
-    return defaultFillWithColor(color);
-  },
-
-  refillWithAppropriateColor: function() {
-    this.setFill(this.calculateAppropriateFill());
-  },
-
-  highlighter: function() { return this._highlighter; },
 
 
   // expanding and collapsing
@@ -99,23 +89,26 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.replaceThingiesWith(thingies);
   },
 
+  expandCategory: function(c) {
+    var expander = isRootCategory(c) ? this.expander() : this.categoryMorphFor(c).expander();
+    expander.expand();
+  },
+
 
   // slots
 
-  slotMorphs: function() {
-    if (! this._slotMorphs) { this._slotMorphs = new BloodyHashTable(); }
-    return this._slotMorphs;
+  eachSlot: function(f) {
+    if (this.mirror().isReflecteeFunction()) { f(Object.create(lobby.slots.functionBody).initialize(this)); }
+    f(Object.create(lobby.slots.parent).initialize(this));
+    this.mirror().eachSlotInCategory(this.category(), f);
   },
 
   slotMorphFor: function(s) {
-    return this.slotMorphs().getOrIfAbsentPut(s.name(), function() { return new SlotMorph(s); });
+    return this._slotMorphs.getOrIfAbsentPut(s.name(), function() { return new SlotMorph(s); });
   },
 
-  populateSlotsPanel: function() {
-    var sps = [];
-    this.mirror().eachSlot(function(s) { sps.push(this.slotMorphFor(s)); }.bind(this));
-    sps.sort(function(sp1, sp2) {return sp1.slot().name() < sp2.slot().name() ? -1 : 1});
-    this._slotsPanel.replaceThingiesWith(sps);
+  categoryMorphFor: function(c) {
+    return this._categoryMorphs.getOrIfAbsentPut(categoryFullName(c), function() { return new CategoryMorph(this, c); }.bind(this));
   },
 
   
@@ -126,7 +119,6 @@ ColumnMorph.subclass("OutlinerMorph", {
     if (m) { return m; }
     m = this._commentMorph = new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 80)), "");
     m.nameOfEditCommand = "edit comment";
-    m.extraMenuItemAdders = [function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this)];
     m.closeDnD();
     m.setFill(null);
     var thisOutliner = this;
@@ -158,7 +150,8 @@ ColumnMorph.subclass("OutlinerMorph", {
   morphMenu: function(evt) {
     var menu = new MenuMorph([], this);
     if (this.mirror().canHaveSlots()) {
-      menu.addSection([["add slot",     function(evt) { this.    addSlot(evt); }.bind(this)]]);
+      menu.addSection([["add slot",     function(evt) { this.addSlot    (evt); }.bind(this)]]);
+      menu.addSection([["add category", function(evt) { this.addCategory(evt); }.bind(this)]]);
     }
     if (this.mirror().canHaveChildren()) {
       menu.addSection([["create child", function(evt) { this.createChild(evt); }.bind(this)]]);
@@ -181,16 +174,6 @@ ColumnMorph.subclass("OutlinerMorph", {
     }.bind(this)]);
 
     return menu;
-  },
-
-  addSlot: function(evt) {
-    var name = this.mirror().findUnusedSlotName("slot");
-    this.mirror().reflectee()[name] = null;
-    this.updateAppearance();
-    this.expander().expand();
-    var sm = this.slotMorphFor(this.mirror().slotAt(name));
-    sm.toggleSource();
-    sm.labelMorph.beWritableAndSelectAll();
   },
 
   createChild: function(evt) {
@@ -221,4 +204,60 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.highlighter().setChecked(false);
   },
 });
+
+CategoryMixin = {
+  populateSlotsPanel: function() {
+    var sms = [];
+    this.eachSlot(function(s) { sms.push(this.outliner().slotMorphFor(s)); }.bind(this));
+    sms.sort(function(sm1, sm2) {return sm1.slot().name() < sm2.slot().name() ? -1 : 1});
+
+    var scms = this.immediateSubcategoryMorphs();
+    scms.sort(function(scm1, scm2) {return categoryLastPartName(scm1.category()) < categoryLastPartName(scm2.category()) ? -1 : 1});
+    
+    this._slotsPanel.replaceThingiesWith(sms.concat(scms));
+  },
+
+  immediateSubcategoryMorphs: function() {
+    var scms = [];
+    this.mirror().eachImmediateSubcategoryOf(this.category(), function(sc) { scms.push(this.outliner().categoryMorphFor(sc)); }.bind(this));
+    return scms;
+  },
+
+  addSlot: function(evt) {
+    var name = this.mirror().findUnusedSlotName("slot");
+    this.mirror().reflectee()[name] = null;
+    var s = this.mirror().slotAt(name);
+    s.setCategory(this.category());
+    this.outliner().updateAppearance();
+    this.outliner().expandCategory(this.category());
+    var sm = this.outliner().slotMorphFor(s);
+    sm.toggleSource();
+    sm.labelMorph.beWritableAndSelectAll();
+  },
+
+  addCategory: function(evt) {
+    this.updateAppearance();
+    this.expander().expand();
+    var cm = new CategoryMorph(this.outliner(), subcategory(this.category(), ""));
+    this._slotsPanel.addRow(cm);
+    cm.titleLabel.beWritableAndSelectAll();
+  },
+
+
+  // color
+
+  calculateAppropriateFill: function() {
+    var color = Color.neutral.gray.lighter();
+    if (this.highlighter().isChecked()) {color = color.lighter().lighter();}
+    return defaultFillWithColor(color);
+  },
+
+  refillWithAppropriateColor: function() {
+    this.setFill(this.calculateAppropriateFill());
+  },
+
+  highlighter: function() { return this._highlighter; },
+};
+
 Object.extend(OutlinerMorph.prototype, CanHaveArrowsAttachedToIt);
+Object.extend(OutlinerMorph.prototype, CategoryMixin);
