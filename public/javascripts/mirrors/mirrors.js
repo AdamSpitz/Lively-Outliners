@@ -258,7 +258,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
   add.method('comment', function () {
     var a = this.annotation();
     if (! a) { return ""; }
-    return a.comment;
+    return a.comment || "";
   });
 
   add.method('setComment', function (c) {
@@ -432,7 +432,7 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
   add.method('comment', function () {
     var a = this.annotation();
     if (! a) { return ""; }
-    return a.comment;
+    return a.comment || "";
   });
 
   add.method('setComment', function (c) {

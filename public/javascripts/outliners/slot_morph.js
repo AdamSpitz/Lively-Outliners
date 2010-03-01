@@ -11,12 +11,11 @@ ColumnMorph.subclass("SlotMorph", {
     this.beUngrabbable();
 
     this.labelMorph = new SlotNameMorph(this);
+    this.commentButton = createButton("'...'", function(evt) { this.toggleComment(evt); }.bind(this), 1);
+    this.signatureRowSpacer = createSpacer();
     this.signatureRow = new RowMorph().beInvisible();
     this.signatureRow.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.signatureRow.inspect = function() { return "signature row"; };
-
-    var button = this.isMethodThatShouldBeShownAsPartOfTheBox() ? this.sourceButton() : this.contentsPointer();
-    this.signatureRow.replaceThingiesWith([this.labelMorph, createSpacer(), button]);
 
     this.updateAppearance();
   },
@@ -25,6 +24,15 @@ ColumnMorph.subclass("SlotMorph", {
       if (! this.slot().isMethod()) { return false; }
       if (this.slot().contents().iterator('eachNonParentSlot').find(function(s) { return true; })) { return false; }
       return true;
+  },
+
+  populateSignatureRow: function() {
+    var ms = [this.labelMorph];
+    if (this._shouldShowComment || (this.slot().comment && this.slot().comment())) { ms.push(this.commentButton); }
+    ms.push(this.signatureRowSpacer);
+    var button = this.isMethodThatShouldBeShownAsPartOfTheBox() ? this.sourceButton() : this.contentsPointer();
+    ms.push(button);
+    this.signatureRow.replaceThingiesWith(ms);
   },
 
   contentsPointer: function() {
@@ -100,6 +108,21 @@ ColumnMorph.subclass("SlotMorph", {
     return m;
   },
 
+  commentMorph: function() {
+    var m = this._commentMorph;
+    if (m) { return m; }
+    m = this._commentMorph = new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 80)), "");
+    m.nameOfEditCommand = "edit comment";
+    m.extraMenuItemAdders = [function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this)];
+    m.closeDnD();
+    m.setFill(null);
+    var thisSlotMorph = this;
+    m.getSavedText = function() { return thisSlotMorph.slot().comment(); };
+    m.setSavedText = function(text) { if (text !== this.getSavedText()) { thisSlotMorph.slot().setComment(text); } };
+    m.refreshText();
+    return m;
+  },
+
   toggleSource: function() {
     this._shouldShowSource = ! this._shouldShowSource;
     this.updateAppearance();
@@ -108,6 +131,12 @@ ColumnMorph.subclass("SlotMorph", {
   toggleAnnotation: function() {
     this._shouldShowAnnotation = ! this._shouldShowAnnotation;
     this.updateAppearance();
+  },
+
+  toggleComment: function(evt) {
+    this._shouldShowComment = ! this._shouldShowComment;
+    this.updateAppearance();
+    if (this._shouldShowComment) { evt.hand.setKeyboardFocus(this.commentMorph()); }
   },
 
   transferUIStateTo: function(otherSlotMorph) {
@@ -126,9 +155,12 @@ ColumnMorph.subclass("SlotMorph", {
 
   updateAppearance: function() {
     this.labelMorph.updateAppearance();
-    if (this._sourceMorph)     { this._sourceMorph.refreshText(); }
-    if (this._moduleLabel)     { this._moduleLabel.refreshText(); }
+    this.populateSignatureRow();
+    if (this._commentMorph)    { this._commentMorph.refreshText(); }
+    if (this._sourceMorph)     { this._sourceMorph .refreshText(); }
+    if (this._moduleLabel)     { this._moduleLabel .refreshText(); }
     var rows = [this.signatureRow];
+    if (this._shouldShowComment   ) { rows.push(this.   commentMorph()); }
     if (this._shouldShowSource    ) { rows.push(this.    sourceMorph()); }
     if (this._shouldShowAnnotation) { rows.push(this.annotationMorph()); }
     this.replaceThingiesWith(rows);
@@ -188,6 +220,12 @@ ColumnMorph.subclass("SlotMorph", {
         this.slot().remove();
         evt.hand.grabMorphWithoutAskingPermission(new SlotMorph(newSlot), evt);
         this.outliner().updateAppearance();
+      }.bind(this)]);
+    }
+
+    if (this.slot().comment) {
+      menu.addItem([this._shouldShowComment ? "hide comment" : "edit comment", function(evt) {
+        this.toggleComment(evt);
       }.bind(this)]);
     }
 

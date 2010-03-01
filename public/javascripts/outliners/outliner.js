@@ -19,6 +19,8 @@ ColumnMorph.subclass("OutlinerMorph", {
     this._expander = new ExpanderMorph(this);
 
     this.titleLabel = createLabel(function() {return m.inspect();});
+    
+    this.commentButton = createButton("'...'", function(evt) { this.toggleComment(evt); }.bind(this), 1);
 
     this.evaluatorButton = new WindowControlMorph(new Rectangle(0, 0, 22, 22), 3, Color.purple);
     this.evaluatorButton.relayToModel(this, {HelpText: "-EvaluatorHelp", Trigger: "=openEvaluator"});
@@ -26,45 +28,43 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.dismissButton = new WindowControlMorph(new Rectangle(0, 0, 22, 22), 3, Color.primary.yellow);
     this.dismissButton.relayToModel(this, {HelpText: "-DismissHelp", Trigger: "=ensureIsNotInWorld"});
 
-    this.create_header_row();
+    this.createHeaderRow();
     this.addRow(this._evaluatorsPanel);
   },
 
   mirror: function() { return this._mirror; },
 
-  create_header_row: function() {
+
+  // header row
+
+  createHeaderRow: function() {
     var r = this._headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
     r.fPadding = 3;
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
     r.inspect = function() {return "the header row";};
-    r.replaceThingiesWith([this._expander, this.titleLabel, createSpacer(), this.evaluatorButton, this.dismissButton]);
+    this.populateHeaderRow();
     this.addRow(r);
     return r;
   },
 
-  commentMorph: function() {
-    var m = this._commentMorph;
-    if (m) { return m; }
-    m = this._commentMorph = new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 80)), "");
-    m.nameOfEditCommand = "edit comment";
-    m.extraMenuItemAdders = [function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this)];
-    m.closeDnD();
-    m.setFill(null);
-    var thisOutliner = this;
-    m.getSavedText = function() { return thisOutliner.mirror().comment(); };
-    m.setSavedText = function(text) { if (text !== this.getSavedText()) { thisOutliner.mirror().setComment(text); } };
-    m.refreshText();
-    return m;
+  populateHeaderRow: function() {
+    var ms = [this._expander, this.titleLabel];
+    if (this._shouldShowComment || (this.mirror().comment && this.mirror().comment())) { ms.push(this.commentButton); }
+    ms.push(createSpacer());
+    ms.push(this.evaluatorButton);
+    ms.push(this.dismissButton);
+    this._headerRow.replaceThingiesWith(ms);
   },
 
 
   // updating    // aaa - now, can I make this happen automatically? maybe an update process?
 
   updateAppearance: function() {
-    this.populateSlotsPanel();
     if (! this.world()) {return;}
+    this.populateSlotsPanel();
     this.refillWithAppropriateColor();
     this.titleLabel.refreshText();
+    this.populateHeaderRow();
     this.minimumExtentChanged();
   },
 
@@ -134,9 +134,26 @@ ColumnMorph.subclass("OutlinerMorph", {
   
   // comments
    
-  toggleComment: function() {
+  commentMorph: function() {
+    var m = this._commentMorph;
+    if (m) { return m; }
+    m = this._commentMorph = new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 80)), "");
+    m.nameOfEditCommand = "edit comment";
+    m.extraMenuItemAdders = [function(menu, evt) { this.addEditingMenuItemsTo(menu, evt); }.bind(this)];
+    m.closeDnD();
+    m.setFill(null);
+    var thisOutliner = this;
+    m.getSavedText = function() { return thisOutliner.mirror().comment(); };
+    m.setSavedText = function(text) { if (text !== this.getSavedText()) { thisOutliner.mirror().setComment(text); } };
+    m.refreshText();
+    return m;
+  },
+
+  toggleComment: function(evt) {
     this._shouldShowComment = !this._shouldShowComment;
     this.updateExpandedness();
+    this.updateAppearance();
+    if (this._shouldShowComment) { evt.hand.setKeyboardFocus(this.commentMorph()); }
   },
 
 
@@ -187,7 +204,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     menu.addLine();
 
     if (this.mirror().comment) {
-      menu.addItem([this._shouldShowComment ? "hide comment" : "show comment", function(evt) { this.toggleComment(); }.bind(this)]);
+      menu.addItem([this._shouldShowComment ? "hide comment" : "show comment", function(evt) { this.toggleComment(evt); }.bind(this)]);
     }
 
     menu.addLine();
