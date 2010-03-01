@@ -430,8 +430,6 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     if (  o.hasOwnProperty(newName)) { throw o + " already has a slot named " + newName; }
     if (! o.hasOwnProperty(oldName)) { throw o + " has no slot named "        + oldName; }
 
-    var caaat = this.category();
-
     var cs = contentsMir.creatorSlot();
     var isCreator = cs && cs.equals(this);
 
@@ -445,8 +443,6 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     delete holderAnno.slotAnnotations[oldName];
 
     if (isCreator) {newSlot.beCreator();}
-
-    assert(newSlot.category().inspect() === caaat.inspect(), Object.inspect(newSlot.category()) + " !== " + Object.inspect(caaat));
 
     return newSlot;
   });

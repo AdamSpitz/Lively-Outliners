@@ -9,13 +9,7 @@ ColumnMorph.subclass("CategoryMorph", {
     this.closeDnD();
     this.beUngrabbable();
 
-    this._slotsPanel = new ColumnMorph().beInvisible();
-    this._slotsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
-
-    this._highlighter = new BooleanHolder(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
-    this._highlighter.setChecked(false);
-
-    this._expander = new ExpanderMorph(this);
+    this.initializeCategoryUI();
 
     var categoryMorph = this;
     this.titleLabel = new TwoModeTextMorph(pt(5, 10).extent(pt(140, 20)), categoryLastPartName(category));

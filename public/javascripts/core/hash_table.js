@@ -127,3 +127,11 @@ Object.extend(BloodyHashTable.prototype, {
   }
 
 });
+
+Object.extend(String.prototype, {
+  hashCode: function() {return this;},
+});
+
+Object.extend(Number.prototype, {
+  hashCode: function() {return this;},
+});

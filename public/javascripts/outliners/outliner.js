@@ -9,15 +9,11 @@ ColumnMorph.subclass("OutlinerMorph", {
     this._slotMorphs     = new BloodyHashTable();
     this._categoryMorphs = new BloodyHashTable();
 
-    this.     _slotsPanel = new ColumnMorph().beInvisible();
+    this.initializeCategoryUI();
+    
     this._evaluatorsPanel = new ColumnMorph().beInvisible();
-    this.     _slotsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
     this._evaluatorsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
 
-    this._highlighter = new BooleanHolder(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
-    this._highlighter.setChecked(false);
-
-    this._expander = new ExpanderMorph(this);
     this.titleLabel = createLabel(function() {return m.inspect();});
     this.commentButton = createButton("'...'", function(evt) { this.toggleComment(evt); }.bind(this), 1);
     this.evaluatorButton = createButton("E", function(evt) { this.openEvaluator(evt); }.bind(this), 1);
@@ -206,6 +202,16 @@ ColumnMorph.subclass("OutlinerMorph", {
 });
 
 CategoryMixin = {
+  initializeCategoryUI: function() {
+    this._slotsPanel = new ColumnMorph().beInvisible();
+    this._slotsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
+
+    this._highlighter = new BooleanHolder(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
+    this._highlighter.setChecked(false);
+
+    this._expander = new ExpanderMorph(this);
+  },
+
   populateSlotsPanel: function() {
     var sms = [];
     this.eachSlot(function(s) { sms.push(this.outliner().slotMorphFor(s)); }.bind(this));

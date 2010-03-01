@@ -19,7 +19,7 @@ thisModule.addSlots(lobby.transporter.module, function(add) {
         alreadySeen.put(mir, mir);
       }
     }.bind(this));
-    return alreadySeen.values().sort(function(a, b) { return spaceship(a.name(), b.name()); });
+    return alreadySeen.values().sort(function(a, b) { var an = a.name(); var bn = b.name(); return an === bn ? 0 : an < bn ? -1 : 1; });
   });
 
   add.method('fileOut', function () {
