@@ -49,7 +49,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
     if (this.isReflecteeArray()) { return this.reflectee().length > 5 ? "an array" : "[" + this.reflectee().map(function(elem) {return reflect(elem).inspect();}).join(", ") + "]"; }
     var n = this.name();
     if (this.isReflecteeFunction()) { return n; } // the code will be visible through the *code* fake-slot
-    var s = new StringBuffer(n);
+    var s = stringBuffer.create(n);
     var toString = this.reflecteeToString();
     if (typeof toString === 'string' && toString) { s.append("(").append(toString).append(")"); }
     return s.toString();
@@ -62,7 +62,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
     if (chain) {
       if (chain.length === 0) {return "";}
       var isThePrototype = chain[0].contents().equals(this);
-      var s = new StringBuffer(isThePrototype ? "" : chain[chain.length - 1].name().startsWithVowel() ? "an " : "a ");
+      var s = stringBuffer.create(isThePrototype ? "" : chain[chain.length - 1].name().startsWithVowel() ? "an " : "a ");
       for (var i = chain.length - 1; i >= 0; i -= 1) {
         s.append(chain[i].name());
         if (i > 0) {s.append(" ");}
@@ -79,7 +79,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
     var chain = this.creatorSlotChain();
     if (! chain) {throw this.inspect() + " does not have a creator slot chain.";}
 
-    var s = new StringBuffer("lobby");
+    var s = stringBuffer.create("lobby");
     for (var i = chain.length - 1; i >= 0; i -= 1) {
       s.append(".").append(chain[i].name());
     }
@@ -221,7 +221,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
     if (this.isReflecteeFunction()) { return this.source(); }
     if (this.isReflecteeArray()) { return "[" + this.reflectee().map(function(elem) {return reflect(elem).expressionEvaluatingToMe();}).join(", ") + "]"; }
 
-    var str = new StringBuffer("{");
+    var str = stringBuffer.create("{");
     var sep = "";
     this.eachNormalSlot(function(slot) {
         str.append(sep).append(slot.name()).append(": ").append(slot.contents().expressionEvaluatingToMe());

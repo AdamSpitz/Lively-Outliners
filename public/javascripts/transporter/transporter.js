@@ -23,7 +23,7 @@ thisModule.addSlots(lobby.transporter.module, function(add) {
   });
 
   add.method('fileOut', function () {
-    var buffer = new StringBuffer("lobby.transporter.module.create('").append(this.name()).append("', function(thisModule) {\n\n\n");
+    var buffer = stringBuffer.create("lobby.transporter.module.create('").append(this.name()).append("', function(thisModule) {\n\n\n");
     this.fileOutSlots(buffer);
     buffer.append("});");
 

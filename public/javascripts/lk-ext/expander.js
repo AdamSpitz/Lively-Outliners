@@ -1,7 +1,7 @@
 ButtonMorph.subclass("ExpanderMorph", {
   initialize: function($super, expandee) {
     $super(pt(0, 0).extent(pt(12, 12)));
-    var model = new BooleanHolder(false);
+    var model = booleanHolder.containing(false);
     this.connectModel({model: model, getValue: "isChecked", setValue: "setChecked"});
     if (expandee) { model.notifier.add_observer(function() {this.updateExpandedness();}.bind(expandee)); }
     return this;
