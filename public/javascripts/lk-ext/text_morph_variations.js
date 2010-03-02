@@ -70,6 +70,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
       this.setBorderColor(Color.red);
       this.setBorderWidth(this.borderWidthWhenModified || 2);
     }
+    this.minimumExtentChanged();
     $super();
   },
 

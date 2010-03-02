@@ -109,8 +109,8 @@ ColumnMorph.subclass("SlotMorph", {
     var m = this._annotationMorph;
     if (m) { return m; }
     m = this._annotationMorph = new ColumnMorph(this).beInvisible();
-    this._moduleLabel = createLabel(function() {var m = this.slot().module(); return m ? m.name() : "";}.bind(this));
-    m.addRow(createLabelledNode("Module", this._moduleLabel));
+    this._moduleMorph = createInputBox(this.moduleName.bind(this), this.setModuleName.bind(this));
+    m.addRow(createLabelledNode("Module", this._moduleMorph));
     return m;
   },
 
@@ -167,12 +167,28 @@ ColumnMorph.subclass("SlotMorph", {
     return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
   },
 
+  moduleName: function() {
+    var module = this.slot().module();
+    return module ? module.name() : "";
+  },
+
+  setModuleName: function(n) {
+    var module = transporter.module.existingOneNamed(n);
+    if (module) { return this.slot().setModule(module); }
+    this.world().confirm("The '" + n + "' module does not exist. Create it?", function(b) {
+      if (b) {
+        this.slot().setModule(transporter.module.named(n));
+        this._moduleMorph.changed();
+      }
+    }.bind(this));
+  },
+
   updateAppearance: function() {
     this.labelMorph.refreshText();
     this.signatureRow.refreshContent();
     if (this._commentMorph)    { this._commentMorph.refreshText(); }
     if (this._sourceMorph)     { this._sourceMorph .refreshText(); }
-    if (this._moduleLabel)     { this._moduleLabel .refreshText(); }
+    if (this._moduleMorph)     { this._moduleMorph .refreshText(); }
     this.refreshContent();
   },
 

@@ -66,6 +66,10 @@ thisModule.addSlots(lobby.transporter.module, function(add) {
     reflect(lobby.modules).eachNormalSlot(function(s) { f(s.contents().reflectee()); });
   });
 
+  add.method('existingOneNamed', function (n) {
+    return lobby.modules[n];
+  });
+
 });
 
 
