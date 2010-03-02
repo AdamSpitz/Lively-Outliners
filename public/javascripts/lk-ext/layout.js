@@ -24,6 +24,7 @@ Morph.addMethods({
     this._cachedMinimumExtent = null;
     this.minimumExtent();
     if (old_cachedMinimumExtent && old_cachedMinimumExtent.eqPt(this._cachedMinimumExtent)) { return; }
+    delete this._spaceUsedLastTime; // aaa - should probably put this just in RowOrColumnMorph
     var o = this.owner;
     if (!o || o instanceof WorldMorph || o instanceof HandMorph) {
       this.rejiggerTheLayoutIncludingSubmorphs();

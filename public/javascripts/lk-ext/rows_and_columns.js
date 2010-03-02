@@ -32,12 +32,15 @@ Morph.subclass("RowOrColumnMorph", {
   new_rejiggerTheLayout: function(availableSpace) {
     // console.log(this.inspect() + " has asked for at least " + this._cachedMinimumExtent + " and received " + availableSpace);
     
+    var availableSpaceToUse = pt(this.horizontalLayoutMode === LayoutModes.ShrinkWrap ? this._cachedMinimumExtent.x : availableSpace.x,
+                                 this.  verticalLayoutMode === LayoutModes.ShrinkWrap ? this._cachedMinimumExtent.y : availableSpace.y);
+
+    if (this._spaceUsedLastTime && this._spaceUsedLastTime.eqPt(availableSpaceToUse)) { return; }
+    this._spaceUsedLastTime = availableSpaceToUse;
+
     var direction = this.direction;
     var sPadding  = this.sPadding;
     var fPadding  = this.fPadding;
-
-    var availableSpaceToUse = pt(this.horizontalLayoutMode === LayoutModes.ShrinkWrap ? this._cachedMinimumExtent.x : availableSpace.x,
-                                 this.  verticalLayoutMode === LayoutModes.ShrinkWrap ? this._cachedMinimumExtent.y : availableSpace.y);
 
     var availableSpaceToPassOn = availableSpaceToUse.addPt(direction.point(0, -sPadding - sPadding));
 
