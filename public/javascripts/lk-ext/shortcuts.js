@@ -60,6 +60,16 @@ function createButton(text, f, padding) {
   return b;
 }
 
+function createInputBox(getFunction, setFunction) {
+  var m = new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 20)), "");
+  m.closeDnD();
+  m.setFill(null);
+  m.getSavedText = getFunction;
+  m.setSavedText = function(str) { if (str !== this.getSavedText()) { setFunction(str); } };
+  m.refreshText();
+  return m;
+}
+
 function createTextBoxWithButton(buttonText, textBoxText, f) {
   var m = new RowMorph();
   m.sPadding = 0;

@@ -89,21 +89,20 @@ ColumnMorph.subclass("SlotMorph", {
   sourceMorph: function() {
     var m = this._sourceMorph;
     if (m) { return m; }
-    m = this._sourceMorph = new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 80)), "");
-    m.nameOfEditCommand = "edit source";
-    m.closeDnD();
-    m.setFill(null);
     var thisSlotMorph = this;
-    m.getSavedText = function() { try {return thisSlotMorph.slot().contents().expressionEvaluatingToMe();} catch (ex) {return "cannot display contents";} };
-    m.setSavedText = function(text) {
-      if (text !== this.getSavedText()) {
-        MessageNotifierMorph.showIfErrorDuring(function() {
-          thisSlotMorph.setContents(reflect(eval("(" + text + ")")));
-        }.bind(this), createFakeEvent());
+    var getter = function() {
+      try {
+        return thisSlotMorph.slot().contents().expressionEvaluatingToMe();
+      } catch (ex) {
+        return "cannot display contents";
       }
     };
-    m.refreshText();
-    return m;
+    var setter = function(s) {
+      MessageNotifierMorph.showIfErrorDuring(function() {
+        thisSlotMorph.setContents(reflect(eval("(" + text + ")")));
+      }.bind(this), createFakeEvent());
+    };
+    return this._sourceMorph = createInputBox(getter, setter);
   },
 
   annotationMorph: function() {
@@ -118,15 +117,9 @@ ColumnMorph.subclass("SlotMorph", {
   commentMorph: function() {
     var m = this._commentMorph;
     if (m) { return m; }
-    m = this._commentMorph = new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 80)), "");
-    m.nameOfEditCommand = "edit comment";
-    m.closeDnD();
-    m.setFill(null);
     var thisSlotMorph = this;
-    m.getSavedText = function() { return thisSlotMorph.slot().comment(); };
-    m.setSavedText = function(text) { if (text !== this.getSavedText()) { thisSlotMorph.slot().setComment(text); } };
-    m.refreshText();
-    return m;
+    return this._commentMorph = createInputBox(function( ) { return thisSlotMorph.slot().comment(); },
+                                               function(c) { thisSlotMorph.slot().setComment(c); });
   },
 
   toggleSource: function() {

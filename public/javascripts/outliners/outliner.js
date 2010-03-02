@@ -62,17 +62,21 @@ ColumnMorph.subclass("OutlinerMorph", {
     if (m) { return m; }
     m = this._annotationMorph = new ColumnMorph(this).beInvisible();
 
-    var outliner = this;
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
-    this._copyDownParentsLabel = new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 20)), "");
-    this._copyDownParentsLabel.closeDnD();
-    this._copyDownParentsLabel.setFill(null);
-    this._copyDownParentsLabel.getSavedText = function()    { return reflect(outliner.mirror().copyDownParents()).expressionEvaluatingToMe(); };
-    this._copyDownParentsLabel.setSavedText = function(str) { if (str !== this.getSavedText()) { MessageNotifierMorph.showIfErrorDuring(function() {outliner.mirror().setCopyDownParents(eval(str)); }, createFakeEvent()); outliner.updateAppearance(); } };
-    this._copyDownParentsLabel.refreshText();
-
+    this._copyDownParentsLabel = createInputBox(this.copyDownParentsString.bind(this), this.setCopyDownParentsString.bind(this));
     m.addRow(createLabelledNode("Copy-down parents", this._copyDownParentsLabel));
     return m;
+  },
+
+  copyDownParentsString: function() {
+    return reflect(this.mirror().copyDownParents()).expressionEvaluatingToMe();
+  },
+
+  setCopyDownParentsString: function() {
+    MessageNotifierMorph.showIfErrorDuring(function() {
+      this.mirror().setCopyDownParents(eval(str));
+    }, createFakeEvent());
+    this.updateAppearance();
   },
 
 
@@ -140,15 +144,9 @@ ColumnMorph.subclass("OutlinerMorph", {
   commentMorph: function() {
     var m = this._commentMorph;
     if (m) { return m; }
-    m = this._commentMorph = new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 80)), "");
-    m.nameOfEditCommand = "edit comment";
-    m.closeDnD();
-    m.setFill(null);
     var thisOutliner = this;
-    m.getSavedText = function() { return thisOutliner.mirror().comment(); };
-    m.setSavedText = function(text) { if (text !== this.getSavedText()) { thisOutliner.mirror().setComment(text); } };
-    m.refreshText();
-    return m;
+    return this._commentMorph = createInputBox(function( ) { return thisOutliner.mirror().comment(); },
+                                               function(c) { thisOutliner.mirror().setComment(c); });
   },
 
   toggleComment: function(evt) {

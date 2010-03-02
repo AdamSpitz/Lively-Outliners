@@ -528,6 +528,16 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     m.objectsThatMightContainSlotsInMe().push(this.holder().reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later;
   });
 
+  add.method('initializationExpression', function () {
+    var a = this.annotation();
+    if (! a) { return ""; }
+    return a.initializeTo || "";
+  });
+
+  add.method('setInitializationExpression', function (e) {
+    this.annotation().initializeTo = e;
+  });
+
   add.method('comment', function () {
     var a = this.annotation();
     if (! a) { return ""; }
