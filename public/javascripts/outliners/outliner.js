@@ -20,7 +20,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.dismissButton = this.createDismissButton();
 
     this.createHeaderRow();
-    this.populateSlotsPanel();
+    //this.populateSlotsPanel();
 
     this.replaceThingiesWith([this._headerRow, this._evaluatorsPanel]);
   },
@@ -80,7 +80,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     if (! this.world()) {return;}
     var thingies = [this._headerRow];
     if (this._shouldShowComment) { thingies.push(this.commentMorph()); }
-    if (this.expander().isExpanded()) { thingies.push(this._slotsPanel); }
+    if (this.expander().isExpanded()) { thingies.push(this.slotsPanel()); }
     thingies.push(this._evaluatorsPanel);
     this.replaceThingiesWith(thingies);
   },
@@ -202,16 +202,24 @@ ColumnMorph.subclass("OutlinerMorph", {
 
 CategoryMixin = {
   initializeCategoryUI: function() {
-    this._slotsPanel = new ColumnMorph().beInvisible();
-    this._slotsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
-
     this._highlighter = booleanHolder.containing(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
     this._highlighter.setChecked(false);
 
     this._expander = new ExpanderMorph(this);
   },
 
+  slotsPanel: function() {
+    var sp = this._slotsPanel;
+    if (sp) { return sp; }
+    sp = this._slotsPanel = new ColumnMorph().beInvisible();
+    sp.horizontalLayoutMode = LayoutModes.SpaceFill;
+    this.populateSlotsPanel();
+    return sp;
+  },
+
   populateSlotsPanel: function() {
+    if (! this._slotsPanel) { return this.slotsPanel(); } // that'll end up calling back here
+
     var sms = [];
     this.eachSlot(function(s) { sms.push(this.outliner().slotMorphFor(s)); }.bind(this));
     sms.sort(function(sm1, sm2) {return sm1.slot().name() < sm2.slot().name() ? -1 : 1});
@@ -244,7 +252,7 @@ CategoryMixin = {
     this.updateAppearance();
     this.expander().expand();
     var cm = new CategoryMorph(this.outliner(), subcategory(this.category(), ""));
-    this._slotsPanel.addRow(cm);
+    this.slotsPanel().addRow(cm);
     cm.titleLabel.beWritableAndSelectAll();
   },
 

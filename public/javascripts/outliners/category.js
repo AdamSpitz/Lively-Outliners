@@ -67,7 +67,7 @@ ColumnMorph.subclass("CategoryMorph", {
   updateExpandedness: function() {
     if (! this.world()) {return;}
     var thingies = [this._headerRow];
-    if (this.expander().isExpanded()) { thingies.push(this._slotsPanel); }
+    if (this.expander().isExpanded()) { thingies.push(this.slotsPanel()); }
     this.replaceThingiesWith(thingies);
   },
 
