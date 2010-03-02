@@ -417,6 +417,8 @@ thisModule.addSlots(lobby.slots.abstract, function(add) {
 
   add.method('isFunctionBody', function () { return false; });
 
+  add.method('isFromACopyDownParent', function () { return false; });
+
 });
 
 
@@ -563,6 +565,19 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     this.annotation().category = c;
   });
 
+  add.method('isFromACopyDownParent', function () {
+    var name = this.name();
+    return this.holder().copyDownParents().find(function(cdp) {
+      var parentMir = reflect(cdp.parent);
+      if (parentMir.reflecteeHasOwnProperty(name)) {
+        var slotsToOmit = cdp.slotsToOmit || [];
+        if (typeof slotsToOmit === 'string') { slotsToOmit = slotsToOmit.split(' '); }
+        return ! slotsToOmit.include(name);
+      } else {
+        return false;
+      }
+    }.bind(this));
+  });
 
   add.method('fileOutTo', function (buffer) {
     var creationMethod = "data";

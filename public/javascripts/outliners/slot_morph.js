@@ -200,6 +200,12 @@ ColumnMorph.subclass("SlotMorph", {
     if (this._sourceMorph)     { this._sourceMorph .refreshText(); }
     if (this._moduleMorph)     { this._moduleMorph .refreshText(); }
     this.refreshContent();
+    this.updateFill();
+  },
+
+  updateFill: function() {
+    var color = this.slot().isFromACopyDownParent() ? Color.red.lighter().lighter() : Color.gray;
+    this.setFill(defaultFillWithColor(color));
   },
 
   refreshContent: function() {
