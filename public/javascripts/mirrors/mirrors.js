@@ -548,7 +548,8 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
       var objectAnnoToStringify = {};
       var objectAnno = contents.annotation();
       if (objectAnno) {
-        if (objectAnno.comment) {objectAnnoToStringify.comment = objectAnno.comment;}
+        if (objectAnno.comment        ) {objectAnnoToStringify.comment         = objectAnno.comment;        }
+        if (objectAnno.copyDownParents) {objectAnnoToStringify.copyDownParents = objectAnno.copyDownParents;}
         buffer.append(", ").append(reflect(objectAnnoToStringify).expressionEvaluatingToMe());
       }
     }

@@ -56,6 +56,12 @@ lobby.transporter.module.slotAdder = {
       a.creatorSlotName   = name;
       a.creatorSlotHolder = this.holder;
       Object.extend(a, contentsAnnotation);
+      
+      if (contentsAnnotation.copyDownParents) {
+        for (var i = 0; i < contentsAnnotation.copyDownParents.length; i += 1) {
+          Object.extend(contents, eval(contentsAnnotation.copyDownParents[i].expression));
+        }
+      }
     }
   },
   
