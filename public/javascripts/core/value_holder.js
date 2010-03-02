@@ -1,6 +1,6 @@
 Object.subclass("ValueHolder", {
   initialize: function(v) {
-    this.notifier = new Notifier(this);
+    this.notifier = Object.newChildOf(notifier, this);
     this.setValue(v);
   },
 
