@@ -3,7 +3,8 @@ ColumnMorph.subclass("OutlinerMorph", {
     $super();
     this._mirror = m;
 
-    this.sPadding = this.fPadding = 5;
+    this.sPadding = 10;
+    this.fPadding = 2;
     this.shape.roundEdgesBy(10);
 
     this._slotMorphs     = bloodyHashTable.copyRemoveAll();
@@ -127,7 +128,10 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   slotMorphFor: function(s) {
-    return this._slotMorphs.getOrIfAbsentPut(s.name(), function() { return new SlotMorph(s); });
+    return this._slotMorphs.getOrIfAbsentPut(s.name(), function() {
+      console.log("Creating slot morph for " + s.name());
+      return new SlotMorph(s);
+    });
   },
 
   categoryMorphFor: function(c) {

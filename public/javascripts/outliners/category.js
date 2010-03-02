@@ -5,7 +5,7 @@ ColumnMorph.subclass("CategoryMorph", {
     this._category = category;
 
     this.horizontalLayoutMode = LayoutModes.SpaceFill;
-    this.sPadding = this.fPadding = 5;
+    this.sPadding = this.fPadding = 2;
     this.closeDnD();
     this.beUngrabbable();
 
@@ -21,7 +21,7 @@ ColumnMorph.subclass("CategoryMorph", {
     this.titleLabel.refreshText();
 
     this.createHeaderRow();
-    this.populateSlotsPanel();
+    //this.populateSlotsPanel();
 
     this.replaceThingiesWith([this._headerRow]);
   },

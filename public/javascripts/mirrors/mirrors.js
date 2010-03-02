@@ -374,6 +374,15 @@ thisModule.addSlots(lobby.mirror, function(add) {
     return new ReferenceFinder(this.reflectee()).go();
   });
 
+  add.method('categorizeUncategorizedSlotsAlphabetically', function() {
+    this.eachNormalSlot(function(s) {
+      var c = s.category();
+      if (isRootCategory(c)) {
+        s.setCategory(subcategory(c, s.name()[0] || 'unnamed'));
+      }
+    });
+  });
+
 });
 
 
