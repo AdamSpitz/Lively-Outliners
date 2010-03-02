@@ -192,7 +192,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
     return reflect(this.reflectee().__proto__);
   });
 
-  add.method('canAccessParent', function () { return UserAgent.is_proto_property_supported; });
+  add.method('canAccessParent', function () { return String.prototype.__proto__ !== undefined; });
 
   add.method('hasParent', function () { return ! (this.isReflecteeNull() || this.isReflecteeUndefined()); });
 
@@ -205,7 +205,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
 
   add.method('createChild', function () {
     var parent = this.reflectee();
-    var ChildConstructor = UserAgent.is_proto_property_supported ? function() {} : function() {this.__parent_slot_that_does_not_actually_mean_anything_but_is_here_for_reflective_purposes__ = parent;};
+    var ChildConstructor = function() {};
     ChildConstructor.prototype = parent;
     var child = new ChildConstructor();
     return reflect(child);

@@ -10,10 +10,6 @@ var BloodyHashTable = function() {
   this._size = 0;
 };
 
-// I'd prefer to use a subclass of Array, but that gave me grief on IE.
-// Maybe there's a way to do it; try later.
-BloodyHashTable.Bucket = Array;
-
 Object.extend(BloodyHashTable.prototype, {
 
   keysAreEqual: function(k1, k2) {
@@ -37,8 +33,7 @@ Object.extend(BloodyHashTable.prototype, {
     var bucketName = "" + this.hashCodeForKey(k);
     var b = this._buckets[bucketName];
     if (typeof b === "undefined") {
-      b = new BloodyHashTable.Bucket();
-      this._buckets[bucketName] = b;
+      this._buckets[bucketName] = b = [];
     }
     else {
       if (! this._buckets.hasOwnProperty(bucketName)) {
