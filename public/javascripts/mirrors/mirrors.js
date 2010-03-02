@@ -23,7 +23,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('hashCode', function () {
-    return "a mirror"; // aaa - crap, hash tables will be linear time now; can I get an object ID somehow?;
+    return "a mirror"; // aaa - crap, hash tables will be linear time now; can I get an object ID hash somehow?;
   });
 
   add.method('reflecteeToString', function () {
@@ -63,14 +63,28 @@ thisModule.addSlots(lobby.mirror, function(add) {
       if (chain.length === 0) {return "";}
       var isThePrototype = chain[0].contents().equals(this);
       var s = stringBuffer.create(isThePrototype ? "" : chain[chain.length - 1].name().startsWithVowel() ? "an " : "a ");
-      for (var i = chain.length - 1; i >= 0; i -= 1) {
+
+      // HACK - Recognize class-like patterns and show names like "a WobulatorMorph" rather than "a WobulatorMorph.prototype",
+      // because, well, that's really annoying. Not sure this is the right way to fix this. But the reality is that in JS code
+      // it'll probably be common to have both class-like and prototype-like inheritance and naming patterns.
+      var stopHere =  !isThePrototype && chain.length >= 2 && chain[0].name() === 'prototype' && chain[0].holder().isReflecteeProbablyAClass() ? 1 : 0;
+
+      for (var i = chain.length - 1; i >= stopHere; i -= 1) {
         s.append(chain[i].name());
-        if (i > 0) {s.append(" ");}
+        if (i > stopHere) {s.append(".");}
       }
       return s.toString();
     } else {
       return this.isReflecteeFunction() ? "a function" : this.isReflecteeArray() ? "an array" : "an object";
     }
+  });
+
+  add.method('isReflecteeProbablyAClass', function () {
+    // Let's see whether this is a good enough test for now.
+    var r = this.reflectee();
+    if (r === Object || r === String || r === Function || r === Boolean || r === Array || r === Number) { return true; }
+    if (this.isReflecteeFunction() && this.reflecteeHasOwnProperty('superclass')) { return true; }
+    return false;
   });
 
   add.method('creatorSlotChainExpression', function () {
@@ -183,7 +197,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
 
   add.method('reflecteeHasOwnProperty', function (n) {
     if (! this.canHaveSlots()) { return false; }
-    return this.reflectee().hasOwnProperty(name);
+    return this.reflectee().hasOwnProperty(n);
   });
 
   add.method('parent', function () {
