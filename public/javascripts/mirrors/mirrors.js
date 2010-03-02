@@ -565,31 +565,36 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     var contents = this.contents();
     var array = null;
     var isCreator = false;
-    if (contents.isReflecteePrimitive()) {
-      contentsExpr = "" + contents.reflectee();
+    var initializer = this.initializationExpression();
+    if (initializer) {
+      contentsExpr = initializer;
     } else {
-      var cs = contents.creatorSlot();
-      if (! cs) {
-        throw "Cannot file out a reference to " + contents.name();
-      } else if (! cs.equals(this)) {
-        // This is just a reference to some well-known object that's created elsewhere.
-        contentsExpr = contents.creatorSlotChainExpression();
+      if (contents.isReflecteePrimitive()) {
+        contentsExpr = "" + contents.reflectee();
       } else {
-        var isCreator = true;
-        if (contents.isReflecteeFunction()) {
-          creationMethod = "method";
-          contentsExpr = contents.reflectee().toString();
+        var cs = contents.creatorSlot();
+        if (! cs) {
+          throw "Cannot file out a reference to " + contents.name();
+        } else if (! cs.equals(this)) {
+          // This is just a reference to some well-known object that's created elsewhere.
+          contentsExpr = contents.creatorSlotChainExpression();
         } else {
-          creationMethod = "creator";
-          if (contents.isReflecteeArray()) {
-            contentsExpr = "[]";
-            array = contents.reflectee();
+          var isCreator = true;
+          if (contents.isReflecteeFunction()) {
+            creationMethod = "method";
+            contentsExpr = contents.reflectee().toString();
           } else {
-            var contentsParent = contents.parent();
-            if (contentsParent.equals(reflect(Object.prototype))) {
-              contentsExpr = "{}";
+            creationMethod = "creator";
+            if (contents.isReflecteeArray()) {
+              contentsExpr = "[]";
+              array = contents.reflectee();
             } else {
-              contentsExpr = "Object.create(" + contentsParent.creatorSlotChainExpression() + ")";
+              var contentsParent = contents.parent();
+              if (contentsParent.equals(reflect(Object.prototype))) {
+                contentsExpr = "{}";
+              } else {
+                contentsExpr = "Object.create(" + contentsParent.creatorSlotChainExpression() + ")";
+              }
             }
           }
         }
@@ -598,8 +603,9 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
 
     var slotAnnoToStringify = {};
     var slotAnno = this.annotation();
-    if (slotAnno.comment ) {slotAnnoToStringify.comment  = slotAnno.comment;}
-    if (slotAnno.category) {slotAnnoToStringify.category = slotAnno.category;}
+    if (slotAnno.comment     ) { slotAnnoToStringify.comment      = slotAnno.comment;      }
+    if (slotAnno.category    ) { slotAnnoToStringify.category     = slotAnno.category;     }
+    if (slotAnno.initializeTo) { slotAnnoToStringify.initializeTo = slotAnno.initializeTo; }
 
     buffer.append("  add.").append(creationMethod).append("('").append(this.name()).append("', ").append(contentsExpr);
     buffer.append(", ").append(reflect(slotAnnoToStringify).expressionEvaluatingToMe());

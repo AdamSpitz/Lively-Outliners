@@ -9,6 +9,12 @@ WorldMorph.addMethods({
 
     menu.addLine();
 
+    menu.addItem(["get the lobby", function(evt) {
+      this.outlinerFor(reflect(lobby)).grabMe(evt);
+    }]);
+
+    menu.addLine();
+
     menu.addItem(["file in module...", function(evt) {
       var filenames = new FileDirectory(lobby.transporter.module.urlForModuleDirectory()).filenames().select(function(n) {return n.endsWith(".js");});
       
@@ -35,10 +41,6 @@ WorldMorph.addMethods({
         ["create new weirdo test object", function(evt) {
           var o = {anObject: {}, anArray: ['zero', 1, 'two'], aNull: null, fortyTwo: 42, aString: 'here is a string', aBoolean: true, aFunction: function(a, b) {argleBargle();}};
           this.outlinerFor(reflect(o)).grabMe(evt);
-        }],
-
-        ["get the lobby", function(evt) {
-          this.outlinerFor(reflect(lobby)).grabMe(evt);
         }],
 
         ["aaaaa", function(evt) {

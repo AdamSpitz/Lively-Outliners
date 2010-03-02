@@ -99,7 +99,7 @@ ColumnMorph.subclass("SlotMorph", {
     };
     var setter = function(s) {
       MessageNotifierMorph.showIfErrorDuring(function() {
-        thisSlotMorph.setContents(reflect(eval("(" + text + ")")));
+        thisSlotMorph.setContents(reflect(eval("(" + s + ")")));
       }.bind(this), createFakeEvent());
     };
     return this._sourceMorph = createInputBox(getter, setter);
@@ -109,8 +109,10 @@ ColumnMorph.subclass("SlotMorph", {
     var m = this._annotationMorph;
     if (m) { return m; }
     m = this._annotationMorph = new ColumnMorph(this).beInvisible();
-    this._moduleMorph = createInputBox(this.moduleName.bind(this), this.setModuleName.bind(this));
-    m.addRow(createLabelledNode("Module", this._moduleMorph));
+    this._moduleMorph      = createInputBox(this.moduleName.bind(this), this.setModuleName.bind(this));
+    this._initializerMorph = createInputBox(this.initializationExpression.bind(this), this.setInitializationExpression.bind(this));
+    m.addRow(createLabelledNode("Module",        this._moduleMorph     ));
+    m.addRow(createLabelledNode("Initialize to", this._initializerMorph));
     return m;
   },
 
@@ -181,6 +183,14 @@ ColumnMorph.subclass("SlotMorph", {
         this._moduleMorph.changed();
       }
     }.bind(this));
+  },
+
+  initializationExpression: function() {
+    return this.slot().initializationExpression();
+  },
+
+  setInitializationExpression: function(e) {
+    this.slot().setInitializationExpression(e);
   },
 
   updateAppearance: function() {
