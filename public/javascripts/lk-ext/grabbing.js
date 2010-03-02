@@ -48,10 +48,9 @@ Morph.addMethods({
     beGrabbable:   function() {if ( this.old_okToBeGrabbedBy) {this.okToBeGrabbedBy = this.old_okToBeGrabbedBy; this.old_okToBeGrabbedBy = null;}},
 
   grabMe: function(evt) {
-    // aaa - Can't seem to make the drop shadows come out right without messing up the way it looks when you grab something that's already in the world.
-    //this.setPosition(evt.hand.position());
+    // Had to do this to make the morph be right under the hand, and to get the drop shadows right.
+    evt.hand.world().addMorphAt(this, evt.hand.position().subPt(this.getExtent().scaleBy(0.5)));
     evt.hand.grabMorph(this, evt);
-    //this.setPosition(pt(0,0));
   },
 
 });
