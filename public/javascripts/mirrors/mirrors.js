@@ -378,7 +378,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
     this.eachNormalSlot(function(s) {
       var c = s.category();
       if (isRootCategory(c)) {
-        s.setCategory(subcategory(c, s.name()[0] || 'unnamed'));
+        s.setCategory(subcategory(c, (s.name()[0] || '_unnamed_').toUpperCase()));
       }
     });
   });

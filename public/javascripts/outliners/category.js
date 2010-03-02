@@ -21,7 +21,6 @@ ColumnMorph.subclass("CategoryMorph", {
     this.titleLabel.refreshText();
 
     this.createHeaderRow();
-    //this.populateSlotsPanel();
 
     this.replaceThingiesWith([this._headerRow]);
   },

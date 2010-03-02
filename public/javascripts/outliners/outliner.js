@@ -21,7 +21,6 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.dismissButton = this.createDismissButton();
 
     this.createHeaderRow();
-    //this.populateSlotsPanel();
 
     this.replaceThingiesWith([this._headerRow, this._evaluatorsPanel]);
   },
@@ -128,10 +127,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   slotMorphFor: function(s) {
-    return this._slotMorphs.getOrIfAbsentPut(s.name(), function() {
-      console.log("Creating slot morph for " + s.name());
-      return new SlotMorph(s);
-    });
+    return this._slotMorphs.getOrIfAbsentPut(s.name(), function() { return new SlotMorph(s); });
   },
 
   categoryMorphFor: function(c) {
