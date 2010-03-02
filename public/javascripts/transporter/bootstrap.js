@@ -37,10 +37,16 @@ function creatorChainLength(o) {
   return creatorChainLength(creatorSlotHolder) + 1;
 }
 
-function copyDownSlots(dst, src) {
+function copyDownSlots(dst, src, slotsToOmit) {
+  slotsToOmit = slotsToOmit || [];
+  if (typeof slotsToOmit === 'string') {
+    slotsToOmit = slotsToOmit.split(" ");
+  }
+  slotsToOmit.push('__annotation__');
+
   for (var name in src) {
     if (src.hasOwnProperty(name)) {
-      if (name !== '__annotation__') {
+      if (! slotsToOmit.include(name)) {
         dst[name] = src[name];
       }
     }
@@ -88,7 +94,8 @@ lobby.transporter.module.slotAdder = {
       
       if (contentsAnnotation.copyDownParents) {
         for (var i = 0; i < contentsAnnotation.copyDownParents.length; i += 1) {
-          copyDownSlots(contents, contentsAnnotation.copyDownParents[i].parent);
+          var cdp = contentsAnnotation.copyDownParents[i];
+          copyDownSlots(contents, cdp.parent, cdp.slotsToOmit);
         }
       }
     }

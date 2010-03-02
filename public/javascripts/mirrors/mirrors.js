@@ -341,7 +341,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
     this.annotationForWriting().copyDownParents = cdps;
     for (var i = 0; i < cdps.length; ++i) {
       if (cdps[i].parent === undefined) { throw "Each element of the array must contain a 'parent' slot pointing to the desired copy-down parent; e.g. [{parent: Enumerable}]"; }
-      copyDownSlots(this.reflectee(), cdps[i].parent);
+      copyDownSlots(this.reflectee(), cdps[i].parent, cdps[i].slotsToOmit);
     }
   });
 
