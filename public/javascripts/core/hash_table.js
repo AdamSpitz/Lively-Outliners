@@ -3,26 +3,26 @@ lobby.transporter.module.create('hash_table', function(thisModule) {
 
 thisModule.addSlots(lobby, function(add) {
 
-  add.creator('bloodyHashTable', {}, {category: ['collections']}, {comment: 'I don\'t mean to keep this class around forever - hopefully sooner or later Javascript will have a working hash table that can handle arbitrary objects (rather than just strings) as keys. Maybe it exists already, but I couldn\'t find it. So for now I\'ll just use this bloody thing. -- Adam', copyDownParents: [{expression: 'Enumerable'}]});
+  add.creator('bloodyHashTable', {}, {category: ['collections']}, {comment: 'I don\'t mean to keep this class around forever - hopefully sooner or later Javascript will have a working hash table that can handle arbitrary objects (rather than just strings) as keys. Maybe it exists already, but I couldn\'t find it. So for now I\'ll just use this bloody thing. -- Adam', copyDownParents: [{parent: Enumerable}]});
 
 });
 
 
-thisModule.addSlots(lobby.Number.prototype, function(add) {
+thisModule.addSlots(Number.prototype, function(add) {
 
   add.method('hashCode', function () {return this;}, {}, {});
 
 });
 
 
-thisModule.addSlots(lobby.String.prototype, function(add) {
+thisModule.addSlots(String.prototype, function(add) {
 
   add.method('hashCode', function () {return this;}, {}, {});
 
 });
 
 
-thisModule.addSlots(lobby.bloodyHashTable, function(add) {
+thisModule.addSlots(bloodyHashTable, function(add) {
 
   add.method('copyRemoveAll', function () {
     // Should this be called copyRemoveAll or cloneRemoveAll or create or what?

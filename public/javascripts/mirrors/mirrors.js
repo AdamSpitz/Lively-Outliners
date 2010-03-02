@@ -79,6 +79,11 @@ thisModule.addSlots(lobby.mirror, function(add) {
     }
   });
 
+  add.method('isWellKnown', function () {
+    var chain = this.creatorSlotChain();
+    return chain && (chain.length === 0 || chain[0].contents().equals(this));
+  });
+
   add.method('isReflecteeProbablyAClass', function () {
     // Let's see whether this is a good enough test for now.
     var r = this.reflectee();
@@ -92,10 +97,14 @@ thisModule.addSlots(lobby.mirror, function(add) {
 
     var chain = this.creatorSlotChain();
     if (! chain) {throw this.inspect() + " does not have a creator slot chain.";}
+    if (chain.length === 0) {return "lobby";}
 
-    var s = stringBuffer.create("lobby");
+    var s = stringBuffer.create(lobby === window ? "" : "lobby."); // don't need to say "lobby" if the lobby is the global JS namespace
+    
+    sep = "";
     for (var i = chain.length - 1; i >= 0; i -= 1) {
-      s.append(".").append(chain[i].name());
+      s.append(sep).append(chain[i].name());
+      sep = ".";
     }
     return s.toString();
   });
@@ -232,6 +241,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
 
   add.method('expressionEvaluatingToMe', function () {
     if (this.isReflecteePrimitive()) { return Object.inspect(this.reflectee()); }
+    if (this.isWellKnown()) { return this.creatorSlotChainExpression(); }
     if (this.isReflecteeFunction()) { return this.source(); }
     if (this.isReflecteeArray()) { return "[" + this.reflectee().map(function(elem) {return reflect(elem).expressionEvaluatingToMe();}).join(", ") + "]"; }
 
@@ -316,6 +326,23 @@ thisModule.addSlots(lobby.mirror, function(add) {
 
   add.method('setComment', function (c) {
     this.annotationForWriting().comment = c || "";
+  });
+
+  add.method('copyDownParents', function () {
+    var a = this.annotation();
+    if (! a) { return []; }
+    return a.copyDownParents || [];
+  });
+
+  add.method('setCopyDownParents', function (cdps) {
+    // aaa - Of course, we should be removing slots copied in by the previous list of copy-down parents. But never mind that for now.
+    var cdpsMir = reflect(cdps);
+    if (! cdpsMir.isReflecteeArray()) { throw "Must be an array; e.g. [{parent: Enumerable}]"; }
+    this.annotationForWriting().copyDownParents = cdps;
+    for (var i = 0; i < cdps.length; ++i) {
+      if (cdps[i].parent === undefined) { throw "Each element of the array must contain a 'parent' slot pointing to the desired copy-down parent; e.g. [{parent: Enumerable}]"; }
+      copyDownSlots(this.reflectee(), cdps[i].parent);
+    }
   });
 
   add.method('canHaveAnnotation', function () {

@@ -110,9 +110,7 @@ ColumnMorph.subclass("SlotMorph", {
     var m = this._annotationMorph;
     if (m) { return m; }
     m = this._annotationMorph = new ColumnMorph(this).beInvisible();
-    this._moduleLabel = createLabel(function() {var m = this.slot().module(); 
-        console.log("aaa - moduleLabel being set to " + (m ? m.name() : ""));
-        return m ? m.name() : "";}.bind(this));
+    this._moduleLabel = createLabel(function() {var m = this.slot().module(); return m ? m.name() : "";}.bind(this));
     m.addRow(createLabelledNode("Module", this._moduleLabel));
     return m;
   },

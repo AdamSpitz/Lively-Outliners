@@ -55,6 +55,27 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
 
+  // annotation
+
+  annotationMorph: function() {
+    var m = this._annotationMorph;
+    if (m) { return m; }
+    m = this._annotationMorph = new ColumnMorph(this).beInvisible();
+
+    var outliner = this;
+    // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
+    this._copyDownParentsLabel = new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 20)), "");
+    this._copyDownParentsLabel.closeDnD();
+    this._copyDownParentsLabel.setFill(null);
+    this._copyDownParentsLabel.getSavedText = function()    { return reflect(outliner.mirror().copyDownParents()).expressionEvaluatingToMe(); };
+    this._copyDownParentsLabel.setSavedText = function(str) { if (str !== this.getSavedText()) { MessageNotifierMorph.showIfErrorDuring(function() {outliner.mirror().setCopyDownParents(eval(str)); }, createFakeEvent()); outliner.updateAppearance(); } };
+    this._copyDownParentsLabel.refreshText();
+
+    m.addRow(createLabelledNode("Copy-down parents", this._copyDownParentsLabel));
+    return m;
+  },
+
+
   // updating    // aaa - now, can I make this happen automatically? maybe an update process?
 
   updateAppearance: function() {
@@ -63,8 +84,14 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.immediateSubcategoryMorphs().each(function(scm) { scm.updateAppearance(); }); // aaa is this gonna cause us to redo a lot of work?
     this.refillWithAppropriateColor();
     this.titleLabel.refreshText();
+    if (this._copyDownParentsLabel) {this._copyDownParentsLabel.refreshText();}
     this._headerRow.refreshContent();
     this.minimumExtentChanged();
+  },
+
+  toggleAnnotation: function(evt) {
+    this._shouldShowAnnotation = !this._shouldShowAnnotation;
+    this.updateExpandedness();
   },
 
 
@@ -79,7 +106,8 @@ ColumnMorph.subclass("OutlinerMorph", {
   updateExpandedness: function() {
     if (! this.world()) {return;}
     var thingies = [this._headerRow];
-    if (this._shouldShowComment) { thingies.push(this.commentMorph()); }
+    if (this._shouldShowAnnotation) { thingies.push(this.annotationMorph()); }
+    if (this._shouldShowComment   ) { thingies.push(this.   commentMorph()); }
     if (this.expander().isExpanded()) { thingies.push(this.slotsPanel()); }
     thingies.push(this._evaluatorsPanel);
     this.replaceThingiesWith(thingies);
@@ -152,10 +180,14 @@ ColumnMorph.subclass("OutlinerMorph", {
       menu.addSection([["create child", function(evt) { this.createChild(evt); }.bind(this)]]);
     }
     
-    menu.addLine();
+    if (this.mirror().canHaveAnnotation()) {
+      menu.addLine();
 
-    if (this.mirror().comment) {
-      menu.addItem([this._shouldShowComment ? "hide comment" : "show comment", function(evt) { this.toggleComment(evt); }.bind(this)]);
+      menu.addItem([this._shouldShowAnnotation ? "hide annotation" : "show annotation", function(evt) { this.toggleAnnotation(evt); }.bind(this)]);
+
+      if (this.mirror().comment) {
+        menu.addItem([this._shouldShowComment ? "hide comment" : "show comment", function(evt) { this.toggleComment(evt); }.bind(this)]);
+      }
     }
 
     menu.addLine();

@@ -37,6 +37,16 @@ function creatorChainLength(o) {
   return creatorChainLength(creatorSlotHolder) + 1;
 }
 
+function copyDownSlots(dst, src) {
+  for (var name in src) {
+    if (src.hasOwnProperty(name)) {
+      if (name !== '__annotation__') {
+        dst[name] = src[name];
+      }
+    }
+  }
+}
+
 var lobby = window; // still not sure whether I want this to be window, or Object.create(window), or {}
 
 lobby.modules = {};
@@ -78,7 +88,7 @@ lobby.transporter.module.slotAdder = {
       
       if (contentsAnnotation.copyDownParents) {
         for (var i = 0; i < contentsAnnotation.copyDownParents.length; i += 1) {
-          Object.extend(contents, eval(contentsAnnotation.copyDownParents[i].expression));
+          copyDownSlots(contents, contentsAnnotation.copyDownParents[i].parent);
         }
       }
     }
