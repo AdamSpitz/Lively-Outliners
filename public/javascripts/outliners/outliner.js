@@ -23,6 +23,8 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.createHeaderRow();
 
     this.replaceThingiesWith([this._headerRow, this._evaluatorsPanel]);
+
+    this.startPeriodicallyUpdating();
   },
 
   mirror: function() { return this._mirror; },
@@ -68,6 +70,11 @@ ColumnMorph.subclass("OutlinerMorph", {
     return m;
   },
 
+  toggleAnnotation: function(evt) {
+    this._shouldShowAnnotation = !this._shouldShowAnnotation;
+    this.updateExpandedness();
+  },
+
   copyDownParentsString: function() {
     return reflect(this.mirror().copyDownParents()).expressionEvaluatingToMe();
   },
@@ -92,10 +99,9 @@ ColumnMorph.subclass("OutlinerMorph", {
     this._headerRow.refreshContent();
     this.minimumExtentChanged();
   },
-
-  toggleAnnotation: function(evt) {
-    this._shouldShowAnnotation = !this._shouldShowAnnotation;
-    this.updateExpandedness();
+  
+  startPeriodicallyUpdating: function() {
+    this._updater = new PeriodicalExecuter(function(pe) { this.updateAppearance(); }.bind(this), 8);
   },
 
 
@@ -132,6 +138,10 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   slotMorphFor: function(s) {
     return this._slotMorphs.getOrIfAbsentPut(s.name(), function() { return new SlotMorph(s); });
+  },
+
+  existingCategoryMorphFor: function(c) {
+    return this._categoryMorphs.get(categoryFullName(c));
   },
 
   categoryMorphFor: function(c) {
@@ -255,6 +265,7 @@ CategoryMixin = {
     sms.sort(function(sm1, sm2) {return sm1.slot().name() < sm2.slot().name() ? -1 : 1});
 
     var scms = this.immediateSubcategoryMorphs();
+    scms = scms.concat(this._slotsPanel.submorphs.select(function(m) {return m.isNewCategory && ! this.outliner().existingCategoryMorphFor(m.category());}.bind(this)));
     scms.sort(function(scm1, scm2) {return categoryLastPartName(scm1.category()) < categoryLastPartName(scm2.category()) ? -1 : 1});
     
     this._slotsPanel.replaceThingiesWith(sms.concat(scms));
@@ -282,6 +293,7 @@ CategoryMixin = {
     this.updateAppearance();
     this.expander().expand();
     var cm = new CategoryMorph(this.outliner(), subcategory(this.category(), ""));
+    cm.isNewCategory = true;
     this.slotsPanel().addRow(cm);
     cm.titleLabel.beWritableAndSelectAll();
   },
