@@ -6,8 +6,8 @@ ColumnMorph.subclass("OutlinerMorph", {
     this.sPadding = this.fPadding = 5;
     this.shape.roundEdgesBy(10);
 
-    this._slotMorphs     = new BloodyHashTable();
-    this._categoryMorphs = new BloodyHashTable();
+    this._slotMorphs     = bloodyHashTable.copyRemoveAll();
+    this._categoryMorphs = bloodyHashTable.copyRemoveAll();
 
     this.initializeCategoryUI();
     

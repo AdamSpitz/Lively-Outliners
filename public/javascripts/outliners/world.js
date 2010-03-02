@@ -60,10 +60,7 @@ WorldMorph.addMethods({
   },
 
   outliners: function() {
-    if (! this._outliners) {
-      this._outliners = new BloodyHashTable();
-    }
-    return this._outliners;
+    return this._outliners || (this._outliners = bloodyHashTable.copyRemoveAll());
   },
 
   existingOutlinerFor: function(mir) {
