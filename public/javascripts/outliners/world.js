@@ -44,14 +44,18 @@ WorldMorph.addMethods({
           this.outlinerFor(reflect(lobby)).grabMe(evt);
         }],
 
-        ["annotate external objects", function(evt) {
-            var marker = new CreatorSlotMarker();
-            var objectCount = marker.walk(lobby);
-            console.log("Whoa, done annotating external stuff! It took " + (new Date().getTime() - marker._startTime) + " ms to annotate " + objectCount + " objects.");
-        }],
-
         ["aaaaa", function(evt) {
-          this.outlinerFor(reflect(transporter)).grabMe(evt);
+            var obj = OutlinerMorph;
+            var annoyingName = 'prototype';
+            for (var name in obj) {
+              if (obj.hasOwnProperty(name) && name === annoyingName) {
+                throw "Oh, OK, it's there.";
+              }
+              if (name === annoyingName) {
+                throw "Huh, it's not the thing's own property?";
+              }
+            }
+            if (obj[annoyingName] !== undefined) { throw "But accessing it directly works???"; }
         }],
       ]);
     }

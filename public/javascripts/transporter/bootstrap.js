@@ -10,6 +10,14 @@ function setCreatorSlot(annotation, name, holder) {
   annotation.creatorSlotHolder = holder;
 }
 
+function creatorChainLength(o) {
+  if (o === lobby) { return 0; }
+  if (! o.hasOwnProperty('__annotation__')) { return null; }
+  var creatorSlotHolder = o.__annotation__.creatorSlotHolder;
+  if (creatorSlotHolder === undefined) { return null; }
+  return creatorChainLength(creatorSlotHolder) + 1;
+}
+
 var lobby = window; // still not sure whether I want this to be window, or Object.create(window), or {}
 
 lobby.modules = {};

@@ -74,10 +74,10 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('creatorSlotChainExpression', function () {
-    if (this.isReflecteePrimitive()) {throw this.reflectee() + " does not have a creator slot chain.";}
+    if (this.isReflecteePrimitive()) {throw this.inspect() + " does not have a creator slot chain.";}
 
     var chain = this.creatorSlotChain();
-    if (! chain) {throw this.reflectee() + " does not have a creator slot chain.";}
+    if (! chain) {throw this.inspect() + " does not have a creator slot chain.";}
 
     var s = new StringBuffer("lobby");
     for (var i = chain.length - 1; i >= 0; i -= 1) {

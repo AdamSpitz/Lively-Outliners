@@ -19,9 +19,9 @@ Object.subclass("ObjectGraphWalker", {
     'enabledPlugin'    // aaa just a hack for now - what's this clientInformation thing, and what are these arrays that aren't really arrays?
   ],
 
-  go: function() {
+  go: function(root) {
     this.reset();
-    this.walk(lobby, 0);
+    this.walk(root === undefined ? lobby : root, 0);
     return this.results();
   },
 
@@ -34,6 +34,8 @@ Object.subclass("ObjectGraphWalker", {
     // children can override
     return this._results;
   },
+ 
+  objectCount: function() { return this._objectCount; },
 
   inspect: function() {
     return this.constructor.type.prependAOrAn();
@@ -117,11 +119,31 @@ Object.subclass("ObjectGraphWalker", {
 
 ObjectGraphWalker.subclass("CreatorSlotMarker", {
   markContents: function(holder, slotName, contents, contentsAnno) {
-    if (contentsAnno.hasOwnProperty('creatorSlotName')) { return false; }
-    setCreatorSlot(contentsAnno, slotName, holder);
-    return true;
+    if (contentsAnno.hasOwnProperty('creatorSlotName')) {
+      if (creatorChainLength(holder) < creatorChainLength(contentsAnno.creatorSlotHolder)) {
+        // This one's shorter, so probably better; use it instead.
+        setCreatorSlot(contentsAnno, slotName, holder);
+      }
+      return false;
+    } else {
+      setCreatorSlot(contentsAnno, slotName, holder);
+      return true;
+    }
   },
 });
+
+CreatorSlotMarker.annotateExternalObjects = function() {
+  var marker = new this();
+  marker.walk(lobby);
+  // aaa - WTFJS, damned for loops don't seem to see String and Number and Array and their 'prototype' slots.
+  ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function'].each(function(typeName) {
+    var type = window[typeName];
+    marker.markContents(window, typeName, type, annotationOf(type));
+    marker.markContents(type, 'prototype', type.prototype, annotationOf(type.prototype));
+    marker.walk(type.prototype);
+  });
+};
+
 
 // aaa - these guys below probably belong in another module, and should be returning a list of slots rather than holders
 
