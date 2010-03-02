@@ -60,6 +60,9 @@ WorldMorph.addMethods({
     return menu;
   },
 
+  
+  // outliners
+
   outliners: function() {
     return this._outliners || (this._outliners = bloodyHashTable.copyRemoveAll());
   },

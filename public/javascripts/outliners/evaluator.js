@@ -30,8 +30,10 @@ ColumnMorph.subclass("EvaluatorMorph", {
   textMorph: function() { return this._textMorph; },
 
   runTheCode: function() {
-    var self = this.outliner().mirror().reflectee();
-    return eval("(" +  this.textMorph().getText() + ")");
+    var __codeToRun__ = this.textMorph().getText();
+    var __result__;
+    (function() { __result__ = eval("(" + __codeToRun__ + ")"); }).call(this.outliner().mirror().reflectee());
+    return __result__;
   },
 
    doIt: function(evt) { MessageNotifierMorph.showIfErrorDuring(function() {                                         this.runTheCode()              ; }.bind(this), evt); },
