@@ -1,7 +1,10 @@
 var tickNumber = 0;
-var periodicArrowUpdatingProcess = PeriodicalExecuter.createButDontStartYet(function(pe) {
-  updateAllArrows();
-}, 0.1);
+
+function startUpdatingAllArrows() {
+  new PeriodicalExecuter(function(pe) {
+    updateAllArrows();
+  }, 0.1);
+}
 
 var allArrows = [];
 

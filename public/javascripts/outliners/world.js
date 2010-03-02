@@ -32,9 +32,6 @@ WorldMorph.addMethods({
 
     if (debugMode) {
       menu.addSection([
-        periodicArrowUpdatingProcess.isRunning() ? [ "stop updating arrows", function() {periodicArrowUpdatingProcess.stop();}]
-                                                 : ["start updating arrows", function() {periodicArrowUpdatingProcess.ensureRunning();}],
-
         ["create new weirdo test object", function(evt) {
           var o = {anObject: {}, anArray: ['zero', 1, 'two'], aNull: null, fortyTwo: 42, aString: 'here is a string', aBoolean: true, aFunction: function(a, b) {argleBargle();}};
           this.outlinerFor(reflect(o)).grabMe(evt);
