@@ -32,7 +32,7 @@ ColumnMorph.subclass("SlotMorph", {
   isMethodThatShouldBeShownAsPartOfTheBox: function() {
       if (this.slot().isFunctionBody()) { return true; }
       if (! this.slot().isMethod()) { return false; }
-      if (this.slot().contents().iterator('eachNonParentSlot').find(function(s) { return true; })) { return false; }
+      if (new Iterator(this.slot().contents(), 'eachNormalSlot').find(function(s) { return true; })) { return false; }
       return true;
   },
 

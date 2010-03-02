@@ -63,7 +63,7 @@ thisModule.addSlots(lobby.transporter.module, function(add) {
   });
 
   add.method('eachModule', function (f) {
-    reflect(lobby.modules).eachNonParentSlot(function(s) { f(s.contents().reflectee()); });
+    reflect(lobby.modules).eachNormalSlot(function(s) { f(s.contents().reflectee()); });
   });
 
 });

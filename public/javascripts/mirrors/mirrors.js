@@ -104,12 +104,16 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('eachSlot', function (f) {
-    if (this.isReflecteeFunction()) { f(Object.create(lobby.slots.functionBody).initialize(this)); } // not sure this really makes sense here
-    f(Object.create(lobby.slots.parent).initialize(this));
-    this.eachNonParentSlot(f);
+    this.eachFakeSlot(f);
+    this.eachNormalSlot(f);
   });
 
-  add.method('eachNonParentSlot', function (f) {
+  add.method('eachFakeSlot', function (f) {
+    if (this.isReflecteeFunction()) { f(Object.create(lobby.slots.functionBody).initialize(this)); }
+    if (this.hasAccessibleParent()) { f(Object.create(lobby.slots.parent      ).initialize(this)); }
+  });
+
+  add.method('eachNormalSlot', function (f) {
     if (! this.canHaveSlots()) {return;} // aaa - Do primitives have a parent? Or maybe numbers do but null doesn't or something?
     var o = this.reflectee();
     for (var name in o) {
@@ -122,14 +126,14 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('eachSlotInCategory', function (c, f) {
-    this.eachNonParentSlot(function(s) {
+    this.eachNormalSlot(function(s) {
       if (categoriesAreEqual(c, s.category())) { f(s); }
     });
   });
 
   add.method('eachImmediateSubcategoryOf', function (c, f) {
     var subcats = {};
-    this.eachNonParentSlot(function(s) {
+    this.eachNormalSlot(function(s) {
       var sc = s.category();
       if (isImmediateSubcategoryOf(c, sc)) { subcats[categoryLastPartName(sc)] = sc; }
     });
@@ -183,24 +187,25 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('parent', function () {
-    var o = this.reflectee();
-    if (! is_proto_property_supported) {
-      return reflect(o.__parent_slot_that_does_not_actually_mean_anything_but_is_here_for_reflective_purposes__);
-    } else {
-      return reflect(o.__proto__);
-    }
+    if (! this.canAccessParent()) { throw "Sorry, you can't access an object's parent in this browser. Try Firefox or Safari."; }
+    if (! this.hasParent()) { throw this.name() + " does not have a parent."; }
+    return reflect(this.reflectee().__proto__);
   });
 
-  add.method('canSetParent', function () { return is_proto_property_supported; });
+  add.method('canAccessParent', function () { return UserAgent.is_proto_property_supported; });
+
+  add.method('hasParent', function () { return ! (this.isReflecteeNull() || this.isReflecteeUndefined()); });
+
+  add.method('hasAccessibleParent', function () { return this.canAccessParent() && this.hasParent(); });
 
   add.method('setParent', function (pMir) {
-    if (! this.canSetParent()) { throw "Sorry, you can't change an object's parent in this browser. Try Firefox or Safari."; }
+    if (! this.canAccessParent()) { throw "Sorry, you can't change an object's parent in this browser. Try Firefox or Safari."; }
     this.reflectee().__proto__ = pMir.reflectee();
   });
 
   add.method('createChild', function () {
     var parent = this.reflectee();
-    var ChildConstructor = is_proto_property_supported ? function() {} : function() {this.__parent_slot_that_does_not_actually_mean_anything_but_is_here_for_reflective_purposes__ = parent;};
+    var ChildConstructor = UserAgent.is_proto_property_supported ? function() {} : function() {this.__parent_slot_that_does_not_actually_mean_anything_but_is_here_for_reflective_purposes__ = parent;};
     ChildConstructor.prototype = parent;
     var child = new ChildConstructor();
     return reflect(child);
@@ -218,7 +223,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
 
     var str = new StringBuffer("{");
     var sep = "";
-    this.eachNonParentSlot(function(slot) {
+    this.eachNormalSlot(function(slot) {
         str.append(sep).append(slot.name()).append(": ").append(slot.contents().expressionEvaluatingToMe());
         sep = ", ";
     });
@@ -231,7 +236,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
 
   add.method('size', function () {
     var size = 0;
-    this.eachNonParentSlot(function(s) { size += 1; });
+    this.eachNormalSlot(function(s) { size += 1; });
     return size;
   });
 

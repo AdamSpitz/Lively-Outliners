@@ -94,8 +94,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   // slots
 
   eachSlot: function(f) {
-    if (this.mirror().isReflecteeFunction()) { f(Object.create(lobby.slots.functionBody).initialize(this.mirror())); }
-    f(Object.create(lobby.slots.parent).initialize(this.mirror()));
+    this.mirror().eachFakeSlot(f);
     this.mirror().eachSlotInCategory(this.category(), f);
   },
 

@@ -124,9 +124,30 @@ Object.extend(BloodyHashTable.prototype, {
     });
     s.push(")");
     return s.join("");
-  }
+  },
 
+  getOrIfAbsentPut: function(key, functionReturningTheValueToPutIfAbsent) {
+    var v = this.get(key);
+    if (v == null) {
+      v = functionReturningTheValueToPutIfAbsent();
+      this.set(key, v);
+    }
+    return v;
+  },
+
+  eachKeyAndValue: function(f) {
+    return this.each(function(pair) {return f(pair.key, pair.value);});
+  },
+
+  eachValue: function(f) {
+    return this.each(function(pair) {return f(pair.value);});
+  },
+
+  eachKey: function(f) {
+    return this.each(function(pair) {return f(pair.key);});
+  }
 });
+Object.extend(BloodyHashTable.prototype, Enumerable);
 
 Object.extend(String.prototype, {
   hashCode: function() {return this;},

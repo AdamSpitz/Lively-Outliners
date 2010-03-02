@@ -10,9 +10,3 @@ Object.subclass("Iterator", {
 });
 
 Object.extend(Iterator.prototype, Enumerable);
-
-Object.extend(Object.prototype, {
-  iterator: function(methodName) {
-    return new Iterator(this, methodName);
-  },
-});
