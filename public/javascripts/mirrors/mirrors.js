@@ -43,8 +43,13 @@ thisModule.addSlots(lobby.mirror, function(add) {
     return "on " + this.name();
   });
 
+  add.method('nameOfLobby', function () {
+    // I haven't quite decided whether I want to call it lobby or Global or window or what.
+    return lobby === Global ? "Global" : "lobby";
+  });
+
   add.method('inspect', function () {
-    if (this.reflectee() === lobby) {return "lobby";}
+    if (this.reflectee() === lobby) {return this.nameOfLobby();}
     if (this.isReflecteePrimitive()) {return Object.inspect(this.reflectee());}
     if (this.isReflecteeArray()) { return this.reflectee().length > 5 ? "an array" : "[" + this.reflectee().map(function(elem) {return reflect(elem).inspect();}).join(", ") + "]"; }
     var n = this.name();

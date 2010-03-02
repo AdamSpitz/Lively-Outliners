@@ -9,8 +9,8 @@ WorldMorph.addMethods({
 
     menu.addLine();
 
-    menu.addItem(["get the lobby", function(evt) {
-      this.outlinerFor(reflect(lobby)).grabMe(evt);
+    menu.addItem(["get the Global object", function(evt) {
+      this.outlinerFor(reflect(Global)).grabMe(evt);
     }]);
 
     menu.addLine();
