@@ -296,6 +296,7 @@ CategoryMixin = {
     this.expander().expand();
     var cm = new CategoryMorph(this.outliner(), subcategory(this.category(), ""));
     cm.isNewCategory = true;
+    cm.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.slotsPanel().addRow(cm);
     cm.titleLabel.beWritableAndSelectAll();
   },

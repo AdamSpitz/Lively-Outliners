@@ -170,7 +170,7 @@ TextMorph.subclass("TwoModeTextMorph", {
 
   beWritable: function() {
     this.acceptInput = true;
-    this.setFill(this.backgroundColorWhenWritable || Color.white);
+    this.setFill(this.backgroundColorWhenWritable || null);
     this.setWrapStyle(lively.Text.WrapStyle.Shrink);
     this.changed();
     this.beUngrabbable();

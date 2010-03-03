@@ -36,13 +36,12 @@ Morph.addMethods({
   forceLayoutRejiggering: function(isMinimumExtentKnownToHaveChanged) {
     this._layoutIsStillValid = false;
 
+    var doesMyOwnerNeedToKnow = isMinimumExtentKnownToHaveChanged || this.hasMinimumExtentActuallyChanged();
     var o = this.owner;
     if (!o || o instanceof WorldMorph || o instanceof HandMorph) {
-      if (! isMinimumExtentKnownToHaveChanged) { this.hasMinimumExtentActuallyChanged(); } // make sure it's calculated
       this.new_rejiggerTheLayout(pt(100000, 100000));
       return;
     }
-    var doesMyOwnerNeedToKnow = isMinimumExtentKnownToHaveChanged || this.hasMinimumExtentActuallyChanged();
     if (doesMyOwnerNeedToKnow) { 
       var layoutRejiggeringHasBeenTriggeredHigherUp = o.minimumExtentChanged();
       if (layoutRejiggeringHasBeenTriggeredHigherUp) { return; }

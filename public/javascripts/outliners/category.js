@@ -11,9 +11,10 @@ ColumnMorph.subclass("CategoryMorph", {
     this.initializeCategoryUI();
 
     var categoryMorph = this;
-    this.titleLabel = new TwoModeTextMorph(pt(5, 10).extent(pt(140, 20)), categoryLastPartName(category));
+    this.titleLabel = new TwoModeTextMorph(pt(5, 10).extent(pt(20, 20)), categoryLastPartName(category));
     this.titleLabel.nameOfEditCommand = "rename";
     this.titleLabel.setFill(null);
+    this.titleLabel.backgroundColorWhenWritable = null;
     this.titleLabel.morphMenu = function(evt) { return categoryMorph.morphMenu(evt); };
     this.titleLabel.getSavedText = function() { return categoryLastPartName(category); };
     this.titleLabel.setSavedText = function(newName) { if (newName !== this.getSavedText()) { categoryMorph.rename(newName, createFakeEvent()); } };

@@ -109,12 +109,6 @@ Morph.subclass("RowOrColumnMorph", {
     if (this.areArraysEqual(old, ms)) { return; }
 
     for (var i = 0, n = old.length; i < n; ++i) { var m = old[i]; if (! m.shouldNotBePartOfRowOrColumn) {this.removeMorph(m);}}
-    // aaa - I've got a bug somewhere, where if I replace the morphs with the same morphs but in a different order,
-    // the layout doesn't get rejiggered (despite the forceLayoutRejiggering call down there), possibly because the
-    // minimum requirements are the same. This is a workaround, but I'd like to fix it properly.
-    this._cachedMinimumExtent = null;
-    delete this._spaceUsedLastTime; // aaa - should probably put this just in RowOrColumnMorph
-    //this.minimumExtentChanged();  
     for (var i = 0, n =  ms.length; i < n; ++i) { this.addMorph(ms[i]); }
     this.forceLayoutRejiggering();
   },
