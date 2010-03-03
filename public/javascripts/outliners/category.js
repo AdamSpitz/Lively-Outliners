@@ -48,7 +48,7 @@ ColumnMorph.subclass("CategoryMorph", {
   updateAppearance: function() {
     if (! this.world()) {return;}
     this.populateSlotsPanel();
-    this.immediateSubcategoryMorphs().each(function(scm) { scm.updateAppearance(); }); // aaa is this gonna cause us to redo a lot of work?
+    this._slotsPanel.submorphs.each(function(m) { m.updateAppearance(); }); // aaa is this gonna cause us to redo a lot of work?
     this.refillWithAppropriateColor();
     this.titleLabel.refreshText();
     this.minimumExtentChanged();

@@ -63,7 +63,8 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
   },
 
   changed: function($super) {
-    if (this.getText() == this.getSavedText()) {
+    this.hasChangedFromSavedText = this.getText() !== this.getSavedText();
+    if (! this.hasChangedFromSavedText) {
       this.setBorderColor(Color.black);
       this.setBorderWidth(this.normalBorderWidth || 1);
     } else {
@@ -75,10 +76,15 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
   },
 
   refreshText: function() {
-    var newText = this.getSavedText();
-    if (newText != this.getText()) {
-      this.setText(newText);
+    if (this.hasChangedFromSavedText) {
+      // Don't wanna lose the stuff that we've typed.
       this.changed();
+    } else {
+      var newText = this.getSavedText();
+      if (newText !== this.getText()) {
+        this.setText(newText);
+        this.changed();
+      }
     }
   },
 

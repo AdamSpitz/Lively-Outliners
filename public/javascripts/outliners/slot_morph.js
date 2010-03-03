@@ -163,7 +163,7 @@ ColumnMorph.subclass("SlotMorph", {
   },
 
      slot: function() { return this._slot; },
-  inspect: function() { return "the " + this.slot().name() + " slot morph"; },
+  inspect: function() { return this.slot().name(); },
 
   outliner: function() {
     return WorldMorph.current().existingOutlinerFor(this.slot().mirror());

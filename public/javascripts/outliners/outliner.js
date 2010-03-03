@@ -79,10 +79,10 @@ ColumnMorph.subclass("OutlinerMorph", {
     return reflect(this.mirror().copyDownParents()).expressionEvaluatingToMe();
   },
 
-  setCopyDownParentsString: function() {
+  setCopyDownParentsString: function(str) {
     MessageNotifierMorph.showIfErrorDuring(function() {
       this.mirror().setCopyDownParents(eval(str));
-    }, createFakeEvent());
+    }.bind(this), createFakeEvent());
     this.updateAppearance();
   },
 
@@ -92,7 +92,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   updateAppearance: function() {
     if (! this.world()) {return;}
     this.populateSlotsPanel();
-    this.immediateSubcategoryMorphs().each(function(scm) { scm.updateAppearance(); }); // aaa is this gonna cause us to redo a lot of work?
+    this._slotsPanel.submorphs.each(function(m) { m.updateAppearance(); }); // aaa is this gonna cause us to redo a lot of work?
     this.refillWithAppropriateColor();
     this.titleLabel.refreshText();
     if (this._copyDownParentsLabel) {this._copyDownParentsLabel.refreshText();}
