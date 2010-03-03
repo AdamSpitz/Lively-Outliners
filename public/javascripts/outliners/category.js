@@ -4,7 +4,7 @@ ColumnMorph.subclass("CategoryMorph", {
     this._outliner = outliner;
     this._category = category;
 
-    this.sPadding = this.fPadding = 2;
+    this.setPadding(2);
     this.closeDnD();
     this.beUngrabbable();
 
@@ -15,7 +15,12 @@ ColumnMorph.subclass("CategoryMorph", {
     this.titleLabel.nameOfEditCommand = "rename";
     this.titleLabel.setFill(null);
     this.titleLabel.backgroundColorWhenWritable = null;
+
+    // aaa - I think there's a way to make the titleLabel just ignore the event and let the categoryMorph be the thing that does the menu,
+    // rather than explicitly forwarding the messages like I do here. Try looking at what "createLabel" does. (That's what the outliner's titleLabel is, and it seems to work right.)
+    this.titleLabel.inspect   = function()    { return categoryMorph.inspect(); };
     this.titleLabel.morphMenu = function(evt) { return categoryMorph.morphMenu(evt); };
+
     this.titleLabel.getSavedText = function() { return categoryLastPartName(category); };
     this.titleLabel.setSavedText = function(newName) { if (newName !== this.getSavedText()) { categoryMorph.rename(newName, createFakeEvent()); } };
     this.titleLabel.refreshText();
@@ -35,7 +40,7 @@ ColumnMorph.subclass("CategoryMorph", {
   createHeaderRow: function() {
     var r = this._headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
     this._headerRowSpacer = createSpacer();
-    r.fPadding = 3;
+    r.setPadding({top: 0, bottom: 0, left: 0, right: 0, between: 3});
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
     r.inspect = function() {return "the header row";};
     this._headerRow.replaceThingiesWith([this._expander, this.titleLabel, this._headerRowSpacer]);

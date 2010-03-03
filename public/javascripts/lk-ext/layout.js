@@ -15,7 +15,7 @@ Morph.addMethods({
     return this._cachedMinimumExtent = this.getExtent();
   },
 
-  new_rejiggerTheLayout: function(availableSpace) {
+  rejiggerTheLayout: function(availableSpace) {
     // maybe nothing to do here
   },
 
@@ -39,7 +39,7 @@ Morph.addMethods({
     var doesMyOwnerNeedToKnow = isMinimumExtentKnownToHaveChanged || this.hasMinimumExtentActuallyChanged();
     var o = this.owner;
     if (!o || o instanceof WorldMorph || o instanceof HandMorph) {
-      this.new_rejiggerTheLayout(pt(100000, 100000));
+      this.rejiggerTheLayout(pt(100000, 100000));
       return;
     }
     if (doesMyOwnerNeedToKnow) { 
@@ -47,7 +47,7 @@ Morph.addMethods({
       if (layoutRejiggeringHasBeenTriggeredHigherUp) { return; }
     }
     if (this._spaceUsedLastTime) {
-      this.new_rejiggerTheLayout(this._spaceUsedLastTime);
+      this.rejiggerTheLayout(this._spaceUsedLastTime);
     } else {
       o.forceLayoutRejiggering();
     }

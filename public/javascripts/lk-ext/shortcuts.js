@@ -72,8 +72,7 @@ function createInputBox(getFunction, setFunction) {
 
 function createTextBoxWithButton(buttonText, textBoxText, f) {
   var m = new RowMorph();
-  m.sPadding = 0;
-  m.fPadding = 0;
+  m.setPadding(0);
   m.setFill(Color.white);
   m.textBox = createTextField(false, textBoxText || "");
   m.replaceThingiesWith([m.textBox, createButton(buttonText, function() {f(m.textBox.getText());})]);

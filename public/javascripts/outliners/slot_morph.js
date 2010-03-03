@@ -2,8 +2,7 @@ ColumnMorph.subclass("SlotMorph", {
   initialize: function($super, slot) {
     $super();
     this._slot = slot;
-    this.sPadding = 0;
-    this.fPadding = 0;
+    this.setPadding(0);
     this.setFill(defaultFillWithColor(Color.gray));
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);

@@ -4,7 +4,7 @@ ColumnMorph.subclass("SliceMorph", {
     this._searcher = searcher;
 
     this.setFill(defaultFillWithColor(Color.blue.lighter()));
-    this.sPadding = this.fPadding = 5;
+    this.setPadding(5);
     this.shape.roundEdgesBy(10);
 
     this._slotsPanel = new ColumnMorph().beInvisible();
@@ -27,7 +27,7 @@ ColumnMorph.subclass("SliceMorph", {
   createHeaderRow: function() {
     var r = this._headerRow = new RowMorph().beInvisible();
     this._headerRowSpacer = createSpacer();
-    r.fPadding = 3;
+    r.setPadding({top: 0, bottom: 0, left: 3, right: 3, between: 3});
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
     r.inspect = function() {return "the header row";};
     r.replaceThingiesWith([this._expander, this.titleLabel, this._headerRowSpacer, this.redoButton, this.dismissButton]);
@@ -73,7 +73,7 @@ ColumnMorph.subclass("SliceMorph", {
   createRowForSlot: function(s) {
     var r = new RowMorph().beInvisible();
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
-    r.fPadding = 3
+    r.setPadding({top: 0, bottom: 0, left: 3, right: 3, between: 3});
       var inSituButton = createButton("in situ", function() { this.showInSitu(s, inSituButton); }.bind(this), 2);
     var ms = [createLabel(s.holder().name()), createSpacer(), new SlotMorph(s), inSituButton];
     r.replaceThingiesWith(ms);

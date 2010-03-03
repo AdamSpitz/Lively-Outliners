@@ -3,8 +3,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     $super();
     this._mirror = m;
 
-    this.sPadding = 10;
-    this.fPadding = 2;
+    this.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: 2});
     this.shape.roundEdgesBy(10);
 
     this._slotMorphs     = bloodyHashTable.copyRemoveAll();
@@ -39,7 +38,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   createHeaderRow: function() {
     var r = this._headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
     this._headerRowSpacer = createSpacer();
-    r.fPadding = 3;
+    r.setPadding({top: 0, bottom: 0, left: 0, right: 0, between: 3});
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
     r.inspect = function() {return "the header row";};
     r.refreshContent = function() { this.refreshHeaderRow(); }.bind(this);
@@ -252,6 +251,7 @@ CategoryMixin = {
     var sp = this._slotsPanel;
     if (sp) { return sp; }
     sp = this._slotsPanel = new ColumnMorph().beInvisible();
+    sp.setPadding({top: 0, bottom: 0, left: 10, right: 0, between: 0});
     sp.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.populateSlotsPanel();
     return sp;
