@@ -211,7 +211,14 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   createChild: function(evt) {
-    this.world().outlinerFor(this.mirror().createChild()).grabMe(evt);
+    var child = this.mirror().createChild();
+    var childOutliner = this.world().outlinerFor(child);
+    childOutliner.grabMe(evt);
+
+    // might as well show the arrow from the child to the parent
+    childOutliner.expander().expand();
+    var parentSlotMorph = childOutliner.slotMorphFor(child.parentSlot());
+    parentSlotMorph.contentsPointer().getModel().setValue(false);
   },
 
 

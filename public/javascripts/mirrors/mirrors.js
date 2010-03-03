@@ -137,8 +137,16 @@ thisModule.addSlots(lobby.mirror, function(add) {
   });
 
   add.method('eachFakeSlot', function (f) {
-    if (this.isReflecteeFunction()) { f(Object.create(lobby.slots.functionBody).initialize(this)); }
-    if (this.hasAccessibleParent()) { f(Object.create(lobby.slots.parent      ).initialize(this)); }
+    if (this.isReflecteeFunction()) { f(this.functionBodySlot()); }
+    if (this.hasAccessibleParent()) { f(this.      parentSlot()); }
+  });
+
+  add.method('functionBodySlot', function () {
+    return Object.create(lobby.slots.functionBody).initialize(this);
+  });
+
+  add.method('parentSlot', function () {
+    return Object.create(lobby.slots.parent).initialize(this);
   });
 
   add.method('eachNormalSlot', function (f) {
