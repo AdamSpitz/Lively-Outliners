@@ -12,7 +12,7 @@ ColumnMorph.subclass("SlotMorph", {
     this.labelMorph = new TwoModeTextMorph(pt(5, 10).extent(pt(140, 20)), slotMorph.slot().name());
     this.labelMorph.nameOfEditCommand = "rename";
     this.labelMorph.setFill(null);
-    this.labelMorph.morphMenu = function(evt) { return slotMorph.morphMenu(evt); };
+    this.labelMorph.ignoreEvents();
     this.labelMorph.getSavedText = function() { return slotMorph.slot().name(); };
     this.labelMorph.setSavedText = function(newName) { if (newName !== this.getSavedText()) { slotMorph.rename(newName, createFakeEvent()); } };
     this.labelMorph.refreshText();
