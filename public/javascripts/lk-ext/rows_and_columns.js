@@ -35,7 +35,10 @@ Morph.subclass("RowOrColumnMorph", {
     var availableSpaceToUse = pt(this.horizontalLayoutMode === LayoutModes.ShrinkWrap ? this._cachedMinimumExtent.x : availableSpace.x,
                                  this.  verticalLayoutMode === LayoutModes.ShrinkWrap ? this._cachedMinimumExtent.y : availableSpace.y);
 
-    if (this._spaceUsedLastTime && this._spaceUsedLastTime.eqPt(availableSpaceToUse)) { return; }
+    if (this._layoutIsStillValid && this._spaceUsedLastTime && this._spaceUsedLastTime.eqPt(availableSpaceToUse)) {
+      if (this.aaaDebugMe) { console.log("Not gonna lay out " + this.inspect() + ", since it's already laid out in the appropriate amount of space."); }
+      return;
+    }
     this._spaceUsedLastTime = availableSpaceToUse;
 
     var direction = this.direction;
@@ -86,16 +89,34 @@ Morph.subclass("RowOrColumnMorph", {
       this.setBounds(b);
       if (this.aaaDebugMe) { console.log("Setting bounds to " + b); }
     }
+    this._layoutIsStillValid = true;
   },
 
-     addThingy: function(m) {this.   addMorph(m); this.minimumExtentChanged();},
-  removeThingy: function(m) {this.removeMorph(m); this.minimumExtentChanged();},
+     addThingy: function(m) {this.   addMorph(m); this.forceLayoutRejiggering();},
+  removeThingy: function(m) {this.removeMorph(m); this.forceLayoutRejiggering();},
+
+  areArraysEqual: function(a1, a2) {
+    if (a1.length !== a2.length) { return false; }
+    for (var i = 0, n = a1.length; i < n; ++i) {
+      if (a1[i] !== a2[i]) { return false; }
+    }
+    return true;
+  },
 
   replaceThingiesWith: function(ms) {
     var old = $A(this.submorphs);
+
+    if (this.areArraysEqual(old, ms)) { return; }
+
     for (var i = 0, n = old.length; i < n; ++i) { var m = old[i]; if (! m.shouldNotBePartOfRowOrColumn) {this.removeMorph(m);}}
+    // aaa - I've got a bug somewhere, where if I replace the morphs with the same morphs but in a different order,
+    // the layout doesn't get rejiggered (despite the forceLayoutRejiggering call down there), possibly because the
+    // minimum requirements are the same. This is a workaround, but I'd like to fix it properly.
+    this._cachedMinimumExtent = null;
+    delete this._spaceUsedLastTime; // aaa - should probably put this just in RowOrColumnMorph
+    //this.minimumExtentChanged();  
     for (var i = 0, n =  ms.length; i < n; ++i) { this.addMorph(ms[i]); }
-    this.minimumExtentChanged();
+    this.forceLayoutRejiggering();
   },
 
   eachThingy: function(f) {

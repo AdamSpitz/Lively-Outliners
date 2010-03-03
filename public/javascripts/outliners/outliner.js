@@ -268,7 +268,9 @@ CategoryMixin = {
     scms = scms.concat(this._slotsPanel.submorphs.select(function(m) {return m.isNewCategory && ! this.outliner().existingCategoryMorphFor(m.category());}.bind(this)));
     scms.sort(function(scm1, scm2) {return categoryLastPartName(scm1.category()) < categoryLastPartName(scm2.category()) ? -1 : 1});
     
-    this._slotsPanel.replaceThingiesWith(sms.concat(scms));
+    var allSubmorphs = sms.concat(scms);
+    allSubmorphs.each(function(m) { m.horizontalLayoutMode = LayoutModes.SpaceFill; });
+    this._slotsPanel.replaceThingiesWith(allSubmorphs);
   },
 
   immediateSubcategoryMorphs: function() {

@@ -4,7 +4,6 @@ ColumnMorph.subclass("CategoryMorph", {
     this._outliner = outliner;
     this._category = category;
 
-    this.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.sPadding = this.fPadding = 2;
     this.closeDnD();
     this.beUngrabbable();

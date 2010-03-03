@@ -4,7 +4,6 @@ ColumnMorph.subclass("SlotMorph", {
     this._slot = slot;
     this.sPadding = 0;
     this.fPadding = 0;
-    this.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.setFill(defaultFillWithColor(Color.gray));
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
@@ -158,6 +157,7 @@ ColumnMorph.subclass("SlotMorph", {
   transferUIStateTo: function(otherSlotMorph) {
     // used after renaming, since it's actually a whole nother slot and slotMorph but we want it to feel like the same one
     otherSlotMorph._shouldShowSource     = this._shouldShowSource;
+    otherSlotMorph._shouldShowComment    = this._shouldShowComment;
     otherSlotMorph._shouldShowAnnotation = this._shouldShowAnnotation;
     otherSlotMorph.updateAppearance();
   },
