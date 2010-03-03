@@ -7,6 +7,7 @@ ColumnMorph.subclass("CategoryMorph", {
     this.setPadding(2);
     this.closeDnD();
     this.beUngrabbable();
+    // this.ignoreEvents();  // aaa - This makes grabbing-the-outliner-through-me work, but breaks the category's menu. Can't I have both?
 
     this.initializeCategoryUI();
 
@@ -15,11 +16,7 @@ ColumnMorph.subclass("CategoryMorph", {
     this.titleLabel.nameOfEditCommand = "rename";
     this.titleLabel.setFill(null);
     this.titleLabel.backgroundColorWhenWritable = null;
-
-    // aaa - I think there's a way to make the titleLabel just ignore the event and let the categoryMorph be the thing that does the menu,
-    // rather than explicitly forwarding the messages like I do here. Try looking at what "createLabel" does. (That's what the outliner's titleLabel is, and it seems to work right.)
-    this.titleLabel.inspect   = function()    { return categoryMorph.inspect(); };
-    this.titleLabel.morphMenu = function(evt) { return categoryMorph.morphMenu(evt); };
+    this.titleLabel.ignoreEvents();
 
     this.titleLabel.getSavedText = function() { return categoryLastPartName(category); };
     this.titleLabel.setSavedText = function(newName) { if (newName !== this.getSavedText()) { categoryMorph.rename(newName, createFakeEvent()); } };
@@ -61,7 +58,7 @@ ColumnMorph.subclass("CategoryMorph", {
 
 
   // inspecting
-  inspect: function() {return "category " + this._category + " on " + this.mirror().inspect();},
+  inspect: function() {return "category " + this._category;},
 
 
   // expanding and collapsing
