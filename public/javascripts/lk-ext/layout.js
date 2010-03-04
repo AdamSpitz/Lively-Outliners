@@ -54,3 +54,13 @@ Morph.addMethods({
   },
 
 });
+
+TextMorph.addMethods({
+	fitText: function() { 
+		if (this.wrap == lively.Text.WrapStyle.Normal) 
+			this.fitHeight();
+		else 
+			this.fitWidth();
+                this.minimumExtentChanged(); // aaa - hack, added by Adam
+	},
+});

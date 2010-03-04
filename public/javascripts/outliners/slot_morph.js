@@ -267,7 +267,9 @@ ColumnMorph.subclass("SlotMorph", {
   morphMenu: function(evt) {
     var menu = new MenuMorph([], this);
 
-    this.labelMorph.addEditingMenuItemsTo(menu, evt);
+    if (this.slot().rename) {
+      this.labelMorph.addEditingMenuItemsTo(menu, evt);
+    }
 
     menu.addItem([this._shouldShowSource ? "hide contents" : "edit contents", function(evt) {
       this.toggleSource();
@@ -322,18 +324,18 @@ ColumnMorph.subclass("SlotMorph", {
       }.bind(this)]);
     }
 
-    menu.addItem([this._shouldShowAnnotation ? "hide annotation" : " show annotation", function(evt) {
-      this.toggleAnnotation();
-    }.bind(this)]);
+    if (this.slot().annotation) {
+      menu.addItem([this._shouldShowAnnotation ? "hide annotation" : " show annotation", function(evt) {
+        this.toggleAnnotation();
+      }.bind(this)]);
+    }
 
-    menu.addLine();
-    
     if (this.slot().wellKnownImplementors) {
-      menu.addItem(["implementors", function(evt) {
+      menu.addSection([["implementors", function(evt) {
         var slice = new SliceMorph(new ImplementorsFinder(this.slot().name()));
         slice.grabMe(evt);
         slice.redo();
-      }.bind(this)]);
+      }.bind(this)]]);
     }
 
     return menu;
