@@ -48,7 +48,7 @@ ColumnMorph.subclass("CategoryMorph", {
   // updating    // aaa - now, can I make this happen automatically? maybe an update process?
 
   updateAppearance: function() {
-    if (! this.world()) {return;}
+    if (! this.world() || ! this.expander().isExpanded()) {return;}
     this.populateSlotsPanel();
     this._slotsPanel.submorphs.each(function(m) { m.updateAppearance(); }); // aaa is this gonna cause us to redo a lot of work?
     this.refillWithAppropriateColor();
