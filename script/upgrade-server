@@ -1,0 +1,13 @@
+#!/bin/sh
+
+appName=Lively-Outliners
+archiveName=${appName}.tar.gz
+server=adamzcom@ftp.adamspitz.com
+
+git checkout-index -a --prefix=${appName}/
+tar -zcvf ${archiveName} ${appName}
+scp ${archiveName} ${server}:#{archiveName}
+ssh ${server} ./rename_existing_directory.rb #{appName}; tar -zxvf #{archiveName}
+
+rm -r ${appName}
+rm ${archiveName}
