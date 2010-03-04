@@ -10,7 +10,6 @@
 
 Object.subclass("ObjectGraphWalker", {
   initialize: function() {
-    this._startTime = new Date().getTime();
     this._objectCount = 0; // just for fun
   },
 
@@ -21,6 +20,7 @@ Object.subclass("ObjectGraphWalker", {
 
   go: function(root) {
     this.reset();
+    this._startTime = new Date().getTime();
     this.walk(root === undefined ? lobby : root, 0);
     return this.results();
   },
@@ -28,6 +28,7 @@ Object.subclass("ObjectGraphWalker", {
   reset: function() {
     // children can override
     this._results = [];
+    this._objectCount = 0;
   },
 
   results: function() {
@@ -100,14 +101,20 @@ Object.subclass("ObjectGraphWalker", {
 
     for (var name in currentObj) {
       if (currentObj.hasOwnProperty(name) && ! this.namesToIgnore.include(name)) {
-        var contents = currentObj[name];
-        this.reachedSlot(currentObj, name, contents);
-        if (this.canHaveSlots(contents)) {
-          if (contents.constructor !== Array) { // aaa - this isn't right. But I don't wanna walk all the indexables.
-            if (! this.shouldIgnoreObject(contents)) {
-              var contentsAnno = annotationOf(contents);
-              if (this.markContents(currentObj, name, contents, contentsAnno)) {
-                this.walk(contents, nesting + 1);
+        var contents, contentsAnno;
+        var encounteredStupidFirefoxBug;
+        try { contents = currentObj[name]; } catch (ex) { encounteredStupidFirefoxBug = true; }
+        if (! encounteredStupidFirefoxBug) {
+          this.reachedSlot(currentObj, name, contents);
+          if (this.canHaveSlots(contents)) {
+            if (contents.constructor !== Array) { // aaa - this isn't right. But I don't wanna walk all the indexables.
+              if (! this.shouldIgnoreObject(contents)) {
+                try { contentsAnno = annotationOf(contents); } catch (ex) { encounteredStupidFirefoxBug = true; }
+                if (! encounteredStupidFirefoxBug) {
+                  if (this.markContents(currentObj, name, contents, contentsAnno)) {
+                    this.walk(contents, nesting + 1);
+                  }
+                }
               }
             }
           }
@@ -145,7 +152,7 @@ CreatorSlotMarker.annotateExternalObjects = function() {
 };
 
 
-// aaa - these guys below probably belong in another module, and should be returning a list of slots rather than holders
+// aaa - these guys below probably belong in another module
 
 ObjectGraphWalker.subclass("ImplementorsFinder", {
   initialize: function($super, slotName) {

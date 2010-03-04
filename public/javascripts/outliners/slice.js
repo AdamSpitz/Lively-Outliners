@@ -30,7 +30,8 @@ ColumnMorph.subclass("SliceMorph", {
     r.setPadding({top: 0, bottom: 0, left: 3, right: 3, between: 3});
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
     r.inspect = function() {return "the header row";};
-    r.replaceThingiesWith([this._expander, this.titleLabel, this._headerRowSpacer, this.redoButton, this.dismissButton]);
+    // aaa - redo doesn't work yet because we don't unmark the objects after we're done
+    r.replaceThingiesWith([this._expander, this.titleLabel, this._headerRowSpacer, /* this.redoButton, */ this.dismissButton]); 
     this.addRow(r);
     return r;
   },
