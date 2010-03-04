@@ -1,4 +1,4 @@
-var debugMode = true;
+var debugMode = false;
 
 Morph.suppressAllHandlesForever();
 startUpdatingAllArrows();
