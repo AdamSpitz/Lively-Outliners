@@ -7,7 +7,7 @@ ColumnMorph.subclass("EvaluatorMorph", {
     tm.setExtent(pt(150,60));
     var thisEvaluator = this;
     tm.onKeyPress = function(evt) {
-      if (evt.getKeyCode() == Event.KEY_RETURN && (evt.isAltDown() || evt.isMetaDown() || evt.isCtrlDown())) {
+      if (evt.getKeyCode() == Event.KEY_RETURN && (evt.isMetaDown() || evt.isCtrlDown())) {
         thisEvaluator.getIt(evt);
         evt.stop();
         return;

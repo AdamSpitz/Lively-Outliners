@@ -40,7 +40,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
       return;
     }
 
-    if (evt.getKeyCode() == Event.KEY_RETURN && (this.returnKeyShouldAccept() || evt.isAltDown() || evt.isMetaDown() || evt.isCtrlDown())) {
+    if (evt.getKeyCode() == Event.KEY_RETURN && (this.returnKeyShouldAccept() || evt.isMetaDown() || evt.isCtrlDown())) {
       this.acceptChanges();
       evt.stop();
       return;
@@ -54,7 +54,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
       evt.stop();
       return;
     }
-    if (evt.getKeyCode() == Event.KEY_RETURN && (this.returnKeyShouldAccept() || evt.isAltDown() || evt.isMetaDown() || evt.isCtrlDown())) {
+    if (evt.getKeyCode() == Event.KEY_RETURN && (this.returnKeyShouldAccept() || evt.isMetaDown() || evt.isCtrlDown())) {
       this.acceptChanges();
       evt.stop();
       return;
@@ -193,7 +193,7 @@ TextMorph.subclass("TwoModeTextMorph", {
       evt.stop();
       return;
     }
-    if (this.isInWritableMode && evt.getKeyCode() == Event.KEY_RETURN && (this.returnKeyShouldAccept() || evt.isAltDown() || evt.isMetaDown() || evt.isCtrlDown())) {
+    if (this.isInWritableMode && evt.getKeyCode() == Event.KEY_RETURN && (this.returnKeyShouldAccept() || evt.isMetaDown() || evt.isCtrlDown())) {
       this.acceptChanges();
       evt.stop();
       return;
