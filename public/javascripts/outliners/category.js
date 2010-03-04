@@ -124,7 +124,9 @@ Object.extend(CategoryMorph.prototype, CategoryMixin);
 
 
 
-// aaa - Where should this stuff live?
+// aaa - Where should this stuff live? The problem is that I want to use naked arrays
+// in the annotation, so that it's just dumb data. Maybe just create a Category
+// object that's a wrapper around the array, or something.
 
 function subcategory(cat, subcatName) {
   return cat.concat([subcatName]);

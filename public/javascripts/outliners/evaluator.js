@@ -3,6 +3,9 @@ ColumnMorph.subclass("EvaluatorMorph", {
     $super();
     this._outliner = outliner;
     
+    this.setFill(Color.gray);
+    this.beUngrabbable();
+
     var tm = this._textMorph = createTextField();
     tm.setExtent(pt(150,60));
     var thisEvaluator = this;
@@ -14,29 +17,26 @@ ColumnMorph.subclass("EvaluatorMorph", {
       }
       return TextMorph.prototype.onKeyPress.call(this, evt);
     };
-    this.addRow(tm);
     
     var bp = this.buttonsPanel = new RowMorph().beInvisible();
-    bp.addThingy(createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)));
-    bp.addThingy(createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)));
-    bp.addThingy(createButton("Close",  function(evt) {this.close(evt);}.bind(this)));
-    this.addRow(bp);
+    bp.replaceThingiesWith([createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)),
+                            createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)),
+                            createButton("Close",  function(evt) {this.close(evt);}.bind(this))]);
 
-    this.setFill(Color.gray);
-    this.beUngrabbable();
+
+    this.replaceThingiesWith([tm, bp]);
   },
 
-  outliner: function() { return this._outliner; },
+   outliner: function() { return this._outliner;  },
   textMorph: function() { return this._textMorph; },
 
   runTheCode: function() {
     var __codeToRun__ = this.textMorph().getText();
-    var __result__;
-    (function() { __result__ = eval("(" + __codeToRun__ + ")"); }).call(this.outliner().mirror().reflectee());
-    return __result__;
+    // run the code with "this" set to the outliner's object
+    return (function() { return eval("(" + __codeToRun__ + ")"); }).call(this.outliner().mirror().reflectee());
   },
 
-   doIt: function(evt) { MessageNotifierMorph.showIfErrorDuring(function() {                                         this.runTheCode()              ; }.bind(this), evt); },
+   doIt: function(evt) { MessageNotifierMorph.showIfErrorDuring(function() {                                      this.runTheCode()              ; }.bind(this), evt); },
   getIt: function(evt) { MessageNotifierMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(reflect(this.runTheCode())).grabMe(evt); }.bind(this), evt); },
 
   close: function(evt) {

@@ -1,5 +1,4 @@
 var debugMode = false;
-
 Morph.suppressAllHandlesForever();
 startUpdatingAllArrows();
 CreatorSlotMarker.annotateExternalObjects();
