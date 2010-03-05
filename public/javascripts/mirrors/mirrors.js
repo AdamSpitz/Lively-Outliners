@@ -396,6 +396,15 @@ thisModule.addSlots(lobby.mirror, function(add) {
     });
   });
 
+  add.method('modules', function() {
+    var modules = [];
+    this.eachNormalSlot(function(s) {
+      var m = s.module();
+      if (! modules.include(m)) { modules.push(m); }
+    });
+    return modules;
+  });
+
 });
 
 

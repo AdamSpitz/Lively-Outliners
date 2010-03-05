@@ -190,11 +190,32 @@ ColumnMorph.subclass("OutlinerMorph", {
     if (this.mirror().canHaveAnnotation()) {
       menu.addLine();
 
-      menu.addItem([this._shouldShowAnnotation ? "hide annotation" : "show annotation", function(evt) { this.toggleAnnotation(evt); }.bind(this)]);
-
       if (this.mirror().comment) {
         menu.addItem([this._shouldShowComment ? "hide comment" : "show comment", function(evt) { this.toggleComment(evt); }.bind(this)]);
       }
+
+      menu.addItem([this._shouldShowAnnotation ? "hide annotation" : "show annotation", function(evt) { this.toggleAnnotation(evt); }.bind(this)]);
+
+      menu.addItem(["set module...", function(evt) {
+        var all = {};
+        var chooseTargetModule = function(sourceModuleName, evt) {
+          chooseOrCreateAModule(evt, this, function(targetModule, evt) {
+            this.mirror().eachNormalSlot(function(slot) {
+              if (sourceModuleName === all || (!slot.module() && sourceModuleName === '-') || (slot.module() && slot.module().name() === sourceModuleName)) {
+                slot.setModule(targetModule);
+              }
+            }.bind(this));
+          }.bind(this));
+        }.bind(this);
+            
+        var whichSlotsMenu = new MenuMorph([], this);
+        whichSlotsMenu.addItem(["All", function(evt) {chooseTargetModule(all, evt);}.bind(this)]);
+        whichSlotsMenu.addLine();
+        this.mirror().modules().map(function(m) { return m ? m.name() : '-'; }).sort().each(function(moduleName) {
+          whichSlotsMenu.addItem([moduleName, function(evt) {chooseTargetModule(moduleName, evt);}.bind(this)]);
+        }.bind(this));
+        whichSlotsMenu.openIn(this.world(), evt.point());
+      }.bind(this)]);
     }
 
     menu.addLine();
@@ -326,3 +347,26 @@ CategoryMixin = {
 
 Object.extend(OutlinerMorph.prototype, CanHaveArrowsAttachedToIt);
 Object.extend(OutlinerMorph.prototype, CategoryMixin);
+
+
+// aaa - where should this live? Maybe on the module object, but in the outliners module?
+function chooseOrCreateAModule(evt, targetMorph, callback) {
+  var modulesMenu = new MenuMorph([], targetMorph);
+  modulesMenu.addItem(["new module...", function(evt) {
+    evt.hand.world().prompt("Module name?", function(name) {
+      if (name) {
+        if (lobby.modules[name]) {
+          throw "There is already a module named " + name;
+        }
+        callback(lobby.transporter.module.named(name), evt);
+      }
+    });
+  }]);
+  modulesMenu.addLine();
+  lobby.transporter.module.eachModule(function(m) {
+    modulesMenu.addItem([m.name(), function(evt) {
+      callback(m, evt);
+    }]);
+  });
+  modulesMenu.openIn(targetMorph.world(), evt.point());
+}
