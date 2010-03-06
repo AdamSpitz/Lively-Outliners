@@ -35,20 +35,13 @@ function createLabel(textOrFunction, pos, extent) {
 function createLabelledNode(text, n, helpText, container) {
   var m = (container || new RowMorph()).beInvisible();
   var lbl = createLabel(text + ": ");
-  m.replaceThingiesWith([lbl, n]);
+  m.horizontalLayoutMode = LayoutModes.SpaceFill;
+  m.replaceThingiesWith([lbl, n, createSpacer()]);
   m.labelMorph = lbl;
   m.labelledMorph = n;
   m.inspect = function() {return "a labelled node(" + text + ")";};
   m.helpText = helpText;
   return m;
-}
-
-function createLabelledPanel(text, helpText) {
-  var controls = new ColumnMorph();
-  controls.setFill(null);
-  controls.beUngrabbable();
-  controls.inspect = function() {return text + " panel controls";};
-  return createLabelledNode(text, controls, helpText, new ColumnMorph());
 }
 
 function createButton(text, f, padding) {

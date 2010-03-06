@@ -62,6 +62,7 @@ ColumnMorph.subclass("OutlinerMorph", {
     var m = this._annotationMorph;
     if (m) { return m; }
     m = this._annotationMorph = new ColumnMorph(this).beInvisible();
+    m.horizontalLayoutMode = LayoutModes.SpaceFill;
 
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
     this._copyDownParentsLabel = createInputBox(this.copyDownParentsString.bind(this), this.setCopyDownParentsString.bind(this));
