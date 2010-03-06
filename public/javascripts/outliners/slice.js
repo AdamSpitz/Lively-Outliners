@@ -1,5 +1,29 @@
-ColumnMorph.subclass("SliceMorph", {
-  initialize: function($super, searcher) {
+lobby.transporter.module.create('slice', function(thisModule) {
+
+
+thisModule.addSlots(lobby, function(add) {
+
+  add.method('SliceMorph', function SliceMorph() { Class.initializer.apply(this, arguments); }, {category: ['S']});
+
+});
+
+
+thisModule.addSlots(SliceMorph, function(add) {
+
+  add.data('superclass', ColumnMorph);
+
+  add.creator('prototype', Object.create(ColumnMorph.prototype));
+
+  add.data('type', SliceMorph);
+
+});
+
+
+thisModule.addSlots(SliceMorph.prototype, function(add) {
+
+  add.data('constructor', SliceMorph);
+
+  add.method('initialize', function ($super, searcher) {
     $super();
     this._searcher = searcher;
 
@@ -17,14 +41,11 @@ ColumnMorph.subclass("SliceMorph", {
     this.dismissButton = this.createDismissButton();
 
     this.createHeaderRow();
-  },
+  });
 
-  searcher: function() { return this._searcher; },
+  add.method('searcher', function () { return this._searcher; });
 
-
-  // header row
-
-  createHeaderRow: function() {
+  add.method('createHeaderRow', function () {
     var r = this._headerRow = new RowMorph().beInvisible();
     this._headerRowSpacer = createSpacer();
     r.setPadding({top: 0, bottom: 0, left: 3, right: 3, between: 3});
@@ -34,44 +55,33 @@ ColumnMorph.subclass("SliceMorph", {
     r.replaceThingiesWith([this._expander, this.titleLabel, this._headerRowSpacer, /* this.redoButton, */ this.dismissButton]); 
     this.addRow(r);
     return r;
-  },
+  });
 
-
-  // updating
-
-  updateAppearance: function() {
+  add.method('updateAppearance', function () {
     if (! this.world()) {return;}
     this.titleLabel.refreshText();
     this.minimumExtentChanged();
-  },
+  });
 
+  add.method('inspect', function () {return this.searcher().inspect();});
 
-  // inspecting
-  inspect: function() {return this.searcher().inspect();},
+  add.method('expander', function () { return this._expander; });
 
-
-  // expanding and collapsing
-
-  expander: function() { return this._expander; },
-
-  updateExpandedness: function() {
+  add.method('updateExpandedness', function () {
     if (! this.world()) {return;}
     var thingies = [this._headerRow];
     if (this.expander().isExpanded()) { thingies.push(this._slotsPanel); }
     this.replaceThingiesWith(thingies);
-  },
+  });
 
-
-  // searching
-
-  redo: function() {
+  add.method('redo', function () {
     var ss = this.searcher().go().sort(function(sp1, sp2) {var n1 = sp1.holder().name(); var n2 = sp2.holder().name(); n1 === n2 ? 0 : n1 < n2 ? -1 : 1});
     var sms = ss.map(function(s) { return this.createRowForSlot(s); }.bind(this));
     this._slotsPanel.replaceThingiesWith(sms);
     this.expander().expand();
-  },
+  });
 
-  createRowForSlot: function(s) {
+  add.method('createRowForSlot', function (s) {
     var r = new RowMorph().beInvisible();
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
     r.setPadding({top: 0, bottom: 0, left: 3, right: 3, between: 3});
@@ -79,10 +89,14 @@ ColumnMorph.subclass("SliceMorph", {
     var ms = [createLabel(s.holder().name()), createSpacer(), new SlotMorph(s), inSituButton];
     r.replaceThingiesWith(ms);
     return r;
-  },
+  });
 
-  showInSitu: function(s, inSituButton) {
+  add.method('showInSitu', function (s, inSituButton) {
     var w = this.world();
     w.outlinerFor(s.holder()).ensureIsInWorld(w, inSituButton.worldPoint(pt(150,0)));
-  },
+  });
+
+});
+
+
 });
