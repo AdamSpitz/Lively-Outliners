@@ -24,6 +24,11 @@ function annotationOf(o) {
   return o.__annotation__ = {slotAnnotations: {}};
 }
 
+function annotationNameForSlotNamed(slotName) {
+  // can't just use slotName because it leads to conflicts with stuff inherited from Object.prototype
+  return "anno_" + slotName;
+}
+
 function setCreatorSlot(annotation, name, holder) {
   annotation.creatorSlotName   = name;
   annotation.creatorSlotHolder = holder;
@@ -85,7 +90,7 @@ lobby.transporter.module.slotAdder = {
     if (! slotAnnotation) { slotAnnotation = {}; }
     this.holder[name] = contents;
     slotAnnotation.module = this.module;
-    annotationOf(this.holder).slotAnnotations[name] = slotAnnotation;
+    annotationOf(this.holder).slotAnnotations[annotationNameForSlotNamed(name)] = slotAnnotation;
     if (contentsAnnotation) { // used for creator slots
       var a = annotationOf(contents);
       a.creatorSlotName   = name;

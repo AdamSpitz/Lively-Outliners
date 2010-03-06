@@ -30,7 +30,8 @@ ColumnMorph.subclass("SlotMorph", {
   isMethodThatShouldBeShownAsPartOfTheBox: function() {
       if (this.slot().isFunctionBody()) { return true; }
       if (! this.slot().isMethod()) { return false; }
-      if (Object.newChildOf(enumerator, this.slot().contents(), 'eachNormalSlot').find(function(s) { return true; })) { return false; }
+      var aaa_LK_slotNamesAttachedToMethods = ['declaredClass', 'methodName'];
+      if (Object.newChildOf(enumerator, this.slot().contents(), 'eachNormalSlot').find(function(s) { return ! aaa_LK_slotNamesAttachedToMethods.include(s.name()); })) { return false; }
       return true;
   },
 
@@ -84,13 +85,21 @@ ColumnMorph.subclass("SlotMorph", {
     return m;
   },
 
+  createRow: function(m) {
+    var row = new RowMorph().beInvisible();
+    row.horizontalLayoutMode = LayoutModes.SpaceFill;
+    row.setPadding({left: 15, right: 0, top: 0, bottom: 0, between: 0});
+    row.replaceThingiesWith([m, createSpacer()]);
+    return row;
+  },
+
   sourceMorph: function() {
     var m = this._sourceMorph;
     if (m) { return m; }
     var thisSlotMorph = this;
     var getter = function() {
       try {
-        return thisSlotMorph.slot().contents().expressionEvaluatingToMe();
+        return thisSlotMorph.slot().contents().expressionEvaluatingToMe(thisSlotMorph.slot().isCreator());
       } catch (ex) {
         return "cannot display contents";
       }
@@ -100,7 +109,13 @@ ColumnMorph.subclass("SlotMorph", {
         thisSlotMorph.setContents(reflect(eval("(" + s + ")")));
       }.bind(this), createFakeEvent());
     };
-    return this._sourceMorph = createInputBox(getter, setter);
+    m = createInputBox(getter, setter);
+    m.horizontalLayoutMode = LayoutModes.SpaceFill;
+    return this._sourceMorph = m;
+  },
+
+  sourceRow: function() {
+    return this._sourceRow || (this._sourceRow = this.createRow(this.sourceMorph()));
   },
 
   annotationMorph: function() {
@@ -114,12 +129,20 @@ ColumnMorph.subclass("SlotMorph", {
     return m;
   },
 
+  annotationRow: function() {
+    return this._annotationRow || (this._annotationRow = this.createRow(this.annotationMorph()));
+  },
+
   commentMorph: function() {
     var m = this._commentMorph;
     if (m) { return m; }
     var thisSlotMorph = this;
     return this._commentMorph = createInputBox(function( ) { return thisSlotMorph.slot().comment(); },
                                                function(c) { thisSlotMorph.slot().setComment(c); });
+  },
+
+  commentRow: function() {
+    return this._commentRow || (this._commentRow = this.createRow(this.commentMorph()));
   },
 
   toggleSource: function() {
@@ -209,9 +232,9 @@ ColumnMorph.subclass("SlotMorph", {
 
   refreshContent: function() {
     var rows = [this.signatureRow];
-    if (this._shouldShowComment   ) { rows.push(this.   commentMorph()); }
-    if (this._shouldShowSource    ) { rows.push(this.    sourceMorph()); }
-    if (this._shouldShowAnnotation) { rows.push(this.annotationMorph()); }
+    if (this._shouldShowAnnotation) { rows.push(this.annotationRow()); }
+    if (this._shouldShowComment   ) { rows.push(this.   commentRow()); }
+    if (this._shouldShowSource    ) { rows.push(this.    sourceRow()); }
     this.replaceThingiesWith(rows);
   },
 

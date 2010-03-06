@@ -252,9 +252,9 @@ thisModule.addSlots(lobby.mirror, function(add) {
     return this.reflectee().toString();
   });
 
-  add.method('expressionEvaluatingToMe', function () {
+  add.method('expressionEvaluatingToMe', function (shouldNotUseCreatorSlotChainExpression) {
     if (this.isReflecteePrimitive()) { return Object.inspect(this.reflectee()); }
-    if (this.isWellKnown()) { return this.creatorSlotChainExpression(); }
+    if (!shouldNotUseCreatorSlotChainExpression && this.isWellKnown()) { return this.creatorSlotChainExpression(); }
     if (this.isReflecteeFunction()) { return this.source(); }
     if (this.isReflecteeArray()) { return "[" + this.reflectee().map(function(elem) {return reflect(elem).expressionEvaluatingToMe();}).join(", ") + "]"; }
 
@@ -501,6 +501,11 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     return this.contents().isReflecteeFunction();
   });
 
+  add.method('isCreator', function () {
+    var cs = this.contents().creatorSlot();
+    return cs && cs.equals(this);
+  });
+
   add.method('rename', function (newName) {
     var oldName = this.name();
     if (oldName === newName) {return;}
@@ -509,8 +514,7 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     if (  o.hasOwnProperty(newName)) { throw o + " already has a slot named " + newName; }
     if (! o.hasOwnProperty(oldName)) { throw o + " has no slot named "        + oldName; }
 
-    var cs = contentsMir.creatorSlot();
-    var isCreator = cs && cs.equals(this);
+    var isCreator = this.isCreator();
 
     var contents = o[oldName];
     delete o[oldName];
@@ -518,8 +522,8 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     
     var newSlot = this.holder().slotAt(newName);
     var holderAnno = this.holder().annotationForWriting();
-    holderAnno.slotAnnotations[newName] = holderAnno.slotAnnotations[oldName];
-    delete holderAnno.slotAnnotations[oldName];
+    holderAnno.slotAnnotations[annotationNameForSlotNamed(newName)] = holderAnno.slotAnnotations[annotationNameForSlotNamed(oldName)];
+    delete holderAnno.slotAnnotations[annotationNameForSlotNamed(oldName)];
 
     if (isCreator) {newSlot.beCreator();}
 
@@ -527,14 +531,14 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
   });
 
   add.method('hasAnnotation', function () {
-    return this.holder().hasAnnotation() && this.holder().annotation().slotAnnotations[this.name()];
+    return this.holder().hasAnnotation() && this.holder().annotation().slotAnnotations[annotationNameForSlotNamed(this.name())];
   });
 
   add.method('annotation', function () {
     var oa = this.holder().annotationForWriting();
-    var sa = oa.slotAnnotations[this.name()];
+    var sa = oa.slotAnnotations[annotationNameForSlotNamed(this.name())];
     if (sa) {return sa;}
-    return oa.slotAnnotations[this.name()] = {};
+    return oa.slotAnnotations[annotationNameForSlotNamed(this.name())] = {};
   });
 
   add.method('beCreator', function () {
@@ -579,6 +583,7 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
   });
 
   add.method('setCategory', function (c) {
+    if (c[0] === "C" && this.holder().reflectee() !== window) { throw "Huh. aaa"; }
     this.annotation().category = c;
   });
 
