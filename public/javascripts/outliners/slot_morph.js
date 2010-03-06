@@ -395,7 +395,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     }
 
     if (this.slot().annotation) {
-      menu.addItem([this._shouldShowAnnotation ? "hide annotation" : " show annotation", function(evt) {
+      menu.addItem([this._shouldShowAnnotation ? "hide annotation" : "show annotation", function(evt) {
         this.toggleAnnotation();
       }.bind(this)]);
     }

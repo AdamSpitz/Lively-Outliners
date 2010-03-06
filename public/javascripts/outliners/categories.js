@@ -154,15 +154,20 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
   add.method('modules', function () {
     var modules = [];
     this.eachNormalSlotInMeAndSubcategories(function(s) {
-      var m = s.module();
-      if (! modules.include(m)) { modules.push(m); }
+      if (! s.isFromACopyDownParent()) {
+        var m = s.module();
+        if (! modules.include(m)) { modules.push(m); }
+      }
     });
     return modules;
   });
 
   add.method('modulesSummaryString', function () {
     var modules = this.modules();
-    var prefix = modules.length === 0 ? "No slots" : modules.length === 1 ? "Module:  " : "Modules:  ";
+    var n = modules.length;
+    if (n === 0) { return "No slots"; }
+    if (n >=  5) { return n + " modules"; }
+    var prefix = n === 1 ? "Module:  " : "Modules:  ";
     return prefix + modules.map(function(m) { return m ? m.name() : '-'; }).sort().join(", ");
   });
 
