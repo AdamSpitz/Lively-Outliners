@@ -202,8 +202,10 @@ ColumnMorph.subclass("OutlinerMorph", {
         var chooseTargetModule = function(sourceModuleName, evt) {
           chooseOrCreateAModule(evt, this, function(targetModule, evt) {
             this.mirror().eachNormalSlot(function(slot) {
-              if (sourceModuleName === all || (!slot.module() && sourceModuleName === '-') || (slot.module() && slot.module().name() === sourceModuleName)) {
-                slot.setModule(targetModule);
+              if (! slot.isFromACopyDownParent()) {
+                if (sourceModuleName === all || (!slot.module() && sourceModuleName === '-') || (slot.module() && slot.module().name() === sourceModuleName)) {
+                  slot.setModule(targetModule);
+                }
               }
             }.bind(this));
           }.bind(this));
