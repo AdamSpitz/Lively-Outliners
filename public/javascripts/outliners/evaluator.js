@@ -3,25 +3,25 @@ lobby.transporter.module.create('evaluator', function(thisModule) {
 
 thisModule.addSlots(lobby, function(add) {
 
-  add.method('EvaluatorMorph', function EvaluatorMorph() { Class.initializer.apply(this, arguments); }, {category: ['E']}, {});
+  add.method('EvaluatorMorph', function EvaluatorMorph() { Class.initializer.apply(this, arguments); }, {category: ['outliners']});
 
 });
 
 
 thisModule.addSlots(EvaluatorMorph, function(add) {
 
-  add.data('superclass', ColumnMorph, {});
+  add.data('superclass', ColumnMorph);
 
-  add.creator('prototype', Object.create(ColumnMorph.prototype), {}, {});
+  add.creator('prototype', Object.create(ColumnMorph.prototype));
 
-  add.data('type', EvaluatorMorph, {});
+  add.data('type', EvaluatorMorph);
 
 });
 
 
 thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
 
-  add.data('constructor', EvaluatorMorph, {});
+  add.data('constructor', EvaluatorMorph);
 
   add.method('initialize', function ($super, outliner) {
     $super();
@@ -49,27 +49,27 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
 
 
     this.replaceThingiesWith([tm, bp]);
-  }, {}, {});
+  });
 
-  add.method('outliner', function () { return this._outliner;  }, {}, {});
+  add.method('outliner', function () { return this._outliner;  });
 
-  add.method('textMorph', function () { return this._textMorph; }, {}, {});
+  add.method('textMorph', function () { return this._textMorph; });
 
   add.method('runTheCode', function () {
     var __codeToRun__ = this.textMorph().getText();
     // run the code with "this" set to the outliner's object
     return (function() { return eval("(" + __codeToRun__ + ")"); }).call(this.outliner().mirror().reflectee());
-  }, {}, {});
+  });
 
-  add.method('doIt', function (evt) { MessageNotifierMorph.showIfErrorDuring(function() {                                      this.runTheCode()              ; }.bind(this), evt); }, {}, {});
+  add.method('doIt', function (evt) { MessageNotifierMorph.showIfErrorDuring(function() { this.runTheCode(); }.bind(this), evt); });
 
-  add.method('getIt', function (evt) { MessageNotifierMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(reflect(this.runTheCode())).grabMe(evt); }.bind(this), evt); }, {}, {});
+  add.method('getIt', function (evt) { MessageNotifierMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(reflect(this.runTheCode())).grabMe(evt); }.bind(this), evt); });
 
   add.method('close', function (evt) {
     var owner = this.owner;
     this.remove();
     owner.minimumExtentChanged();
-  }, {}, {});
+  });
 
 });
 

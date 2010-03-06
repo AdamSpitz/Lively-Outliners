@@ -640,24 +640,35 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
       }
     }
 
+    buffer.append("  add.").append(creationMethod).append("('").append(this.name()).append("', ").append(contentsExpr);
+
     var slotAnnoToStringify = {};
     var slotAnno = this.annotation();
     if (slotAnno.comment     ) { slotAnnoToStringify.comment      = slotAnno.comment;      }
     if (slotAnno.category    ) { slotAnnoToStringify.category     = slotAnno.category;     }
     if (slotAnno.initializeTo) { slotAnnoToStringify.initializeTo = slotAnno.initializeTo; }
+    var slotAnnoExpr = reflect(slotAnnoToStringify).expressionEvaluatingToMe();
 
-    buffer.append("  add.").append(creationMethod).append("('").append(this.name()).append("', ").append(contentsExpr);
-    buffer.append(", ").append(reflect(slotAnnoToStringify).expressionEvaluatingToMe());
-
+    var objectAnnoExpr;
     if (isCreator) {
       var objectAnnoToStringify = {};
       var objectAnno = contents.annotation();
       if (objectAnno) {
         if (objectAnno.comment        ) {objectAnnoToStringify.comment         = objectAnno.comment;        }
         if (objectAnno.copyDownParents) {objectAnnoToStringify.copyDownParents = objectAnno.copyDownParents;}
-        buffer.append(", ").append(reflect(objectAnnoToStringify).expressionEvaluatingToMe());
+        objectAnnoExpr = reflect(objectAnnoToStringify).expressionEvaluatingToMe();
       }
     }
+    
+    // The fileout looks a bit prettier if we don't bother showing ", {}, {}" all over the place.
+    var optionalArgs = "";
+    if (objectAnnoExpr && objectAnnoExpr !== '{}') {
+      optionalArgs = ", " + objectAnnoExpr + optionalArgs;
+    }
+    if (optionalArgs !== '' || (slotAnnoExpr && slotAnnoExpr !== '{}')) {
+      optionalArgs = ", " + slotAnnoExpr + optionalArgs;
+    }
+    buffer.append(optionalArgs);
 
     buffer.append(");\n\n");
 
