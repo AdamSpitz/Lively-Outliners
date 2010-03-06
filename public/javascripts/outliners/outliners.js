@@ -268,9 +268,36 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
 });
 
 
+thisModule.addSlots(WorldMorph.prototype, function(add) {
+
+  add.method('outliners', function () {
+    return this._outliners || (this._outliners = bloodyHashTable.copyRemoveAll());
+  });
+
+  add.method('existingOutlinerFor', function (mir) {
+    return this.outliners().get(mir);
+  });
+
+  add.method('outlinerFor', function (mir) {
+    return this.outliners().getOrIfAbsentPut(mir, function() {return new OutlinerMorph(mir);});
+  });
+
+  add.method('acceptsDropping', function (m) {
+    return typeof m.wasJustDroppedOnWorld === 'function';
+  });
+
+  add.method('justReceivedDrop', function (m) {
+    if (this.acceptsDropping(m)) { 
+      m.wasJustDroppedOnWorld(this);
+    }
+  });
+
+});
+
+
 thisModule.addSlots(transporter, function(add) {
 
-  add.method('chooseOrCreateAModule', function(evt, targetMorph, callback) {
+  add.method('chooseOrCreateAModule', function (evt, targetMorph, callback) {
     var modulesMenu = new MenuMorph([], targetMorph);
     modulesMenu.addItem(["new module...", function(evt) {
       evt.hand.world().prompt("Module name?", function(name) {
