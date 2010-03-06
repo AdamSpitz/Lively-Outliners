@@ -88,7 +88,7 @@ ColumnMorph.subclass("SlotMorph", {
   createRow: function(m) {
     var row = new RowMorph().beInvisible();
     row.horizontalLayoutMode = LayoutModes.SpaceFill;
-    row.setPadding({left: 15, right: 0, top: 0, bottom: 0, between: 0});
+    row.setPadding({left: 15, right: 2, top: 2, bottom: 2, between: 0});
     row.replaceThingiesWith([m, createSpacer()]);
     return row;
   },
@@ -99,7 +99,8 @@ ColumnMorph.subclass("SlotMorph", {
     var thisSlotMorph = this;
     var getter = function() {
       try {
-        return thisSlotMorph.slot().contents().expressionEvaluatingToMe(thisSlotMorph.slot().isCreator());
+        var slot = thisSlotMorph.slot();
+        return slot.contents().expressionEvaluatingToMe(slot.isFunctionBody() || slot.isCreator());
       } catch (ex) {
         return "cannot display contents";
       }
@@ -122,6 +123,7 @@ ColumnMorph.subclass("SlotMorph", {
     var m = this._annotationMorph;
     if (m) { return m; }
     m = this._annotationMorph = new ColumnMorph(this).beInvisible();
+    m.setPadding({left: 0, right: 0, top: 0, bottom: 0, between: 2});
     this._moduleMorph      = createInputBox(this.moduleName.bind(this), this.setModuleName.bind(this));
     this._initializerMorph = createInputBox(this.initializationExpression.bind(this), this.setInitializationExpression.bind(this));
     m.addRow(createLabelledNode("Module",        this._moduleMorph     ));
