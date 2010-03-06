@@ -390,7 +390,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
 
     if (this.slot().setModule) {
       menu.addItem(["set module...", function(evt) {
-        chooseOrCreateAModule(evt, this, function(m, evt) {this.setModule(m, evt);}.bind(this));;
+        transporter.chooseOrCreateAModule(evt, this, function(m, evt) {this.setModule(m, evt);}.bind(this));;
       }.bind(this)]);
     }
 
