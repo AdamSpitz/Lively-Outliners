@@ -58,6 +58,34 @@ function copyDownSlots(dst, src, slotsToOmit) {
   }
 }
 
+// aaa - Copied from Base.js. Just a hack to make $super work. Not really sure
+// what the right solution is in the long run - how do we make this work with
+// both prototype-style inheritance and class-style inheritance?
+function hackToMakeSuperWork(holder, property, contents) {
+  var value = contents;
+  var superclass = holder.constructor && holder.constructor.superclass;
+  var ancestor = superclass && superclass.prototype;
+  if (ancestor && Object.isFunction(value) && value.argumentNames && value.argumentNames().first() === "$super") {
+    (function() { // wrapped in a method to save the value of 'method' for advice
+      var method = value;
+      var advice = (function(m) {
+        return function callSuper() { 
+          return ancestor[m].apply(this, arguments);
+        };
+      })(property);
+      advice.methodName = "$super:" + (superclass ? superclass.type + "." : "") + property;
+      
+      value = Object.extend(advice.wrap(method), {
+        valueOf:  function() { return method },
+        toString: function() { return method.toString() },
+        originalFunction: method
+      });
+    })();
+  }
+  return value;
+}
+
+
 var lobby = window; // still not sure whether I want this to be window, or Object.create(window), or {}
 
 lobby.modules = {};
@@ -111,7 +139,7 @@ lobby.transporter.module.slotAdder = {
   },
 
   method: function(name, contents, slotAnnotation) {
-    this.creator(name, contents, slotAnnotation);
+    this.creator(name, hackToMakeSuperWork(this.holder, name, contents), slotAnnotation);
   }
 };
 
