@@ -53,6 +53,7 @@ ColumnMorph.subclass("CategoryMorph", {
     this._slotsPanel.submorphs.each(function(m) { m.updateAppearance(); }); // aaa is this gonna cause us to redo a lot of work?
     this.refillWithAppropriateColor();
     this.titleLabel.refreshText();
+    this._modulesLabel.refreshText();
     this.minimumExtentChanged();
   },
 
@@ -150,20 +151,22 @@ function rootCategory() {
   return [];
 }
 
-function categoriesAreEqual(c1, c2) {
-  if (c1.length !== c2.length) { return false; }
-  for (var i = 0; i < c1.length; i += 1) {
-    if (c1[i] !== c2[i]) { return false; }
-  }
-  return true;
-}
-
 function isRootCategory(c) {
   return c.length === 0;
 }
 
+function categoriesAreEqual(c1, c2) {
+  if (c1.length !== c2.length) { return false; }
+  return isEqualToOrSubcategoryOf(c1, c2);
+}
+
 function isImmediateSubcategoryOf(c1, c2) {
   if (c1.length !== c2.length - 1) { return false; }
+  return isEqualToOrSubcategoryOf(c1, c2);
+}
+
+function isEqualToOrSubcategoryOf(c1, c2) {
+  if (c1.length > c2.length) { return false; }
   for (var i = 0; i < c1.length; i += 1) {
     if (c1[i] !== c2[i]) { return false; }
   }

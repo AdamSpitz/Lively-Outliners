@@ -86,11 +86,7 @@ ColumnMorph.subclass("SlotMorph", {
   },
 
   createRow: function(m) {
-    var row = new RowMorph().beInvisible();
-    row.horizontalLayoutMode = LayoutModes.SpaceFill;
-    row.setPadding({left: 15, right: 2, top: 2, bottom: 2, between: 0});
-    row.replaceThingiesWith([m, createSpacer()]);
-    return row;
+    return createLeftJustifiedRow([m], {left: 15, right: 2, top: 2, bottom: 2, between: 0});
   },
 
   sourceMorph: function() {

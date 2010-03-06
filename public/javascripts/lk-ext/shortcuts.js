@@ -28,7 +28,7 @@ function createLabel(textOrFunction, pos, extent) {
   tf.closeDnD();
   tf.beLabel();
   tf.morphMenu = function(evt) {return null;};
-  if (typeof textOrFunction === 'function') { tf.refreshText = function() {this.setText(textOrFunction());}; }
+  if (typeof textOrFunction === 'function') { tf.updateAppearance = tf.refreshText = function() {this.setText(textOrFunction());}; }
   return tf;
 }
 
@@ -86,6 +86,14 @@ function createCheckBoxWithImage(imageURL, size) {
   var button = new CheckBoxMorph(size, image);
   button.setFill(null);
   return button;
+}
+
+function createLeftJustifiedRow(ms, padding) {
+  var row = new RowMorph().beInvisible();
+  if (typeof(padding) !== 'undefined') { row.setPadding(padding); }
+  row.horizontalLayoutMode = LayoutModes.SpaceFill;
+  row.replaceThingiesWith(ms.concat([createSpacer()]));
+  return row;
 }
 
 function createFakeEvent() {

@@ -167,6 +167,12 @@ thisModule.addSlots(lobby.mirror, function(add) {
     });
   });
 
+  add.method('eachSlotNestedSomewhereUnderCategory', function (c, f) {
+    this.eachNormalSlot(function(s) {
+      if (isEqualToOrSubcategoryOf(c, s.category())) { f(s); }
+    });
+  });
+
   add.method('eachImmediateSubcategoryOf', function (c, f) {
     var subcats = {};
     this.eachNormalSlot(function(s) {
@@ -394,15 +400,6 @@ thisModule.addSlots(lobby.mirror, function(add) {
         s.setCategory(subcategory(c, (s.name()[0] || '_unnamed_').toUpperCase()));
       }
     });
-  });
-
-  add.method('modules', function() {
-    var modules = [];
-    this.eachNormalSlot(function(s) {
-      var m = s.module();
-      if (! modules.include(m)) { modules.push(m); }
-    });
-    return modules;
   });
 
 });
