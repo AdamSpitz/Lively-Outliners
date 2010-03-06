@@ -12,13 +12,13 @@ ColumnMorph.subclass("CategoryMorph", {
     this.initializeCategoryUI();
 
     var categoryMorph = this;
-    this.titleLabel = new TwoModeTextMorph(pt(5, 10).extent(pt(20, 20)), categoryLastPartName(category));
+    this.titleLabel = new TwoModeTextMorph(pt(5, 10).extent(pt(20, 20)), category.lastPart());
     this.titleLabel.nameOfEditCommand = "rename";
     this.titleLabel.setFill(null);
     this.titleLabel.backgroundColorWhenWritable = null;
     this.titleLabel.ignoreEvents();
 
-    this.titleLabel.getSavedText = function() { return categoryLastPartName(category); };
+    this.titleLabel.getSavedText = function() { return category.lastPart(); };
     this.titleLabel.setSavedText = function(newName) { if (newName !== this.getSavedText()) { categoryMorph.rename(newName, createFakeEvent()); } };
     this.titleLabel.refreshText();
 
@@ -95,8 +95,7 @@ ColumnMorph.subclass("CategoryMorph", {
   },
  
   rename: function(newName, evt) {
-    setCategoryLastPartName(this.category(), newName);
-    //this.titleLabel.refreshText();
+    this.category().setLastPart(newName);
   },
 
   // mouse events
@@ -127,48 +126,57 @@ Object.extend(CategoryMorph.prototype, CategoryMixin);
 
 // aaa - Where should this stuff live? The problem is that I want to use naked arrays
 // in the annotation, so that it's just dumb data. Maybe just create a Category
-// object that's a wrapper around the array, or something.
+// object that's a wrapper around the array, or something. Yeah, I can always cache them
+// if they turn out to take a lot of memory or something.
 
-function subcategory(cat, subcatName) {
-  return cat.concat([subcatName]);
-}
+Object.subclass("Category", {
+  initialize: function(parts) {
+    this._parts = parts;
+  },
 
-function categoryFullName(cat) {
-  return cat.join(" ");
-}
+  parts: function() { return this._parts; },
+      
+  subcategory: function(subcatName) {
+    return new Category(this._parts.concat([subcatName]));
+  },
 
-function categoryLastPartName(cat) {
-  if (cat.length === 0) { return ""; }
-  return cat[cat.length - 1];
-}
+  fullName: function() {
+    return this._parts.join(" ");
+  },
 
-function setCategoryLastPartName(cat, newName) {
-  if (cat.length === 0) { throw "Cannot rename the root category"; }
-  cat[cat.length - 1] = newName;
-}
+  lastPart: function() {
+    if (this.isRoot()) { return ""; }
+    return this._parts[this._parts.length - 1];
+  },
 
-function rootCategory() {
-  return [];
-}
+  setLastPart: function(newName) {
+    if (this.isRoot()) { throw "Cannot rename the root category"; }
+    this._parts[this._parts.length - 1] = newName;
+  },
 
-function isRootCategory(c) {
-  return c.length === 0;
-}
+  isRoot: function() {
+    return this._parts.length === 0;
+  },
 
-function categoriesAreEqual(c1, c2) {
-  if (c1.length !== c2.length) { return false; }
-  return isEqualToOrSubcategoryOf(c1, c2);
-}
+  equals: function(c) {
+    if (this.parts().length !== c.parts().length) { return false; }
+    return this.isEqualToOrSubcategoryOf(c);
+  },
 
-function isImmediateSubcategoryOf(c1, c2) {
-  if (c1.length !== c2.length - 1) { return false; }
-  return isEqualToOrSubcategoryOf(c1, c2);
-}
+  isImmediateSubcategoryOf: function(c) {
+    if (this.parts().length !== c.parts().length + 1) { return false; }
+    return this.isEqualToOrSubcategoryOf(c);
+  },
 
-function isEqualToOrSubcategoryOf(c1, c2) {
-  if (c1.length > c2.length) { return false; }
-  for (var i = 0; i < c1.length; i += 1) {
-    if (c1[i] !== c2[i]) { return false; }
-  }
-  return true;
-}
+  isEqualToOrSubcategoryOf: function(c) {
+    if (this.parts().length < c.parts().length) { return false; }
+    for (var i = 0; i < c.parts().length; i += 1) {
+      if (this.parts()[i] !== c.parts()[i]) { return false; }
+    }
+    return true;
+  },
+});
+
+Object.extend(Category, {
+  root: function() { return new Category([]); },
+});

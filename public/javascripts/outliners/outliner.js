@@ -30,7 +30,7 @@ ColumnMorph.subclass("OutlinerMorph", {
 
   // aaa - trying to figure out how to factor this and CategoryMorph
   outliner: function() { return this; },
-  category: function() { return rootCategory(); },
+  category: function() { return Category.root(); },
 
 
   // header row
@@ -124,7 +124,7 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   expandCategory: function(c) {
-    var expander = isRootCategory(c) ? this.expander() : this.categoryMorphFor(c).expander();
+    var expander = c.isRoot() ? this.expander() : this.categoryMorphFor(c).expander();
     expander.expand();
   },
 
@@ -141,11 +141,11 @@ ColumnMorph.subclass("OutlinerMorph", {
   },
 
   existingCategoryMorphFor: function(c) {
-    return this._categoryMorphs.get(categoryFullName(c));
+    return this._categoryMorphs.get(c.fullName());
   },
 
   categoryMorphFor: function(c) {
-    return this._categoryMorphs.getOrIfAbsentPut(categoryFullName(c), function() { return new CategoryMorph(this, c); }.bind(this));
+    return this._categoryMorphs.getOrIfAbsentPut(c.fullName(), function() { return new CategoryMorph(this, c); }.bind(this));
   },
 
   
@@ -299,7 +299,7 @@ CategoryMixin = {
 
     var scms = this.immediateSubcategoryMorphs();
     scms = scms.concat(this._slotsPanel.submorphs.select(function(m) {return m.isNewCategory && ! this.outliner().existingCategoryMorphFor(m.category());}.bind(this)));
-    scms.sort(function(scm1, scm2) {return categoryLastPartName(scm1.category()) < categoryLastPartName(scm2.category()) ? -1 : 1});
+    scms.sort(function(scm1, scm2) {return scm1.category().lastPart() < scm2.category().lastPart() ? -1 : 1});
     
     var allSubmorphs = [this._modulesLabelRow];
     sms .each(function(sm ) {allSubmorphs.push(sm );});
@@ -329,7 +329,7 @@ CategoryMixin = {
   addCategory: function(evt) {
     this.updateAppearance();
     this.expander().expand();
-    var cm = new CategoryMorph(this.outliner(), subcategory(this.category(), ""));
+    var cm = new CategoryMorph(this.outliner(), this.category().subcategory(""));
     cm.isNewCategory = true;
     cm.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.slotsPanel().addRow(cm);

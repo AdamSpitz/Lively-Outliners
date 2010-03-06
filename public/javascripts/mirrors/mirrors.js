@@ -163,13 +163,13 @@ thisModule.addSlots(lobby.mirror, function(add) {
 
   add.method('eachSlotInCategory', function (c, f) {
     this.eachNormalSlot(function(s) {
-      if (categoriesAreEqual(c, s.category())) { f(s); }
+      if (c.equals(s.category())) { f(s); }
     });
   });
 
   add.method('eachSlotNestedSomewhereUnderCategory', function (c, f) {
     this.eachNormalSlot(function(s) {
-      if (isEqualToOrSubcategoryOf(c, s.category())) { f(s); }
+      if (s.category().isEqualToOrSubcategoryOf(c)) { f(s); }
     });
   });
 
@@ -177,7 +177,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
     var subcats = {};
     this.eachNormalSlot(function(s) {
       var sc = s.category();
-      if (isImmediateSubcategoryOf(c, sc)) { subcats[categoryLastPartName(sc)] = sc; }
+      if (sc.isImmediateSubcategoryOf(c)) { subcats[sc.lastPart()] = sc; }
     });
 
     for (var name in subcats) {
@@ -396,8 +396,8 @@ thisModule.addSlots(lobby.mirror, function(add) {
   add.method('categorizeUncategorizedSlotsAlphabetically', function() {
     this.eachNormalSlot(function(s) {
       var c = s.category();
-      if (isRootCategory(c)) {
-        s.setCategory(subcategory(c, (s.name()[0] || '_unnamed_').toUpperCase()));
+      if (c.isRoot()) {
+        s.setCategory(c.subcategory(s.name()[0] || '_unnamed_'.toUpperCase()));
       }
     });
   });
@@ -575,13 +575,12 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
 
   add.method('category', function () {
     var a = this.annotation();
-    if (! a) { return rootCategory(); }
-    return a.category || rootCategory();
+    if (!a || !a.category) { return Category.root(); }
+    return new Category(a.category);
   });
 
   add.method('setCategory', function (c) {
-    if (c[0] === "C" && this.holder().reflectee() !== window) { throw "Huh. aaa"; }
-    this.annotation().category = c;
+    this.annotation().category = c.parts();
   });
 
   add.method('isFromACopyDownParent', function () {

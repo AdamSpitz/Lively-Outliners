@@ -44,17 +44,6 @@ WorldMorph.addMethods({
         }],
 
         ["aaaaa", function(evt) {
-            var obj = OutlinerMorph;
-            var annoyingName = 'prototype';
-            for (var name in obj) {
-              if (obj.hasOwnProperty(name) && name === annoyingName) {
-                throw "Oh, OK, it's there.";
-              }
-              if (name === annoyingName) {
-                throw "Huh, it's not the thing's own property?";
-              }
-            }
-            if (obj[annoyingName] !== undefined) { throw "But accessing it directly works???"; }
         }],
       ]);
     }
