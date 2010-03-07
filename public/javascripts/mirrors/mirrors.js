@@ -3,28 +3,28 @@ lobby.transporter.module.create('mirrors', function(thisModule) {
 
 thisModule.addSlots(lobby, function(add) {
 
-  add.creator('mirror', {});
+  add.creator('mirror', {}, {category: ['mirrors']});
 
-  add.creator('slots', {});
+  add.creator('slots', {}, {category: ['mirrors']});
 
 });
 
 
-thisModule.addSlots(lobby.mirror, function(add) {
+thisModule.addSlots(mirror, function(add) {
 
   add.method('initialize', function (o) {
     this._reflectee = o;
-  });
+  }, {category: ['initializing']});
 
-  add.method('reflectee', function () { return this._reflectee; });
+  add.method('reflectee', function () { return this._reflectee; }, {category: ['accessing reflectee']});
 
   add.method('equals', function (m) {
     return this.reflectee() === m.reflectee();
-  });
+  }, {category: ['comparing']});
 
   add.method('hashCode', function () {
     return "a mirror"; // aaa - crap, hash tables will be linear time now; can I get an object ID hash somehow?;
-  });
+  }, {category: ['comparing']});
 
   add.method('reflecteeToString', function () {
     try {
@@ -37,16 +37,16 @@ thisModule.addSlots(lobby.mirror, function(add) {
     } catch (ex) {
       return "";
     }
-  });
+  }, {category: ['naming']});
 
   add.method('toString', function () {
     return "on " + this.name();
-  });
+  }, {category: ['naming']});
 
   add.method('nameOfLobby', function () {
     // I haven't quite decided whether I want to call it lobby or Global or window or what.
     return lobby === Global ? "Global" : "lobby";
-  });
+  }, {category: ['naming']});
 
   add.method('inspect', function () {
     if (this.reflectee() === lobby) {return this.nameOfLobby();}
@@ -58,7 +58,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
     var toString = this.reflecteeToString();
     if (typeof toString === 'string' && toString) { s.append("(").append(toString).append(")"); }
     return s.toString();
-  });
+  }, {category: ['naming']});
 
   add.method('name', function () {
     if (this.isReflecteePrimitive()) {return "" + this.reflectee();}
@@ -82,12 +82,12 @@ thisModule.addSlots(lobby.mirror, function(add) {
     } else {
       return this.isReflecteeFunction() ? "a function" : this.isReflecteeArray() ? "an array" : "an object";
     }
-  });
+  }, {category: ['naming']});
 
   add.method('isWellKnown', function () {
     var chain = this.creatorSlotChain();
     return chain && (chain.length === 0 || chain[0].contents().equals(this));
-  });
+  }, {category: ['testing']});
 
   add.method('isReflecteeProbablyAClass', function () {
     // Let's see whether this is a good enough test for now.
@@ -95,7 +95,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
     if (r === Object || r === String || r === Function || r === Boolean || r === Array || r === Number) { return true; }
     if (this.isReflecteeFunction() && this.reflecteeHasOwnProperty('superclass')) { return true; }
     return false;
-  });
+  }, {category: ['testing']});
 
   add.method('creatorSlotChainExpression', function () {
     if (this.isReflecteePrimitive()) {throw this.inspect() + " does not have a creator slot chain.";}
@@ -112,7 +112,7 @@ thisModule.addSlots(lobby.mirror, function(add) {
       sep = ".";
     }
     return s.toString();
-  });
+  }, {category: ['annotations', 'creator slot']});
 
   add.method('creatorSlotChain', function () {
     if (this.isReflecteePrimitive()) {return null;}
@@ -129,25 +129,25 @@ thisModule.addSlots(lobby.mirror, function(add) {
       chain.push(cs);
       mir = cs.holder();
     }
-  });
+  }, {category: ['annotations', 'creator slot']});
 
   add.method('eachSlot', function (f) {
     this.eachFakeSlot(f);
     this.eachNormalSlot(f);
-  });
+  }, {category: ['iterating']});
 
   add.method('eachFakeSlot', function (f) {
     if (this.isReflecteeFunction()) { f(this.functionBodySlot()); }
     if (this.hasAccessibleParent()) { f(this.      parentSlot()); }
-  });
+  }, {category: ['iterating']});
 
   add.method('functionBodySlot', function () {
     return Object.create(lobby.slots.functionBody).initialize(this);
-  });
+  }, {category: ['functions']});
 
   add.method('parentSlot', function () {
     return Object.create(lobby.slots.parent).initialize(this);
-  });
+  }, {category: ['accessing parent']});
 
   add.method('eachNormalSlot', function (f) {
     if (! this.canHaveSlots()) {return;} // aaa - Do primitives have a parent? Or maybe numbers do but null doesn't or something?
@@ -159,19 +159,19 @@ thisModule.addSlots(lobby.mirror, function(add) {
         }
       }
     }
-  });
+  }, {category: ['iterating']});
 
   add.method('eachSlotInCategory', function (c, f) {
     this.eachNormalSlot(function(s) {
       if (c.equals(s.category())) { f(s); }
     });
-  });
+  }, {category: ['iterating']});
 
   add.method('eachSlotNestedSomewhereUnderCategory', function (c, f) {
     this.eachNormalSlot(function(s) {
       if (s.category().isEqualToOrSubcategoryOf(c)) { f(s); }
     });
-  });
+  }, {category: ['iterating']});
 
   add.method('eachImmediateSubcategoryOf', function (c, f) {
     var subcats = {};
@@ -185,31 +185,31 @@ thisModule.addSlots(lobby.mirror, function(add) {
         f(subcats[name]);
       }
     }
-  });
+  }, {category: ['iterating']});
 
   add.method('slotAt', function (n) {
     return Object.create(lobby.slots.plain).initialize(this, n);
-  });
+  }, {category: ['accessing slot contents']});
 
   add.method('contentsAt', function (n) {
     return reflect(this.primitiveContentsAt(n));
-  });
+  }, {category: ['accessing slot contents']});
 
   add.method('primitiveContentsAt', function (n) {
     return this.reflectee()[n];
-  });
+  }, {category: ['accessing slot contents']});
 
   add.method('setContentsAt', function (n, m) {
     this.primitiveSetContentsAt(n, m.reflectee());
-  });
+  }, {category: ['accessing slot contents']});
 
   add.method('primitiveSetContentsAt', function (n, o) {
     return this.reflectee()[n] = o;
-  });
+  }, {category: ['accessing slot contents']});
 
   add.method('removeSlotAt', function (n) {
     delete this.reflectee()[n];
-  });
+  }, {category: ['accessing slot contents']});
 
   add.method('findUnusedSlotName', function (prefix) {
     if (! this.canHaveSlots()) { throw this.name() + " cannot have slots"; }
@@ -221,29 +221,29 @@ thisModule.addSlots(lobby.mirror, function(add) {
       name = pre + i;
     } while (this.reflectee().hasOwnProperty(name));
     return name;
-  });
+  }, {category: ['accessing slot contents']});
 
   add.method('reflecteeHasOwnProperty', function (n) {
     if (! this.canHaveSlots()) { return false; }
     return this.reflectee().hasOwnProperty(n);
-  });
+  }, {category: ['accessing reflectee']});
 
   add.method('parent', function () {
     if (! this.canAccessParent()) { throw "Sorry, you can't access an object's parent in this browser. Try Firefox or Safari."; }
     if (! this.hasParent()) { throw this.name() + " does not have a parent."; }
     return reflect(this.reflectee().__proto__);
-  });
+  }, {category: ['accessing parent']});
 
-  add.method('canAccessParent', function () { return String.prototype.__proto__ !== undefined; });
+  add.method('canAccessParent', function () { return String.prototype.__proto__ !== undefined; }, {category: ['accessing parent']});
 
-  add.method('hasParent', function () { return ! (this.isReflecteeNull() || this.isReflecteeUndefined()); });
+  add.method('hasParent', function () { return ! (this.isReflecteeNull() || this.isReflecteeUndefined()); }, {category: ['accessing parent']});
 
-  add.method('hasAccessibleParent', function () { return this.canAccessParent() && this.hasParent(); });
+  add.method('hasAccessibleParent', function () { return this.canAccessParent() && this.hasParent(); }, {category: ['accessing parent']});
 
   add.method('setParent', function (pMir) {
     if (! this.canAccessParent()) { throw "Sorry, you can't change an object's parent in this browser. Try Firefox or Safari."; }
     this.reflectee().__proto__ = pMir.reflectee();
-  });
+  }, {category: ['accessing parent']});
 
   add.method('createChild', function () {
     var parent = this.reflectee();
@@ -251,12 +251,12 @@ thisModule.addSlots(lobby.mirror, function(add) {
     ChildConstructor.prototype = parent;
     var child = new ChildConstructor();
     return reflect(child);
-  });
+  }, {category: ['children']});
 
   add.method('source', function () {
     if (! this.isReflecteeFunction()) { throw "not a function"; }
     return this.reflectee().toString();
-  });
+  }, {category: ['functions']});
 
   add.method('expressionEvaluatingToMe', function (shouldNotUseCreatorSlotChainExpression) {
     if (this.isReflecteePrimitive()) { return Object.inspect(this.reflectee()); }
@@ -275,50 +275,50 @@ thisModule.addSlots(lobby.mirror, function(add) {
 
     // aaa - try something like Self's 1 _AsObject, except of course in JS it'll have to be a hack
     //throw "Not implemented yet - don't know how to make an expression evaluating to this object: " + this.name();
-  });
+  }, {category: ['naming']});
 
   add.method('size', function () {
     var size = 0;
     this.eachNormalSlot(function(s) { size += 1; });
     return size;
-  });
+  }, {category: ['accessing slot contents']});
 
   add.method('canHaveSlots', function () {
     return ! this.isReflecteePrimitive();
-  });
+  }, {category: ['accessing slot contents']});
 
   add.method('canHaveChildren', function () {
     return ! this.isReflecteePrimitive(); // aaa - is this correct?;
-  });
+  }, {category: ['children']});
 
-  add.method('isReflecteeNull', function () { return this.reflectee() === null;      });
+  add.method('isReflecteeNull', function () { return this.reflectee() === null;      }, {category: ['testing']});
 
-  add.method('isReflecteeUndefined', function () { return this.reflectee() === undefined; });
+  add.method('isReflecteeUndefined', function () { return this.reflectee() === undefined; }, {category: ['testing']});
 
-  add.method('isReflecteeString', function () { return typeof this.reflectee() === 'string';  });
+  add.method('isReflecteeString', function () { return typeof this.reflectee() === 'string';  }, {category: ['testing']});
 
-  add.method('isReflecteeNumber', function () { return typeof this.reflectee() === 'number';  });
+  add.method('isReflecteeNumber', function () { return typeof this.reflectee() === 'number';  }, {category: ['testing']});
 
-  add.method('isReflecteeBoolean', function () { return typeof this.reflectee() === 'boolean'; });
+  add.method('isReflecteeBoolean', function () { return typeof this.reflectee() === 'boolean'; }, {category: ['testing']});
 
-  add.method('isReflecteeArray', function () { return typeof this.reflectee() === 'object' && this.reflectee() instanceof Array; });
+  add.method('isReflecteeArray', function () { return typeof this.reflectee() === 'object' && this.reflectee() instanceof Array; }, {category: ['testing']});
 
-  add.method('isReflecteePrimitive', function () { return ! (this.isReflecteeObject() || this.isReflecteeFunction()); });
+  add.method('isReflecteePrimitive', function () { return ! (this.isReflecteeObject() || this.isReflecteeFunction()); }, {category: ['testing']});
 
   add.method('isReflecteeObject', function () {
     var o = this.reflectee();
     var t = typeof o;
     return t === 'object' && o !== null;
-  });
+  }, {category: ['testing']});
 
   add.method('isReflecteeFunction', function () {
     return typeof(this.reflectee()) === 'function';
-  });
+  }, {category: ['testing']});
 
   add.method('canHaveCreatorSlot', function () {
     // aaa - is this right?
     return this.isReflecteeObject() || this.isReflecteeFunction();
-  });
+  }, {category: ['annotations', 'creator slot']});
 
   add.method('creatorSlot', function () {
     var a = this.annotation();
@@ -329,29 +329,29 @@ thisModule.addSlots(lobby.mirror, function(add) {
     } else {
       return null;
     }
-  });
+  }, {category: ['annotations', 'creator slot']});
 
   add.method('setCreatorSlot', function (s) {
     var a = this.annotationForWriting();
     a.creatorSlotName   = s.name();
     a.creatorSlotHolder = s.holder().reflectee();
-  });
+  }, {category: ['annotations', 'creator slot']});
 
   add.method('comment', function () {
     var a = this.annotation();
     if (! a) { return ""; }
     return a.comment || "";
-  });
+  }, {category: ['annotations', 'comment']});
 
   add.method('setComment', function (c) {
     this.annotationForWriting().comment = c || "";
-  });
+  }, {category: ['annotations', 'comment']});
 
   add.method('copyDownParents', function () {
     var a = this.annotation();
     if (! a) { return []; }
     return a.copyDownParents || [];
-  });
+  }, {category: ['annotations', 'copy-down parents']});
 
   add.method('setCopyDownParents', function (cdps) {
     // aaa - Of course, we should be removing slots copied in by the previous list of copy-down parents. But never mind that for now.
@@ -362,20 +362,20 @@ thisModule.addSlots(lobby.mirror, function(add) {
       if (cdps[i].parent === undefined) { throw "Each element of the array must contain a 'parent' slot pointing to the desired copy-down parent; e.g. [{parent: Enumerable}]"; }
       copyDownSlots(this.reflectee(), cdps[i].parent, cdps[i].slotsToOmit);
     }
-  });
+  }, {category: ['annotations', 'copy-down parents']});
 
   add.method('canHaveAnnotation', function () {
     return this.isReflecteeObject() || this.isReflecteeFunction();
-  });
+  }, {category: ['annotations']});
 
   add.method('hasAnnotation', function () {
     return this.canHaveAnnotation() && this.reflectee().hasOwnProperty("__annotation__");
-  });
+  }, {category: ['annotations']});
 
   add.method('annotation', function () {
     if (! this.canHaveAnnotation()) { return null; }
     return this.reflectee().__annotation__;
-  });
+  }, {category: ['annotations']});
 
   add.method('annotationForWriting', function () {
     if (! this.hasAnnotation()) {
@@ -383,42 +383,42 @@ thisModule.addSlots(lobby.mirror, function(add) {
       return this.reflectee().__annotation__ = {slotAnnotations: {}};
     }
     return this.reflectee().__annotation__;
-  });
+  }, {category: ['annotations']});
 
-  add.method('wellKnownChildren', function() {
+  add.method('wellKnownChildren', function () {
     return new ChildFinder(this.reflectee()).go();
-  });
+  }, {category: ['searching']});
 
-  add.method('wellKnownReferences', function() {
+  add.method('wellKnownReferences', function () {
     return new ReferenceFinder(this.reflectee()).go();
-  });
+  }, {category: ['searching']});
 
-  add.method('categorizeUncategorizedSlotsAlphabetically', function() {
+  add.method('categorizeUncategorizedSlotsAlphabetically', function () {
     this.eachNormalSlot(function(s) {
       var c = s.category();
       if (c.isRoot()) {
         s.setCategory(c.subcategory((s.name()[0] || '_unnamed_').toUpperCase()));
       }
     });
-  });
+  }, {category: ['organizing']});
 
 });
 
 
-thisModule.addSlots(lobby.slots, function(add) {
+thisModule.addSlots(slots, function(add) {
 
   add.creator('abstract', {});
 
-  add.creator('plain', Object.create(lobby.slots.abstract));
+  add.creator('plain', Object.create(slots.abstract));
 
-  add.creator('parent', Object.create(lobby.slots.abstract));
+  add.creator('parent', Object.create(slots.abstract));
 
-  add.creator('functionBody', Object.create(lobby.slots.abstract));
+  add.creator('functionBody', Object.create(slots.abstract));
 
 });
 
 
-thisModule.addSlots(lobby.slots.abstract, function(add) {
+thisModule.addSlots(slots.abstract, function(add) {
 
   add.method('initialize', function (m) {
     this._mirror = m;
@@ -436,20 +436,7 @@ thisModule.addSlots(lobby.slots.abstract, function(add) {
 });
 
 
-thisModule.addSlots(lobby.slots.parent, function(add) {
-
-  add.method('name', function () { return "*parent*"; });
-
-  add.method('contents', function () { return this._mirror.parent(); });
-
-  add.method('setContents', function (m) { return this._mirror.setParent(m); });
-
-  add.method('isMethod', function () { return false; });
-
-});
-
-
-thisModule.addSlots(lobby.slots.functionBody, function(add) {
+thisModule.addSlots(slots.functionBody, function(add) {
 
   add.method('name', function () { return "*body*"; });
 
@@ -462,7 +449,20 @@ thisModule.addSlots(lobby.slots.functionBody, function(add) {
 });
 
 
-thisModule.addSlots(lobby.slots.plain, function(add) {
+thisModule.addSlots(slots.parent, function(add) {
+
+  add.method('name', function () { return "*parent*"; });
+
+  add.method('contents', function () { return this._mirror.parent(); });
+
+  add.method('setContents', function (m) { return this._mirror.setParent(m); });
+
+  add.method('isMethod', function () { return false; });
+
+});
+
+
+thisModule.addSlots(slots.plain, function(add) {
 
   add.method('initialize', function (m, n) {
     this._mirror = m;
@@ -678,7 +678,7 @@ thisModule.addSlots(lobby.slots.plain, function(add) {
     }
   });
 
-  add.method('wellKnownImplementors', function() {
+  add.method('wellKnownImplementors', function () {
     return new ImplementorsFinder(this.name()).go();
   });
 
