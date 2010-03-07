@@ -44,11 +44,11 @@ function createLabelledNode(text, n, helpText, container) {
   return m;
 }
 
-function createButton(text, f, padding) {
-  var label = createLabel(text);
+function createButton(contents, f, padding) {
+  var contentsMorph = (typeof contents === 'string' || typeof contents === 'function') ? createLabel(contents) : contents;
   var p = (padding != null) ? padding : 5;
-  var b = new ButtonMorph(pt(0,0).extent(label.bounds().extent().addXY(p * 2, p * 2)));
-  b.addMorphAt(label, pt(p, p));
+  var b = new ButtonMorph(pt(0,0).extent(contentsMorph.bounds().extent().addXY(p * 2, p * 2)));
+  b.addMorphAt(contentsMorph, pt(p, p));
   b.connectModel({model: {Value: null, getValue: function() {return this.Value;}, setValue: function(v) {this.Value = v; if (!v) {f(createFakeEvent());}}}, setValue: "setValue", getValue: "getValue"});
   return b;
 }

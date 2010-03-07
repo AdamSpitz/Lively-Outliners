@@ -85,6 +85,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.commentButton = createButton("'...'", function(evt) { this.toggleComment(evt); }.bind(this), 1);
     this.signatureRowSpacer = createSpacer();
     this.signatureRow = new RowMorph().beInvisible();
+    this.signatureRow.setPadding({left: 0, right: 2, top: 0, bottom: 0, between: 0});
     this.signatureRow.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.signatureRow.inspect = function() { return "signature row"; };
     this.signatureRow.refreshContent = function() { this.populateSignatureRow(); }.bind(this);
@@ -114,7 +115,11 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     if (m) { return m; }
     var slot = this.slot();
     var arrow;
-    m = this._contentsPointer = createButton('D', function() {
+    var icon = new ImageMorph(pt(10,10).extentAsRectangle(), "images/icon-data-slot.gif");
+    icon.setFill(null);
+    icon.beUngrabbable();
+    icon.ignoreEvents();
+    m = this._contentsPointer = createButton(icon, function() {
       if (arrow.noLongerNeedsToBeUpdated || ! arrow.world()) {
         var w = this.world();
         w.outlinerFor(slot.contents()).ensureIsInWorld(w, m.worldPoint(pt(150,0)));
@@ -122,7 +127,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
       } else {
         arrow.noLongerNeedsToBeVisible();
       }
-    }.bind(this), 2);
+    }.bind(this), 1);
     arrow = new SlotContentsPointerArrow(this, m);
     arrow.noLongerNeedsToBeUpdated = true;
 
@@ -138,9 +143,12 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   add.method('sourceButton', function () {
     var m = this._sourceButton;
     if (m) { return m; }
-    return this._sourceButton = createButton('M', function(evt) {
-      this.toggleSource();
-    }.bind(this), 2);
+    var icon = new ImageMorph(pt(10,10).extentAsRectangle(), "images/icon-method-slot.gif");
+    icon.setFill(null);
+    icon.beUngrabbable();
+    icon.ignoreEvents();
+    m = this._sourceButton = createButton(icon, function(evt) {this.toggleSource();}.bind(this), 1);
+    return m;
   });
 
   add.method('createButton', function (func) {
