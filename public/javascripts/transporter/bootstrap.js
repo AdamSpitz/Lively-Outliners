@@ -1,5 +1,8 @@
 // Bootstrap the module system.
 
+// aaa - This file is kind of a mess. Gotta figure out exactly what the
+// minimal amount of stuff needed here is.
+
 if (typeof Object.create !== 'function') {
     Object.create = function(parent) {
         function F() {}
