@@ -142,7 +142,8 @@ Morph.subclass("RowOrColumnMorph", {
     this.setFill(null);
     this.setBorderWidth(0);
     this.beUngrabbable();
-    this.ignoreEvents(); // aaa - just added this, not sure it's the right thing to do
+    this.ignoreEvents(); // allows dragging through me, I think
+    this.closeDnD(); // allows dropping through me
     return this;
   }
 });

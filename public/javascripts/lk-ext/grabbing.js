@@ -16,12 +16,14 @@ Morph.addMethods({
         // If checkForDnD is true, return the morph to grab from a mouse down event (or null)
         // If droppingMorph is not null, then check that this is a willing recipient (else null)
 
+        //if (droppingMorph) {console.log(this.inspect() + ">>morphToGrabOrReceive starting");}
+
         if (!this.fullContainsWorldPoint(evt.mousePoint)) return null; // not contained anywhere
         // First check all the submorphs, front first
         for (var i = this.submorphs.length - 1; i >= 0; i--) {
             var hit = this.submorphs[i].morphToGrabOrReceive(evt, droppingMorph, checkForDnD);
             if (hit != null) {
-                //console.log(this + ">>morphToGrabOrReceive hit");
+              //if (droppingMorph) {console.log(this.inspect() + ">>morphToGrabOrReceive hit: " + hit.inspect());}
                 return hit;  // hit a submorph
             }
         }
@@ -30,11 +32,23 @@ Morph.addMethods({
         if (!this.containsWorldPoint(evt.mousePoint)) return null;
 
         // If no DnD check, then we have a hit (unless no handler in which case a miss)
-        if (!checkForDnD) return this.mouseHandler ? this : null;
+        if (!checkForDnD) {
+          if (this.mouseHandler) {
+            //if (droppingMorph) {console.log(this.inspect() + ">>morphToGrabOrReceive has a mouseHandler");}
+            return this;
+          } else {
+            return null;
+          }
+        }
 
         // On drops, check that this is a willing recipient
         if (droppingMorph != null) {
-            return this.acceptsDropping(droppingMorph) ? this : null;
+          if (this.acceptsDropping(droppingMorph)) {
+            //if (droppingMorph) {console.log(this.inspect() + ">>morphToGrabOrReceive accepts the droppingMorph");}
+            return this;
+          } else {
+            return null;
+          }
         } else {
             // On grabs, can't pick up the world or morphs that handle mousedown
             // DI:  I think the world is adequately checked for now elsewhere
