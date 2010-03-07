@@ -1,15 +1,15 @@
 lobby.transporter.module.create('transporter', function(thisModule) {
 
 
-thisModule.addSlots(lobby.transporter.module, function(add) {
+thisModule.addSlots(transporter.module, function(add) {
 
-  add.method('name', function () { return this._name; });
+  add.method('name', function () { return this._name; }, {category: ['accessing']});
 
-  add.method('toString', function () { return this.name(); });
+  add.method('toString', function () { return this.name(); }, {category: ['printing']});
 
   add.method('objectsThatMightContainSlotsInMe', function () {
     return lobby.transporter.module.cache[this.name()];
-  });
+  }, {category: ['keeping track of changes']});
 
   add.method('mirrorsInOrderForFilingOut', function (f) {
     var alreadySeen = bloodyHashTable.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
@@ -20,7 +20,7 @@ thisModule.addSlots(lobby.transporter.module, function(add) {
       }
     }.bind(this));
     return alreadySeen.values().sort(function(a, b) { var an = a.name(); var bn = b.name(); return an === bn ? 0 : an < bn ? -1 : 1; });
-  });
+  }, {category: ['transporting']});
 
   add.method('fileOut', function () {
     var buffer = stringBuffer.create("lobby.transporter.module.create('").append(this.name()).append("', function(thisModule) {\n\n\n");
@@ -33,7 +33,7 @@ thisModule.addSlots(lobby.transporter.module, function(add) {
     if (! status.isSuccess()) {
       throw "failed to file out " + this + ", status is " + status.code();
     }
-  });
+  }, {category: ['transporting']});
 
   add.method('fileOutSlots', function (buffer) {
     var mirs = this.mirrorsInOrderForFilingOut();
@@ -46,29 +46,29 @@ thisModule.addSlots(lobby.transporter.module, function(add) {
       }.bind(this));
       buffer.append("});\n\n\n");
     }.bind(this));
-  });
+  }, {category: ['transporting']});
 
   add.method('urlForModuleDirectory', function () {
     return new URL("http://localhost/~adam/uploads/");
-  });
+  }, {category: ['saving to WebDAV']});
 
   add.method('urlForModuleName', function (name) {
     return this.urlForModuleDirectory().withFilename(name + ".js");
-  });
+  }, {category: ['saving to WebDAV']});
 
   add.method('fileIn', function (name) {
     var url = this.urlForModuleName(name);
     var code = FileDirectory.getContent(url);
     eval(code);
-  });
+  }, {category: ['transporting']});
 
   add.method('eachModule', function (f) {
     reflect(lobby.modules).eachNormalSlot(function(s) { f(s.contents().reflectee()); });
-  });
+  }, {category: ['iterating']});
 
   add.method('existingOneNamed', function (n) {
     return lobby.modules[n];
-  });
+  }, {category: ['accessing modules']});
 
 });
 
