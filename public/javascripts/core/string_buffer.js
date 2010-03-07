@@ -8,25 +8,25 @@ thisModule.addSlots(lobby, function(add) {
 });
 
 
-thisModule.addSlots(lobby.stringBuffer, function(add) {
+thisModule.addSlots(stringBuffer, function(add) {
 
   add.method('create', function (initialString) {
     return Object.newChildOf(this, initialString);
-  }, {}, {});
+  }, {category: ['creating']});
 
   add.method('initialize', function (initialString) {
     this.buffer = [];
     if (initialString != null) {this.append(initialString);}
-  }, {}, {});
+  }, {category: ['creating']});
 
   add.method('append', function (string) {
     this.buffer.push(string);
     return this;
-  }, {}, {});
+  }, {category: ['appending']});
 
   add.method('toString', function () {
     return this.buffer.join("");
-  }, {}, {});
+  }, {category: ['converting']});
 
 });
 
