@@ -166,13 +166,13 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this._shouldShowComment = !this._shouldShowComment;
     this.updateExpandedness();
     this.updateAppearance();
-    if (this._shouldShowComment) { evt.hand.setKeyboardFocus(this.commentMorph()); }
+    if (this._shouldShowComment) { this.commentMorph().requestKeyboardFocus(evt.hand); }
   }, {category: ['comment']});
 
   add.method('openEvaluator', function (evt) {
     var e = new EvaluatorMorph(this);
     this._evaluatorsPanel.addRow(e);
-    evt.hand.setKeyboardFocus(e.textMorph());
+    e.textMorph().requestKeyboardFocus(evt.hand);
   }, {category: ['evaluators']});
 
   add.method('morphMenu', function (evt) {

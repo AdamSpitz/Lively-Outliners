@@ -228,7 +228,7 @@ TextMorph.subclass("TwoModeTextMorph", {
   beWritableAndSelectAll: function(evt) {
     this.beWritable();
     this.requestKeyboardFocus(evt ? evt.hand : WorldMorph.current().firstHand());
-    this.selectAll();
+    this.doSelectAll();
   },
 
   handlesMouseDown: function(evt) { return true; },

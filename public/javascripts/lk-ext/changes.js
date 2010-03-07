@@ -143,6 +143,4 @@ HandMorph.addMethods({
 TextMorph.addMethods({
   getText: function()  {return this.textString;},
   setText: function(t) {if (this.textString != t) {this.textString = t; this.layoutChanged(); this.changed();}},
-
-  selectAll: function() {this.isSelecting = true; return this.setSelectionRange(0, this.textString.length);},
 });

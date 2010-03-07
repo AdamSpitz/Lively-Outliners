@@ -234,7 +234,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   add.method('toggleComment', function (evt) {
     this._shouldShowComment = ! this._shouldShowComment;
     this.updateAppearance();
-    if (this._shouldShowComment) { evt.hand.setKeyboardFocus(this.commentMorph()); }
+    if (this._shouldShowComment) { this.commentMorph().requestKeyboardFocus(evt.hand); }
   }, {category: ['comment']});
 
   add.method('rename', function (newName, evt) {
@@ -246,8 +246,8 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
         var newSlot = outliner.mirror().slotAt(newName);
         var newSlotMorph = outliner.slotMorphFor(newSlot);
         this.transferUIStateTo(newSlotMorph);
-        evt.hand.setKeyboardFocus(newSlotMorph.sourceMorph());
-        newSlotMorph.sourceMorph().selectAll();
+        newSlotMorph.sourceMorph().requestKeyboardFocus(evt.hand);
+        newSlotMorph.sourceMorph().doSelectAll();
       }
     }.bind(this), evt);
   }, {category: ['renaming']});
