@@ -1,12 +1,5 @@
-// Just an experiment to see if I can get decent names.
-
-// Oh, crap, I just realized that if I want to do a traversal of everything,
-// after the initial annotation traversal is done, I'm going to need to do
-// it twice. I need to put a special marker on the annotations, to show that I've
-// been here, and then I need to go through again to remove all the markers.
-// Can't just keep a dictionary, since JS can't do efficient identity dictionaries.
-// Oh, well. Can't think of a better way at the moment, so let's do that.
-// (I mean, I could just leave the markers there, but that kinda sucks.)
+// Just an experiment to see if I can get decent names for objects that weren't created
+// with this system.
 
 Object.subclass("ObjectGraphWalker", {
   initialize: function() {

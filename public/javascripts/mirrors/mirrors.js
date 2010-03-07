@@ -423,41 +423,41 @@ thisModule.addSlots(slots.abstract, function(add) {
   add.method('initialize', function (m) {
     this._mirror = m;
     return this;
-  });
+  }, {category: ['creating']});
 
-  add.method('mirror', function () { return this._mirror; });
+  add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
 
-  add.method('holder', function () { return this._mirror; });
+  add.method('holder', function () { return this._mirror; }, {category: ['accessing']});
 
-  add.method('isFunctionBody', function () { return false; });
+  add.method('isFunctionBody', function () { return false; }, {category: ['testing']});
 
-  add.method('isFromACopyDownParent', function () { return false; });
+  add.method('isFromACopyDownParent', function () { return false; }, {category: ['testing']});
 
 });
 
 
 thisModule.addSlots(slots.functionBody, function(add) {
 
-  add.method('name', function () { return "*body*"; });
+  add.method('name', function () { return "*body*"; }, {category: ['accessing']});
 
-  add.method('contents', function () { return this._mirror; });
+  add.method('contents', function () { return this._mirror; }, {category: ['accessing']});
 
-  add.method('isMethod', function () { return true; });
+  add.method('isMethod', function () { return true; }, {category: ['testing']});
 
-  add.method('isFunctionBody', function () { return true; });
+  add.method('isFunctionBody', function () { return true; }, {category: ['testing']});
 
 });
 
 
 thisModule.addSlots(slots.parent, function(add) {
 
-  add.method('name', function () { return "*parent*"; });
+  add.method('name', function () { return "*parent*"; }, {category: ['accessing']});
 
-  add.method('contents', function () { return this._mirror.parent(); });
+  add.method('contents', function () { return this._mirror.parent(); }, {category: ['accessing']});
 
-  add.method('setContents', function (m) { return this._mirror.setParent(m); });
+  add.method('setContents', function (m) { return this._mirror.setParent(m); }, {category: ['accessing']});
 
-  add.method('isMethod', function () { return false; });
+  add.method('isMethod', function () { return false; }, {category: ['testing']});
 
 });
 
@@ -468,40 +468,40 @@ thisModule.addSlots(slots.plain, function(add) {
     this._mirror = m;
     this._name = n;
     return this;
-  });
+  }, {category: ['creating']});
 
-  add.method('name', function () { return this._name; });
+  add.method('name', function () { return this._name; }, {category: ['accessing']});
 
-  add.method('contents', function () { return this._mirror.   contentsAt(this.name()   ); });
+  add.method('contents', function () { return this._mirror.   contentsAt(this.name()   ); }, {category: ['accessing']});
 
-  add.method('setContents', function (m) { return this._mirror.setContentsAt(this.name(), m); });
+  add.method('setContents', function (m) { return this._mirror.setContentsAt(this.name(), m); }, {category: ['accessing']});
 
   add.method('equals', function (s) {
     return this.name() === s.name() && this.mirror().equals(s.mirror());
-  });
+  }, {category: ['comparing']});
 
   add.method('toString', function () {
     if (this.name() === undefined) { return ""; }
     return this.name() + " slot";
-  });
+  }, {category: ['printing']});
 
   add.method('copyTo', function (newMir) {
     newMir.setContentsAt(this.name(), this.contents());
     return newMir.slotAt(this.name());
-  });
+  }, {category: ['copying']});
 
   add.method('remove', function () {
     this.mirror().removeSlotAt(this.name());
-  });
+  }, {category: ['removing']});
 
   add.method('isMethod', function () {
     return this.contents().isReflecteeFunction();
-  });
+  }, {category: ['testing']});
 
   add.method('isCreator', function () {
     var cs = this.contents().creatorSlot();
     return cs && cs.equals(this);
-  });
+  }, {category: ['creator slots']});
 
   add.method('rename', function (newName) {
     var oldName = this.name();
@@ -525,63 +525,63 @@ thisModule.addSlots(slots.plain, function(add) {
     if (isCreator) {newSlot.beCreator();}
 
     return newSlot;
-  });
+  }, {category: ['accessing']});
 
   add.method('hasAnnotation', function () {
     return this.holder().hasAnnotation() && this.holder().annotation().slotAnnotations[annotationNameForSlotNamed(this.name())];
-  });
+  }, {category: ['accessing annotation']});
 
   add.method('annotation', function () {
     var oa = this.holder().annotationForWriting();
     var sa = oa.slotAnnotations[annotationNameForSlotNamed(this.name())];
     if (sa) {return sa;}
     return oa.slotAnnotations[annotationNameForSlotNamed(this.name())] = {};
-  });
+  }, {category: ['accessing annotation']});
 
   add.method('beCreator', function () {
     this.contents().setCreatorSlot(this);
-  });
+  }, {category: ['creator slots']});
 
   add.method('module', function () {
     var a = this.annotation();
     if (! a) { return null; }
     return a.module;
-  });
+  }, {category: ['accessing annotation', 'module']});
 
   add.method('setModule', function (m) {
     this.annotation().module = m;
     m.objectsThatMightContainSlotsInMe().push(this.holder().reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later;
-  });
+  }, {category: ['accessing annotation', 'module']});
 
   add.method('initializationExpression', function () {
     var a = this.annotation();
     if (! a) { return ""; }
     return a.initializeTo || "";
-  });
+  }, {category: ['accessing annotation', 'initialization expression']});
 
   add.method('setInitializationExpression', function (e) {
     this.annotation().initializeTo = e;
-  });
+  }, {category: ['accessing annotation', 'initialization expression']});
 
   add.method('comment', function () {
     var a = this.annotation();
     if (! a) { return ""; }
     return a.comment || "";
-  });
+  }, {category: ['accessing annotation', 'comment']});
 
   add.method('setComment', function (c) {
     this.annotation().comment = c || "";
-  });
+  }, {category: ['accessing annotation', 'comment']});
 
   add.method('category', function () {
     var a = this.annotation();
     if (!a || !a.category) { return Category.root(); }
     return new Category(a.category);
-  });
+  }, {category: ['accessing annotation', 'category']});
 
   add.method('setCategory', function (c) {
     this.annotation().category = c.parts();
-  });
+  }, {category: ['accessing annotation', 'category']});
 
   add.method('isFromACopyDownParent', function () {
     var name = this.name();
@@ -595,7 +595,7 @@ thisModule.addSlots(slots.plain, function(add) {
         return false;
       }
     }.bind(this));
-  });
+  }, {category: ['testing']});
 
   add.method('fileOutTo', function (buffer) {
     var creationMethod = "data";
@@ -676,11 +676,15 @@ thisModule.addSlots(slots.plain, function(add) {
         contents.slotAt(i.toString()).fileOutTo(buffer);
       }
     }
-  });
+  }, {category: ['filing out']});
 
   add.method('wellKnownImplementors', function () {
     return new ImplementorsFinder(this.name()).go();
-  });
+  }, {category: ['searching']});
+
+  add.method('hashCode', function () {
+    return this.name().hashCode() + this.mirror().hashCode();
+  }, {category: ['comparing']});
 
 });
 
