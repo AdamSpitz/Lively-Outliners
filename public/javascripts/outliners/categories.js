@@ -137,7 +137,7 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
     this.outliner().updateAppearance();
     this.outliner().expandCategory(this.category());
     var sm = this.outliner().slotMorphFor(s);
-    sm.toggleSource();
+    sm.showSource();
     sm.labelMorph.beWritableAndSelectAll();
   }, {category: ['adding']});
 

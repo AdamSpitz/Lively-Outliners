@@ -216,6 +216,11 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     return this._commentRow || (this._commentRow = this.createRow(this.commentMorph()));
   }, {category: ['comment']});
 
+  add.method('showSource', function () {
+    this._shouldShowSource = true;
+    this.updateAppearance();
+  }, {category: ['source']});
+
   add.method('toggleSource', function () {
     this._shouldShowSource = ! this._shouldShowSource;
     this.updateAppearance();
@@ -339,7 +344,20 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
 
   add.method('setContents', function (c, evt) {
     this.slot().setContents(c);
+    
+    // Sometimes the text doesn't come out quite identical; this makes sure the
+    // source editor doesn't stay red.
+    if (this._sourceMorph) { this._sourceMorph.cancelChanges(); }
+
     if (c.isReflecteeFunction()) { this.beCreator(); }
+
+    // Not sure this is really what I want, but I think I don't like it when
+    // the source stays open after I edit it, at least if it's data rather than
+    // a method. (The method I'm likely to be editing again. But editing the
+    // source of a data slot is usually just done when initially creating the
+    // slot.)
+    if (! this.isMethodThatShouldBeShownAsPartOfTheBox()) { this._shouldShowSource = false; }
+
     this.updateAppearance();
   }, {category: ['contents']});
 
