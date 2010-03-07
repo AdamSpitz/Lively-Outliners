@@ -3,7 +3,7 @@ lobby.transporter.module.create('slice', function(thisModule) {
 
 thisModule.addSlots(lobby, function(add) {
 
-  add.method('SliceMorph', function SliceMorph() { Class.initializer.apply(this, arguments); }, {category: ['S']});
+  add.method('SliceMorph', function SliceMorph() { Class.initializer.apply(this, arguments); }, {category: ['outliners']});
 
 });
 

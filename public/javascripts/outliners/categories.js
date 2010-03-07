@@ -227,13 +227,13 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     this.createHeaderRow();
 
     this.replaceThingiesWith([this._headerRow]);
-  });
+  }, {category: ['creating']});
 
-  add.method('outliner', function () { return this._outliner;          });
+  add.method('outliner', function () { return this._outliner;          }, {category: ['accessing']});
 
-  add.method('mirror', function () { return this._outliner.mirror(); });
+  add.method('mirror', function () { return this._outliner.mirror(); }, {category: ['accessing']});
 
-  add.method('category', function () { return this._category;          });
+  add.method('category', function () { return this._category;          }, {category: ['accessing']});
 
   add.method('createHeaderRow', function () {
     var r = this._headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
@@ -243,7 +243,7 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     r.inspect = function() {return "the header row";};
     this._headerRow.replaceThingiesWith([this._expander, this.titleLabel, this._headerRowSpacer]);
     return r;
-  });
+  }, {category: ['creating']});
 
   add.method('updateAppearance', function () {
     if (! this.world() || ! this.expander().isExpanded()) {return;}
@@ -253,22 +253,22 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     this.titleLabel.refreshText();
     this._modulesLabel.refreshText();
     this.minimumExtentChanged();
-  });
+  }, {category: ['updating']});
 
-  add.method('inspect', function () {return "category " + this._category;});
+  add.method('inspect', function () {return "category " + this._category;}, {category: ['printing']});
 
-  add.method('expander', function () { return this._expander; });
+  add.method('expander', function () { return this._expander; }, {category: ['accessing']});
 
   add.method('updateExpandedness', function () {
     if (! this.world()) {return;}
     var thingies = [this._headerRow];
     if (this.expander().isExpanded()) { thingies.push(this.slotsPanel()); }
     this.replaceThingiesWith(thingies);
-  });
+  }, {category: ['updating']});
 
   add.method('eachSlot', function (f) {
     this.mirror().eachSlotInCategory(this.category(), f);
-  });
+  }, {category: ['iterating']});
 
   add.method('morphMenu', function (evt) {
     var menu = new MenuMorph([], this);
@@ -279,31 +279,31 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     }
 
     return menu;
-  });
+  }, {category: ['menu']});
 
   add.method('rename', function (newName, evt) {
     this.category().setLastPart(newName);
-  });
+  }, {category: ['renaming']});
 
   add.method('acceptsDropping', function (m) { // aaa - could this be generalized?
     return typeof(m.wasJustDroppedOnCategory) === 'function';
-  });
+  }, {category: ['drag and drop']});
 
   add.method('justReceivedDrop', function (m) {
     if (this.acceptsDropping(m)) { 
       m.wasJustDroppedOnCategory(this);
     }
-  });
+  }, {category: ['drag and drop']});
 
   add.method('onMouseOver', function (evt) {
     if (evt.hand.submorphs.find(function(m) {return this.acceptsDropping(m);}.bind(this))) {
       this.highlighter().setChecked(true);
     }
-  });
+  }, {category: ['events']});
 
   add.method('onMouseOut', function (evt) {
     this.highlighter().setChecked(false);
-  });
+  }, {category: ['events']});
 
 });
 

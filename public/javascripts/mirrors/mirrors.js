@@ -429,9 +429,11 @@ thisModule.addSlots(slots.abstract, function(add) {
 
   add.method('holder', function () { return this._mirror; }, {category: ['accessing']});
 
-  add.method('isFunctionBody', function () { return false; }, {category: ['testing']});
+  add.method('isFunctionBody', function () { return false; }, {category: ['function bodies']});
 
-  add.method('isFromACopyDownParent', function () { return false; }, {category: ['testing']});
+  add.method('copyDownParentThatIAmFrom', function () { return null; }, {category: ['copy-down parents']});
+
+  add.method('isFromACopyDownParent', function () { return !! this.copyDownParentThatIAmFrom(); }, {category: ['copy-down parents']});
 
 });
 
@@ -583,7 +585,7 @@ thisModule.addSlots(slots.plain, function(add) {
     this.annotation().category = c.parts();
   }, {category: ['accessing annotation', 'category']});
 
-  add.method('isFromACopyDownParent', function () {
+  add.method('copyDownParentThatIAmFrom', function () {
     var name = this.name();
     return this.holder().copyDownParents().find(function(cdp) {
       var parentMir = reflect(cdp.parent);

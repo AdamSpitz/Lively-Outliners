@@ -3,9 +3,9 @@ lobby.transporter.module.create('slot_morph', function(thisModule) {
 
 thisModule.addSlots(lobby, function(add) {
 
-  add.method('SlotMorph', function SlotMorph() { Class.initializer.apply(this, arguments); }, {category: ['S']});
+  add.method('SlotMorph', function SlotMorph() { Class.initializer.apply(this, arguments); }, {category: ['outliners']});
 
-  add.method('SlotContentsPointerArrow', function SlotContentsPointerArrow() { Class.initializer.apply(this, arguments); }, {category: ['S']});
+  add.method('SlotContentsPointerArrow', function SlotContentsPointerArrow() { Class.initializer.apply(this, arguments); }, {category: ['outliners']});
 
 });
 
@@ -362,50 +362,59 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   add.method('morphMenu', function (evt) {
     var menu = new MenuMorph([], this);
 
-    if (this.slot().rename) {
-      this.labelMorph.addEditingMenuItemsTo(menu, evt);
-    }
+    var copyDown = this.slot().copyDownParentThatIAmFrom();
 
-    menu.addItem([this._shouldShowSource ? "hide contents" : "edit contents", function(evt) {
-      this.toggleSource();
-    }.bind(this)]);
-
-    if (this.slot().copyTo) {
-      menu.addItem(["copy", function(evt) { this.grabCopy(evt); }.bind(this)]);
-    }
-
-    if (this.slot().remove) {
-      menu.addItem(["move", function(evt) {
-        this.grabCopy(evt);
-        this.slot().remove();
-        var outliner = this.outliner();
-        if (outliner) { outliner.updateAppearance(); }
+    if (copyDown) {
+      var copyDownParentMir = reflect(copyDown.parent);
+      menu.addItem(["copied down from " + copyDownParentMir.name(), function(evt) {
+        this.world().outlinerFor(copyDownParentMir).grabMe(evt);
       }.bind(this)]);
-    }
-
-    if (this.slot().comment) {
-      menu.addItem([this._shouldShowComment ? "hide comment" : "edit comment", function(evt) {
-        this.toggleComment(evt);
-      }.bind(this)]);
-    }
-
-    if (this.slot().beCreator && this.slot().contents().canHaveCreatorSlot()) {
-      var cs = this.slot().contents().creatorSlot();
-      if (!cs || ! cs.equals(this.slot())) {
-        menu.addItem(["be creator", function(evt) { this.beCreator(); }.bind(this)]);
+    } else {
+      if (this.slot().rename) {
+        this.labelMorph.addEditingMenuItemsTo(menu, evt);
       }
-    }
 
-    if (this.slot().setModule) {
-      menu.addItem(["set module...", function(evt) {
-        transporter.chooseOrCreateAModule(evt, this, function(m, evt) {this.setModule(m, evt);}.bind(this));;
+      menu.addItem([this._shouldShowSource ? "hide contents" : "edit contents", function(evt) {
+        this.toggleSource();
       }.bind(this)]);
-    }
 
-    if (this.slot().annotation) {
-      menu.addItem([this._shouldShowAnnotation ? "hide annotation" : "show annotation", function(evt) {
-        this.toggleAnnotation();
-      }.bind(this)]);
+      if (this.slot().copyTo) {
+        menu.addItem(["copy", function(evt) { this.grabCopy(evt); }.bind(this)]);
+      }
+      
+      if (this.slot().remove) {
+        menu.addItem(["move", function(evt) {
+          this.grabCopy(evt);
+          this.slot().remove();
+          var outliner = this.outliner();
+          if (outliner) { outliner.updateAppearance(); }
+        }.bind(this)]);
+      }
+
+      if (this.slot().comment) {
+        menu.addItem([this._shouldShowComment ? "hide comment" : "edit comment", function(evt) {
+          this.toggleComment(evt);
+        }.bind(this)]);
+      }
+
+      if (this.slot().beCreator && this.slot().contents().canHaveCreatorSlot()) {
+        var cs = this.slot().contents().creatorSlot();
+        if (!cs || ! cs.equals(this.slot())) {
+          menu.addItem(["be creator", function(evt) { this.beCreator(); }.bind(this)]);
+        }
+      }
+
+      if (this.slot().setModule) {
+        menu.addItem(["set module...", function(evt) {
+          transporter.chooseOrCreateAModule(evt, this, function(m, evt) {this.setModule(m, evt);}.bind(this));;
+        }.bind(this)]);
+      }
+
+      if (this.slot().annotation) {
+        menu.addItem([this._shouldShowAnnotation ? "hide annotation" : "show annotation", function(evt) {
+          this.toggleAnnotation();
+        }.bind(this)]);
+      }
     }
 
     if (this.slot().wellKnownImplementors) {

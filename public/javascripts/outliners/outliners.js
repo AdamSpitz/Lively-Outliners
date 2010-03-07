@@ -3,7 +3,7 @@ lobby.transporter.module.create('outliners', function(thisModule) {
 
 thisModule.addSlots(lobby, function(add) {
 
-  add.method('OutlinerMorph', function OutlinerMorph() { Class.initializer.apply(this, arguments); }, {category: ['O']});
+  add.method('OutlinerMorph', function OutlinerMorph() { Class.initializer.apply(this, arguments); }, {category: ['outliners']});
 
 });
 

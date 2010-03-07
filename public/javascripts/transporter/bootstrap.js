@@ -29,6 +29,13 @@ function annotationNameForSlotNamed(slotName) {
   return "anno_" + slotName;
 }
 
+function existingSlotAnnotation(holder, name) {
+  if (! holder.hasOwnProperty('__annotation__')) { return null; }
+  var holderAnno = holder.__annotation__;
+  if (! holderAnno.slotAnnotations) { return null; }
+  return holderAnno.slotAnnotations[annotationNameForSlotNamed(name)];
+}
+
 function setCreatorSlot(annotation, name, holder) {
   annotation.creatorSlotName   = name;
   annotation.creatorSlotHolder = holder;
@@ -49,10 +56,19 @@ function copyDownSlots(dst, src, slotsToOmit) {
   }
   slotsToOmit.push('__annotation__');
 
+  var dstAnno = annotationOf(dst);
   for (var name in src) {
     if (src.hasOwnProperty(name)) {
       if (! slotsToOmit.include(name)) {
         dst[name] = src[name];
+        
+        // Copy down the category (and maybe other stuff?).
+        try {if (name === 'addCategory') {throw "halt";}} catch (ex) {}
+        var srcSlotAnno = existingSlotAnnotation(src, name);
+        if (srcSlotAnno && srcSlotAnno.category) {
+          var dstSlotAnno = dstAnno.slotAnnotations[annotationNameForSlotNamed(name)] = {};
+          dstSlotAnno.category = srcSlotAnno.category;
+        }
       }
     }
   }
