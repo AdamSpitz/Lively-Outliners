@@ -91,7 +91,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.signatureRow.refreshContent = function() { this.populateSignatureRow(); }.bind(this);
 
     this.updateAppearance();
-  });
+  }, {category: ['creating']});
 
   add.method('isMethodThatShouldBeShownAsPartOfTheBox', function () {
       if (this.slot().isFunctionBody()) { return true; }
@@ -99,7 +99,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
       var aaa_LK_slotNamesAttachedToMethods = ['declaredClass', 'methodName'];
       if (Object.newChildOf(enumerator, this.slot().contents(), 'eachNormalSlot').find(function(s) { return ! aaa_LK_slotNamesAttachedToMethods.include(s.name()); })) { return false; }
       return true;
-  });
+  }, {category: ['source']});
 
   add.method('populateSignatureRow', function () {
     var ms = [this.labelMorph];
@@ -108,7 +108,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     var button = this.isMethodThatShouldBeShownAsPartOfTheBox() ? this.sourceButton() : this.contentsPointer();
     ms.push(button);
     this.signatureRow.replaceThingiesWith(ms);
-  });
+  }, {category: ['updating']});
 
   add.method('contentsPointer', function () {
     var m = this._contentsPointer;
@@ -138,7 +138,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     m.setShapeToLookLikeACircle = function() {};
 
     return m;
-  });
+  }, {category: ['contents']});
 
   add.method('sourceButton', function () {
     var m = this._sourceButton;
@@ -149,18 +149,18 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     icon.ignoreEvents();
     m = this._sourceButton = createButton(icon, function(evt) {this.toggleSource();}.bind(this), 1);
     return m;
-  });
+  }, {category: ['source']});
 
   add.method('createButton', function (func) {
     var m = new ButtonMorph(pt(0,0).extent(pt(10,10)));
     
     m.connectModel({model: {Value: null, getValue: function() {return this.Value;}, setValue: function(v) {this.Value = v; if (!v) {func();}}}, setValue: "setValue", getValue: "getValue"});
     return m;
-  });
+  }, {category: ['creating']});
 
   add.method('createRow', function (m) {
     return createLeftJustifiedRow([m], {left: 15, right: 2, top: 2, bottom: 2, between: 0});
-  });
+  }, {category: ['creating']});
 
   add.method('sourceMorph', function () {
     var m = this._sourceMorph;
@@ -182,11 +182,11 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     m = createInputBox(getter, setter);
     m.horizontalLayoutMode = LayoutModes.SpaceFill;
     return this._sourceMorph = m;
-  });
+  }, {category: ['source']});
 
   add.method('sourceRow', function () {
     return this._sourceRow || (this._sourceRow = this.createRow(this.sourceMorph()));
-  });
+  }, {category: ['source']});
 
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
@@ -198,11 +198,11 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     m.addRow(createLabelledNode("Module",        this._moduleMorph     ));
     m.addRow(createLabelledNode("Initialize to", this._initializerMorph));
     return m;
-  });
+  }, {category: ['annotation']});
 
   add.method('annotationRow', function () {
     return this._annotationRow || (this._annotationRow = this.createRow(this.annotationMorph()));
-  });
+  }, {category: ['annotation']});
 
   add.method('commentMorph', function () {
     var m = this._commentMorph;
@@ -210,27 +210,27 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     var thisSlotMorph = this;
     return this._commentMorph = createInputBox(function( ) { return thisSlotMorph.slot().comment(); },
                                                function(c) { thisSlotMorph.slot().setComment(c); });
-  });
+  }, {category: ['comment']});
 
   add.method('commentRow', function () {
     return this._commentRow || (this._commentRow = this.createRow(this.commentMorph()));
-  });
+  }, {category: ['comment']});
 
   add.method('toggleSource', function () {
     this._shouldShowSource = ! this._shouldShowSource;
     this.updateAppearance();
-  });
+  }, {category: ['source']});
 
   add.method('toggleAnnotation', function () {
     this._shouldShowAnnotation = ! this._shouldShowAnnotation;
     this.updateAppearance();
-  });
+  }, {category: ['annotation']});
 
   add.method('toggleComment', function (evt) {
     this._shouldShowComment = ! this._shouldShowComment;
     this.updateAppearance();
     if (this._shouldShowComment) { evt.hand.setKeyboardFocus(this.commentMorph()); }
-  });
+  }, {category: ['comment']});
 
   add.method('rename', function (newName, evt) {
     MessageNotifierMorph.showIfErrorDuring(function() {
@@ -245,7 +245,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
         newSlotMorph.sourceMorph().selectAll();
       }
     }.bind(this), evt);
-  });
+  }, {category: ['renaming']});
 
   add.method('transferUIStateTo', function (otherSlotMorph) {
     // used after renaming, since it's actually a whole nother slot and slotMorph but we want it to feel like the same one
@@ -253,20 +253,20 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     otherSlotMorph._shouldShowComment    = this._shouldShowComment;
     otherSlotMorph._shouldShowAnnotation = this._shouldShowAnnotation;
     otherSlotMorph.updateAppearance();
-  });
+  }, {category: ['renaming']});
 
-  add.method('slot', function () { return this._slot; });
+  add.method('slot', function () { return this._slot; }, {category: ['accessing']});
 
-  add.method('inspect', function () { return this.slot().name(); });
+  add.method('inspect', function () { return this.slot().name(); }, {category: ['printing']});
 
   add.method('outliner', function () {
     return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
-  });
+  }, {category: ['accessing']});
 
   add.method('moduleName', function () {
     var module = this.slot().module();
     return module ? module.name() : "";
-  });
+  }, {category: ['annotation', 'module']});
 
   add.method('setModuleName', function (n) {
     var module = transporter.module.existingOneNamed(n);
@@ -277,15 +277,15 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
         this._moduleMorph.changed();
       }
     }.bind(this));
-  });
+  }, {category: ['annotation', 'module']});
 
   add.method('initializationExpression', function () {
     return this.slot().initializationExpression();
-  });
+  }, {category: ['annotation', 'initialization expression']});
 
   add.method('setInitializationExpression', function (e) {
     this.slot().setInitializationExpression(e);
-  });
+  }, {category: ['annotation', 'initialization expression']});
 
   add.method('updateAppearance', function () {
     this.labelMorph.refreshText();
@@ -295,12 +295,12 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     if (this._moduleMorph)     { this._moduleMorph .refreshText(); }
     this.refreshContent();
     this.updateFill();
-  });
+  }, {category: ['updating']});
 
   add.method('updateFill', function () {
     var color = this.slot().isFromACopyDownParent() ? Color.red.lighter().lighter() : Color.gray;
     this.setFill(defaultFillWithColor(color));
-  });
+  }, {category: ['updating']});
 
   add.method('refreshContent', function () {
     var rows = [this.signatureRow];
@@ -308,14 +308,14 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     if (this._shouldShowComment   ) { rows.push(this.   commentRow()); }
     if (this._shouldShowSource    ) { rows.push(this.    sourceRow()); }
     this.replaceThingiesWith(rows);
-  });
+  }, {category: ['updating']});
 
   add.method('wasJustDroppedOnOutliner', function (outliner) {
     this.slot().copyTo(outliner.mirror());
     outliner.expander().expand();
     this.remove();
     outliner.updateAppearance();
-  });
+  }, {category: ['drag and drop']});
 
   add.method('wasJustDroppedOnCategory', function (categoryMorph) {
     var newSlot = this.slot().copyTo(categoryMorph.outliner().mirror());
@@ -323,32 +323,32 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     categoryMorph.expander().expand();
     this.remove();
     categoryMorph.outliner().updateAppearance();
-  });
+  }, {category: ['drag and drop']});
 
   add.method('wasJustDroppedOnWorld', function (world) {
     var outliner = world.outlinerFor(this.slot().mirror());
     world.addMorphAt(outliner, this.position());
     outliner.expander().expand();
     this.remove();
-  });
+  }, {category: ['drag and drop']});
 
   add.method('setModule', function (m, evt) {
     this.slot().setModule(m);
     this.updateAppearance();
-  });
+  }, {category: ['annotation', 'module']});
 
   add.method('setContents', function (c, evt) {
     this.slot().setContents(c);
     if (c.isReflecteeFunction()) { this.beCreator(); }
     this.updateAppearance();
-  });
+  }, {category: ['contents']});
 
   add.method('beCreator', function () {
     this.slot().beCreator();
     var contentsOutliner = this.world().existingOutlinerFor(this.slot().contents());
     if (contentsOutliner) { contentsOutliner.updateAppearance(); }
     this.updateAppearance();
-  });
+  }, {category: ['creator slots']});
 
   add.method('grabCopy', function (evt) {
     var newSlot = this.slot().copyTo(reflect({}));
@@ -357,7 +357,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     newSlotMorph.forceLayoutRejiggering();
     evt.hand.grabMorphWithoutAskingPermission(newSlotMorph, evt);
     return newSlotMorph;
-  });
+  }, {category: ['drag and drop']});
 
   add.method('morphMenu', function (evt) {
     var menu = new MenuMorph([], this);
@@ -426,7 +426,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     }
 
     return menu;
-  });
+  }, {category: ['menu']});
 
 });
 

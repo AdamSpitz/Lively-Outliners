@@ -39,6 +39,8 @@ thisModule.addSlots(Category.prototype, function(add) {
     return new Category(this._parts.concat([subcatName]));
   }, {category: ['creating']});
 
+  add.method('toString', function () { return this.fullName(); }, {category: ['printing']});
+
   add.method('fullName', function () {
     return this._parts.join(" ");
   }, {category: ['accessing']});
@@ -267,7 +269,7 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     this.minimumExtentChanged();
   }, {category: ['updating']});
 
-  add.method('inspect', function () {return "category " + this._category;}, {category: ['printing']});
+  add.method('inspect', function () {return this._category.toString();}, {category: ['printing']});
 
   add.method('updateExpandedness', function () {
     if (! this.world()) {return;}
