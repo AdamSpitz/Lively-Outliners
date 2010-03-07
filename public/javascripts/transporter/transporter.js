@@ -49,7 +49,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['transporting']});
 
   add.method('urlForModuleDirectory', function () {
-    return new URL("http://localhost/~adam/uploads/");
+    return URL.source.getDirectory().withRelativePath("../jsdemo/");
   }, {category: ['saving to WebDAV']});
 
   add.method('urlForModuleName', function (name) {
