@@ -49,27 +49,27 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
 
 
     this.replaceThingiesWith([tm, bp]);
-  });
+  }, {category: ['creating']});
 
-  add.method('outliner', function () { return this._outliner;  });
+  add.method('outliner', function () { return this._outliner;  }, {category: ['accessing']});
 
-  add.method('textMorph', function () { return this._textMorph; });
+  add.method('textMorph', function () { return this._textMorph; }, {category: ['accessing']});
 
   add.method('runTheCode', function () {
     var __codeToRun__ = this.textMorph().getText();
     // run the code with "this" set to the outliner's object
     return (function() { return eval("(" + __codeToRun__ + ")"); }).call(this.outliner().mirror().reflectee());
-  });
+  }, {category: ['running the code']});
 
-  add.method('doIt', function (evt) { MessageNotifierMorph.showIfErrorDuring(function() { this.runTheCode(); }.bind(this), evt); });
+  add.method('doIt', function (evt) { MessageNotifierMorph.showIfErrorDuring(function() { this.runTheCode(); }.bind(this), evt); }, {category: ['running the code']});
 
-  add.method('getIt', function (evt) { MessageNotifierMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(reflect(this.runTheCode())).grabMe(evt); }.bind(this), evt); });
+  add.method('getIt', function (evt) { MessageNotifierMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(reflect(this.runTheCode())).grabMe(evt); }.bind(this), evt); }, {category: ['running the code']});
 
   add.method('close', function (evt) {
     var owner = this.owner;
     this.remove();
     owner.minimumExtentChanged();
-  });
+  }, {category: ['closing']});
 
 });
 
