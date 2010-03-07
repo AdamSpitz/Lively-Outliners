@@ -48,13 +48,13 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this.replaceThingiesWith([this._headerRow, this._evaluatorsPanel]);
 
     this.startPeriodicallyUpdating();
-  });
+  }, {category: ['creating']});
 
-  add.method('mirror', function () { return this._mirror; });
+  add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
 
-  add.method('outliner', function () { return this; });
+  add.method('outliner', function () { return this; }, {comment: 'For compatibility for CategoryMorph.', category: ['accessing']});
 
-  add.method('category', function () { return Category.root(); });
+  add.method('category', function () { return Category.root(); }, {category: ['accessing']});
 
   add.method('createHeaderRow', function () {
     var r = this._headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
@@ -65,7 +65,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     r.refreshContent = function() { this.refreshHeaderRow(); }.bind(this);
     this.refreshHeaderRow();
     return r;
-  });
+  }, {category: ['initializing']});
 
   add.method('refreshHeaderRow', function () {
     var ms = [this._expander, this.titleLabel];
@@ -74,7 +74,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     ms.push(this.evaluatorButton);
     ms.push(this.dismissButton);
     this._headerRow.replaceThingiesWith(ms);
-  });
+  }, {category: ['updating']});
 
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
@@ -86,23 +86,23 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this._copyDownParentsLabel = createInputBox(this.copyDownParentsString.bind(this), this.setCopyDownParentsString.bind(this));
     m.addRow(createLabelledNode("Copy-down parents", this._copyDownParentsLabel));
     return m;
-  });
+  }, {category: ['annotation']});
 
   add.method('toggleAnnotation', function (evt) {
     this._shouldShowAnnotation = !this._shouldShowAnnotation;
     this.updateExpandedness();
-  });
+  }, {category: ['annotation']});
 
   add.method('copyDownParentsString', function () {
     return reflect(this.mirror().copyDownParents()).expressionEvaluatingToMe();
-  });
+  }, {category: ['annotation']});
 
   add.method('setCopyDownParentsString', function (str) {
     MessageNotifierMorph.showIfErrorDuring(function() {
       this.mirror().setCopyDownParents(eval(str));
     }.bind(this), createFakeEvent());
     this.updateAppearance();
-  });
+  }, {category: ['annotation']});
 
   add.method('updateAppearance', function () {
     if (! this.world()) {return;}
@@ -114,15 +114,13 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     if (this._copyDownParentsLabel) {this._copyDownParentsLabel.refreshText();}
     this._headerRow.refreshContent();
     this.minimumExtentChanged();
-  });
+  }, {category: ['updating']});
 
   add.method('startPeriodicallyUpdating', function () {
     this._updater = new PeriodicalExecuter(function(pe) { this.updateAppearance(); }.bind(this), 8);
-  });
+  }, {category: ['updating']});
 
-  add.method('inspect', function () {return this.mirror().inspect();});
-
-  add.method('expander', function () { return this._expander; });
+  add.method('inspect', function () {return this.mirror().inspect();}, {category: ['printing']});
 
   add.method('updateExpandedness', function () {
     if (! this.world()) {return;}
@@ -132,29 +130,29 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     if (this.expander().isExpanded()) { thingies.push(this.slotsPanel()); }
     thingies.push(this._evaluatorsPanel);
     this.replaceThingiesWith(thingies);
-  });
+  }, {category: ['updating']});
 
   add.method('expandCategory', function (c) {
     var expander = c.isRoot() ? this.expander() : this.categoryMorphFor(c).expander();
     expander.expand();
-  });
+  }, {category: ['categories']});
 
   add.method('eachSlot', function (f) {
     this.mirror().eachFakeSlot(f);
     this.mirror().eachSlotInCategory(this.category(), f);
-  });
+  }, {category: ['iterating']});
 
   add.method('slotMorphFor', function (s) {
     return this._slotMorphs.getOrIfAbsentPut(s.name(), function() { return new SlotMorph(s); });
-  });
+  }, {category: ['slots panel']});
 
   add.method('existingCategoryMorphFor', function (c) {
     return this._categoryMorphs.get(c.fullName());
-  });
+  }, {category: ['categories']});
 
   add.method('categoryMorphFor', function (c) {
     return this._categoryMorphs.getOrIfAbsentPut(c.fullName(), function() { return new CategoryMorph(this, c); }.bind(this));
-  });
+  }, {category: ['categories']});
 
   add.method('commentMorph', function () {
     var m = this._commentMorph;
@@ -162,20 +160,20 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     var thisOutliner = this;
     return this._commentMorph = createInputBox(function( ) { return thisOutliner.mirror().comment(); },
                                                function(c) { thisOutliner.mirror().setComment(c); });
-  });
+  }, {category: ['comment']});
 
   add.method('toggleComment', function (evt) {
     this._shouldShowComment = !this._shouldShowComment;
     this.updateExpandedness();
     this.updateAppearance();
     if (this._shouldShowComment) { evt.hand.setKeyboardFocus(this.commentMorph()); }
-  });
+  }, {category: ['comment']});
 
   add.method('openEvaluator', function (evt) {
     var e = new EvaluatorMorph(this);
     this._evaluatorsPanel.addRow(e);
     evt.hand.setKeyboardFocus(e.textMorph());
-  });
+  }, {category: ['evaluators']});
 
   add.method('morphMenu', function (evt) {
     var menu = new MenuMorph([], this);
@@ -231,7 +229,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     }.bind(this)]);
 
     return menu;
-  });
+  }, {category: ['menu']});
 
   add.method('createChild', function (evt) {
     var child = this.mirror().createChild();
@@ -242,28 +240,17 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     childOutliner.expander().expand();
     var parentSlotMorph = childOutliner.slotMorphFor(child.parentSlot());
     parentSlotMorph.contentsPointer().getModel().setValue(false);
-  });
+  }, {category: ['creating children']});
 
   add.method('acceptsDropping', function (m) { // aaa - could this be generalized?
     return typeof(m.wasJustDroppedOnOutliner) === 'function';
-  });
+  }, {category: ['drag and drop']});
 
   add.method('justReceivedDrop', function (m) {
     if (this.acceptsDropping(m)) { 
       m.wasJustDroppedOnOutliner(this);
     }
-  });
-
-  add.method('onMouseOver', function (evt) {
-      //if (evt.hand.submorphs.find(function(m) {return this.morphToGrabOrReceiveDroppingMorph(evt, m);}.bind(this))) {
-    if (evt.hand.submorphs.find(function(m) {return this.acceptsDropping(m);}.bind(this))) {
-      this.highlighter().setChecked(true);
-    }
-  });
-
-  add.method('onMouseOut', function (evt) {
-    this.highlighter().setChecked(false);
-  });
+  }, {category: ['drag and drop']});
 
 });
 
@@ -292,7 +279,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     }
   });
 
-  add.method('livelyOutlinersWorldMenu', function(evt) {
+  add.method('livelyOutlinersWorldMenu', function (evt) {
     var menu = new MenuMorph([], this);
     menu.addItem(["create new object", function(evt) {
       this.outlinerFor(reflect({})).grabMe(evt);

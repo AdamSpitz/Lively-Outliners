@@ -91,6 +91,8 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
     this._modulesLabelRow.updateAppearance = function() {this._modulesLabel.refreshText();}.bind(this);
   }, {category: ['initializing']});
 
+  add.method('expander', function () { return this._expander; }, {category: ['accessing']});
+
   add.method('slotsPanel', function () {
     var sp = this._slotsPanel;
     if (sp) { return sp; }
@@ -165,7 +167,7 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
   add.method('modulesSummaryString', function () {
     var modules = this.modules();
     var n = modules.length;
-    if (n === 0) { return "No slots"; }
+    if (n === 0) { return "No filed-out slots"; }
     if (n >=  5) { return n + " modules"; }
     var prefix = n === 1 ? "Module:  " : "Modules:  ";
     return prefix + modules.map(function(m) { return m ? m.name() : '-'; }).sort().join(", ");
@@ -182,6 +184,16 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
   }, {category: ['highlighting']});
 
   add.method('highlighter', function () { return this._highlighter; }, {category: ['highlighting']});
+
+  add.method('onMouseOver', function (evt) {
+    if (evt.hand.submorphs.find(function(m) {return this.acceptsDropping(m);}.bind(this))) {
+      this.highlighter().setChecked(true);
+    }
+  }, {category: ['highlighting']});
+
+  add.method('onMouseOut', function (evt) {
+    this.highlighter().setChecked(false);
+  }, {category: ['highlighting']});
 
 });
 
@@ -257,8 +269,6 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
 
   add.method('inspect', function () {return "category " + this._category;}, {category: ['printing']});
 
-  add.method('expander', function () { return this._expander; }, {category: ['accessing']});
-
   add.method('updateExpandedness', function () {
     if (! this.world()) {return;}
     var thingies = [this._headerRow];
@@ -294,16 +304,6 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
       m.wasJustDroppedOnCategory(this);
     }
   }, {category: ['drag and drop']});
-
-  add.method('onMouseOver', function (evt) {
-    if (evt.hand.submorphs.find(function(m) {return this.acceptsDropping(m);}.bind(this))) {
-      this.highlighter().setChecked(true);
-    }
-  }, {category: ['events']});
-
-  add.method('onMouseOut', function (evt) {
-    this.highlighter().setChecked(false);
-  }, {category: ['events']});
 
 });
 
