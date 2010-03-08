@@ -45,9 +45,13 @@ thisModule.addSlots(Category.prototype, function(add) {
     return this._parts.join(" ");
   }, {category: ['accessing']});
 
-  add.method('lastPart', function () {
+  add.method('part', function (i) {
     if (this.isRoot()) { return ""; }
-    return this._parts[this._parts.length - 1];
+    return this._parts[i];
+  }, {category: ['accessing']});
+
+  add.method('lastPart', function () {
+    return this.part(this._parts.length - 1);
   }, {category: ['accessing']});
 
   add.method('setLastPart', function (newName) {
@@ -66,6 +70,11 @@ thisModule.addSlots(Category.prototype, function(add) {
 
   add.method('isImmediateSubcategoryOf', function (c) {
     if (this.parts().length !== c.parts().length + 1) { return false; }
+    return this.isEqualToOrSubcategoryOf(c);
+  }, {category: ['comparing']});
+
+  add.method('isSubcategoryOf', function (c) {
+    if (this.parts().length <= c.parts().length) { return false; }
     return this.isEqualToOrSubcategoryOf(c);
   }, {category: ['comparing']});
 

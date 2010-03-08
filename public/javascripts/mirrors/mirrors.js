@@ -177,7 +177,12 @@ thisModule.addSlots(mirror, function(add) {
     var subcats = {};
     this.eachNormalSlot(function(s) {
       var sc = s.category();
-      if (sc.isImmediateSubcategoryOf(c)) { subcats[sc.lastPart()] = sc; }
+      if (sc.isSubcategoryOf(c)) {
+        var subcatName = sc.part(c.parts().length);
+        if (! subcats.hasOwnProperty(subcatName)) {
+          subcats[subcatName] = c.subcategory(subcatName);
+        }
+      }
     });
 
     for (var name in subcats) {
@@ -394,10 +399,11 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['searching']});
 
   add.method('categorizeUncategorizedSlotsAlphabetically', function () {
+    var uncategorized = Category.root().subcategory("uncategorized");
     this.eachNormalSlot(function(s) {
       var c = s.category();
       if (c.isRoot()) {
-        s.setCategory(c.subcategory((s.name()[0] || '_unnamed_').toUpperCase()));
+        s.setCategory(uncategorized.subcategory((s.name()[0] || '_unnamed_').toUpperCase()));
       }
     });
   }, {category: ['organizing']});
