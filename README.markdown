@@ -17,3 +17,10 @@ There's also a [transporter system](http://research.sun.com/self/papers/transpor
 Not very. I don't really trust this thing with my code yet. (I'm using it to manage most of its own code, but I double-check the filed-out .js files to make sure they look OK.) But it's getting more and more solid every day.
 
 I've mostly been testing with Safari, but I think it should run on Firefox and Chrome too. Not sure about Opera. Definitely not IE.
+
+
+## Is there a demo I can try?
+
+For now I've got something up here:
+
+  [http://adamspitz.com/Lively-Outliners/example.xhtml](http://adamspitz.com/Lively-Outliners/example.xhtml)
