@@ -27,11 +27,27 @@ thisModule.addSlots(transporter.module, function(add) {
     this.fileOutSlots(buffer);
     buffer.append("});");
 
-    var url = this.urlForModuleName(this.name());
     var doc = buffer.toString();
-    var status = new Resource(Record.newPlainInstance({URL: url})).store(doc, true).getStatus();
-    if (! status.isSuccess()) {
-      throw "failed to file out " + this + ", status is " + status.code();
+
+    // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
+    if (URL.source.fullPath().startsWith("http://adamspitz.com")) {
+      var uploadScriptURL = "http://adamspitz.com/cgi-bin/savefile.cgi";
+      //alert(uploadScriptURL);
+      new Ajax.Request(uploadScriptURL, {
+        method: 'post',
+        contentType: 'text/plain',
+        parameters: {fileName: this.name() + ".js", fileContents: doc},
+        asynchronous: true,
+        onSuccess:   function(transport) { var urlToDownload = transport.responseText; window.open(urlToDownload, 'Download'); }.bind(this),
+        onFailure:   function(         ) {alert("Failure. :(");}.bind(this),
+        onException: function(r,      e) {alert("Exception. :(");}.bind(this),
+      });
+    } else {
+      var url = this.urlForModuleName(this.name());
+      var status = new Resource(Record.newPlainInstance({URL: url})).store(doc, true).getStatus();
+      if (! status.isSuccess()) {
+        throw "failed to file out " + this + ", status is " + status.code();
+      }
     }
   }, {category: ['transporting']});
 
