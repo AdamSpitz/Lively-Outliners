@@ -30,9 +30,8 @@ thisModule.addSlots(transporter.module, function(add) {
     var doc = buffer.toString();
 
     // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
-    if (URL.source.fullPath().startsWith("http://adamspitz.com")) {
+    if (URL.source.hostname.include("adamspitz.com")) {
       var uploadScriptURL = "http://adamspitz.com/cgi-bin/savefile.cgi";
-      //alert(uploadScriptURL);
       new Ajax.Request(uploadScriptURL, {
         method: 'post',
         contentType: 'text/plain',
