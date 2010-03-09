@@ -197,7 +197,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
       menu.addItem(["set module...", function(evt) {
         var all = {};
         var chooseTargetModule = function(sourceModuleName, evt) {
-          transporter.chooseOrCreateAModule(evt, this, function(targetModule, evt) {
+          transporter.chooseOrCreateAModule(evt, this, "To which module?", function(targetModule, evt) {
             this.mirror().eachNormalSlot(function(slot) {
               if (! slot.isFromACopyDownParent()) {
                 if (sourceModuleName === all || (!slot.module() && sourceModuleName === '-') || (slot.module() && slot.module().name() === sourceModuleName)) {
@@ -214,7 +214,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
         this.modules().map(function(m) { return m ? m.name() : '-'; }).sort().each(function(moduleName) {
           whichSlotsMenu.addItem([moduleName, function(evt) {chooseTargetModule(moduleName, evt);}.bind(this)]);
         }.bind(this));
-        whichSlotsMenu.openIn(this.world(), evt.point());
+        whichSlotsMenu.openIn(this.world(), evt.point(), false, "Of which slots?");
       }.bind(this)]);
     }
 
@@ -320,7 +320,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
 thisModule.addSlots(transporter, function(add) {
 
-  add.method('chooseOrCreateAModule', function (evt, targetMorph, callback) {
+    add.method('chooseOrCreateAModule', function (evt, targetMorph, menuCaption, callback) {
     var modulesMenu = new MenuMorph([], targetMorph);
     modulesMenu.addItem(["new module...", function(evt) {
       evt.hand.world().prompt("Module name?", function(name) {
@@ -338,7 +338,7 @@ thisModule.addSlots(transporter, function(add) {
         callback(m, evt);
       }]);
     });
-    modulesMenu.openIn(targetMorph.world(), evt.point());
+    modulesMenu.openIn(targetMorph.world(), evt.point(), false, menuCaption);
   });
 
 });
