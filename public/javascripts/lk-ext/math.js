@@ -40,9 +40,13 @@ Object.extend(Point.prototype, {
 
   // Optimization: don't create a new Point object in the process of calculating this.
   r: function() {
+    return Math.sqrt(this.rSquared());
+  },
+
+  rSquared: function() {
     var x = this.x;
     var y = this.y;
-    return Math.sqrt(x*x + y*y);
+    return x*x + y*y;
   },
 
   pointOnCircle: function(radius, angle) {

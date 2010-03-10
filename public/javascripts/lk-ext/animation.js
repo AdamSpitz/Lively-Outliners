@@ -24,22 +24,30 @@ thisModule.addSlots(animation, function(add) {
 
   add.creator('pathMover', {});
 
+  add.creator('wiggler', {});
+
   add.creator('straightPath', {});
 
   add.creator('arcPath', {});
 
-  add.method('newMovement', function (morph, destinationPt, functionToCallWhenDone) {
+  add.method('newMovement', function (morph, destinationPt, shouldWiggleAtEnd, functionToCallWhenDone) {
     var           timePerStep = 40;
-    var   totalMovingDuration = 480;
-    var  accelOrDecelDuration = 200;
+
     var  anticipationDuration = 120;
     var       waitingDuration = 120;
-    var constantSpeedDuration = totalMovingDuration - accelOrDecelDuration - accelOrDecelDuration;
-    var             fullSpeed = 1 / ((totalMovingDuration - accelOrDecelDuration) / timePerStep);
+    var  accelOrDecelDuration = 200;
+    var    mainMovingDuration = 480;
+    var      wigglingDuration = 200;
+
+    var constantSpeedDuration = mainMovingDuration - accelOrDecelDuration - accelOrDecelDuration;
+    var             fullSpeed = 1 / ((mainMovingDuration - accelOrDecelDuration) / timePerStep);
     var          acceleration = fullSpeed / (accelOrDecelDuration / timePerStep);
     
     var currentPt = morph.getPosition();
-    var anticipationPt = currentPt.addPt(morph.getPosition().subPt(destinationPt).scaleToLength(50));
+    var vector = currentPt.subPt(destinationPt);
+    var distanceToTravel = vector.r();
+    if (distanceToTravel < 0.1) { return Object.newChildOf(this.resetter, "already there", function() {}); }
+    var anticipationPt = currentPt.addPt(vector.scaleToLength(distanceToTravel / 20));
     var anticPath = Object.newChildOf(this.straightPath,      currentPt, anticipationPt);
     var  mainPath = Object.newChildOf(this.arcPath,      anticipationPt,  destinationPt);
 
@@ -51,14 +59,21 @@ thisModule.addSlots(animation, function(add) {
     speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "accelerating",    accelOrDecelDuration / timePerStep, Object.newChildOf(this.accelerator,  acceleration)));
     speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "cruising along", constantSpeedDuration / timePerStep, Object.newChildOf(this.nothingDoer               )));
     speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "decelerating",    accelOrDecelDuration / timePerStep, Object.newChildOf(this.accelerator, -acceleration)));
+    speederizer.timeSegments().push(Object.newChildOf(this.resetter,    "done",            function(morph) {morph._speed = 0;}));
 
     var moverizer = Object.newChildOf(this.multiSegment);
     moverizer.timeSegments().push(Object.newChildOf(this.timeSegment, "anticipation line", anticipationDuration / timePerStep, Object.newChildOf(this.pathMover, anticPath)));
     moverizer.timeSegments().push(Object.newChildOf(this.timeSegment, "waiting to move",        waitingDuration / timePerStep, Object.newChildOf(this.nothingDoer         )));
-    moverizer.timeSegments().push(Object.newChildOf(this.timeSegment, "main arc",           totalMovingDuration / timePerStep, Object.newChildOf(this.pathMover,  mainPath)));
+    moverizer.timeSegments().push(Object.newChildOf(this.timeSegment, "main arc",            mainMovingDuration / timePerStep, Object.newChildOf(this.pathMover,  mainPath)));
+
+    if (shouldWiggleAtEnd) {
+      moverizer.timeSegments().push(Object.newChildOf(this.resetter,    "pre-wiggling",      function(morph) {morph.setPosition(destinationPt);}));
+      moverizer.timeSegments().push(Object.newChildOf(this.timeSegment, "wiggling",              wigglingDuration / timePerStep, Object.newChildOf(this.wiggler, destinationPt)));
+    }
+
+    moverizer.timeSegments().push(Object.newChildOf(this.resetter,    "set final loc",     function(morph) {morph.setPosition(destinationPt);}));
 
     return Object.newChildOf(this.wholeThing, morph, [speederizer, moverizer], functionToCallWhenDone);
-
   });
 
 });
@@ -188,6 +203,30 @@ thisModule.addSlots(animation.pathMover, function(add) {
 });
 
 
+thisModule.addSlots(animation.wiggler, function(add) {
+
+  add.method('initialize', function (loc) {
+    this._center = loc;
+    var wiggleSize = 5;
+    this._extreme1 = loc.addXY(-wiggleSize, 0);
+    this._extreme2 = loc.addXY( wiggleSize, 0);
+    this._isMovingTowardExtreme1 = false;
+    this._distanceToMovePerStep = wiggleSize / 2;
+  });
+
+  add.method('doOneStep', function (morph, stepsLeft) {
+    var curPos = morph.getPosition();
+    var dstPos = this._isMovingTowardExtreme1 ? this._extreme1 : this._extreme2;
+    if (curPos.subPt(dstPos).rSquared() < 0.01) {
+      this._isMovingTowardExtreme1 = ! this._isMovingTowardExtreme1;
+      dstPos = this._isMovingTowardExtreme1 ? this._extreme1 : this._extreme2;
+    }
+    morph.setPosition(curPos.addPt(dstPos.subPt(curPos).scaleToLength(this._distanceToMovePerStep)));
+  });
+
+});
+
+
 thisModule.addSlots(animation.straightPath, function(add) {
 
   add.method('initialize', function (from, to) {
@@ -197,7 +236,7 @@ thisModule.addSlots(animation.straightPath, function(add) {
 
   add.method('move', function (speed, curPos) {
     var vector = this._destination.subPt(curPos);
-    if (vector.r() < 0.1) {return curPos;}
+    if (vector.rSquared() < 0.01) {return curPos;}
 
     var distanceToMove = speed * this._totalDistance;
     //console.log("speed: " + speed + ", distanceToMove: " + distanceToMove + ", curPos: " + curPos);

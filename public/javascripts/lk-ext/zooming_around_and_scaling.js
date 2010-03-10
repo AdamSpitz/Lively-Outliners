@@ -64,7 +64,7 @@ Morph.addMethods({
     this.stopZoomingAround();
     functionToCallWhenDone = functionToCallWhenDone || function() {};
     //var zoomer = new Zoomer(this, loc, function() {this.stopZoomingAround(); functionToCallWhenDone();}.bind(this));
-    var zoomer = animation.newMovement(this, loc, function() {this.stopZoomingAround(); functionToCallWhenDone();}.bind(this));
+    var zoomer = animation.newMovement(this, loc, false, function() {this.stopZoomingAround(); functionToCallWhenDone();}.bind(this));
     this._zoomerProcess = new PeriodicalExecuter(function(pe) {
       zoomer.doOneStep(pe);
     }, 0.04);
