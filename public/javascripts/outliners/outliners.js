@@ -269,6 +269,33 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     return this.outliners().getOrIfAbsentPut(mir, function() {return new OutlinerMorph(mir);});
   });
 
+  add.method('cleanUpOutliners', function (evt) {
+    var outlinersToMove = [];
+    this.outliners().eachValue(function(outliner) {
+      if (outliner.world() === this) { // not null
+        outlinersToMove.push(outliner);
+      }
+    }.bind(this));
+
+    var sortedOutlinersToMove = outlinersToMove.sort(function(o1, o2) {
+      var n1 = o1.inspect();
+      var n2 = o2.inspect();
+      return n1 < n2 ? -1 : n1 === n2 ? 0 : 1;
+    });
+
+    var pos = pt(20,20);
+    var widest = 0;
+    for (var i = 0; i < sortedOutlinersToMove.length; ++i) {
+      var outliner = sortedOutlinersToMove[i];
+      outliner.expander().collapse();
+      outliner.startZoomingTo(pos);
+      var extent = outliner.getExtent();
+      pos = pos.withY(pos.y + extent.y);
+      widest = Math.max(widest, extent.x);
+      if (pos.y >= this.getExtent().y - 30) { pos = pt(pos.x + widest + 20, 20); }
+    }
+  });
+
   add.method('acceptsDropping', function (m) {
     return typeof m.wasJustDroppedOnWorld === 'function';
   });
@@ -310,6 +337,12 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
         }.bind(this)]);
       }.bind(this));
       modulesMenu.openIn(this, evt.point());
+    }.bind(this)]);
+
+    menu.addLine();
+
+    menu.addItem(["clean up", function(evt) {
+      this.cleanUpOutliners(evt);
     }.bind(this)]);
 
     return menu;

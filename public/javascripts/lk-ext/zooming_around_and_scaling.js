@@ -57,48 +57,44 @@ Morph.addMethods({
   // zooming around
 
   startZoomingOuttaHere: function() {
-    if (!this.zoomerProcess) {
-      var zoomer = new Zoomer(this, pt(WorldMorph.current().getExtent().x + 300, -300), this.doneZoomingOuttaHere.bind(this));
-      // This scaling thing isn't working nicely:   var scaler = new Scaler(this, destinationMorph.getExtent(), zoomer.estimatedNumberOfSteps(), function() {});
-      this.zoomerProcess = new PeriodicalExecuter(function(pe) {
-        zoomer.doOneStep(pe);
-        // scaler.doOneStep(pe);
-      }, 0.1);
-    }
+    this.startZoomingTo(pt(this.world().getExtent().x + 300, -300), function() {this.remove();}.bind(this));
   },
 
-  stopZoomingOuttaHere: function() {
-    if (this.zoomerProcess != null) {
-      this.zoomerProcess.stop();
-      this.zoomerProcess = null;
-    }
+  startZoomingTo: function(loc, functionToCallWhenDone) {
+    this.stopZoomingAround();
+    functionToCallWhenDone = functionToCallWhenDone || function() {};
+    var zoomer = new Zoomer(this, loc, function() {this.stopZoomingAround(); functionToCallWhenDone();}.bind(this));
+    this._zoomerProcess = new PeriodicalExecuter(function(pe) {
+      zoomer.doOneStep(pe);
+    }, 0.1);
   },
 
-  doneZoomingOuttaHere: function() {
-    this.stopZoomingOuttaHere();
-    this.remove();
+  stopZoomingAround: function() {
+    if (this._zoomerProcess) {
+      this._zoomerProcess.stop();
+      delete this._zoomerProcess;
+    }
   },
 
 
   // adding and removing to/from the world
 
-  ensureIsInWorld: function(w, p) {
-    this.stopZoomingOuttaHere();
-    var shallBeAdded = this.world() == null;
-    if (shallBeAdded) {
-      if (p) {
-        w.addMorphAt(this, p);
-      } else {
-        w.addMorph(this);
+  ensureIsInWorld: function(w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
+    this.stopZoomingAround();
+    if (this.world() !== w) {
+      w.addMorphAt(this, pt(-300,-300));
+      if (desiredLoc) {
+        this.startZoomingTo(desiredLoc);
+      }
+    } else {
+      if (desiredLoc && shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
+        this.startZoomingTo(desiredLoc);
       }
     }
-    return shallBeAdded;
   },
 
   ensureIsNotInWorld: function() {
-    var shallBeRemoved = !! this.world();
-    if (shallBeRemoved) {this.startZoomingOuttaHere();}
-    return shallBeRemoved;
+    if (this.world()) {this.startZoomingOuttaHere();}
   },
 
   createDismissButton: function() {

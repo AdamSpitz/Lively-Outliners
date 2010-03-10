@@ -132,7 +132,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     m = this._contentsPointer = createButton(icon, function() {
       if (arrow.noLongerNeedsToBeUpdated || ! arrow.world()) {
         var w = this.world();
-        w.outlinerFor(slot.contents()).ensureIsInWorld(w, m.worldPoint(pt(150,0)));
+        w.outlinerFor(slot.contents()).ensureIsInWorld(w, m.worldPoint(pt(150,0)), false);
         arrow.needsToBeVisible();
       } else {
         arrow.noLongerNeedsToBeVisible();

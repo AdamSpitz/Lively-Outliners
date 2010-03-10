@@ -61,9 +61,13 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
     return (function() { return eval("(" + __codeToRun__ + ")"); }).call(this.outliner().mirror().reflectee());
   }, {category: ['running the code']});
 
-  add.method('doIt', function (evt) { MessageNotifierMorph.showIfErrorDuring(function() { this.runTheCode(); }.bind(this), evt); }, {category: ['running the code']});
+  add.method('doIt', function (evt) {
+    MessageNotifierMorph.showIfErrorDuring(function() { this.runTheCode(); }.bind(this), evt);
+  }, {category: ['running the code']});
 
-  add.method('getIt', function (evt) { MessageNotifierMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(reflect(this.runTheCode())).grabMe(evt); }.bind(this), evt); }, {category: ['running the code']});
+  add.method('getIt', function (evt) {
+    MessageNotifierMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(reflect(this.runTheCode())).grabMe(evt); }.bind(this), evt);
+  }, {category: ['running the code']});
 
   add.method('close', function (evt) {
     var owner = this.owner;
