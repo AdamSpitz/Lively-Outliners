@@ -44,6 +44,10 @@ Object.extend(Point.prototype, {
     var y = this.y;
     return Math.sqrt(x*x + y*y);
   },
+
+  pointOnCircle: function(radius, angle) {
+    return this.addPt(pt(Math.cos(angle), Math.sin(angle)).scaleToLength(radius));
+  },
 });
 
 Object.extend(Rectangle.prototype, {

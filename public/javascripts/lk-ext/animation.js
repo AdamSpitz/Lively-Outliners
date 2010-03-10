@@ -22,6 +22,8 @@ thisModule.addSlots(animation, function(add) {
 
   add.creator('straightPath', {});
 
+  add.creator('arcPath', {});
+
   add.method('newMovement', function (morph, destinationPt, functionToCallWhenDone) {
     var timePerStep = 40;
     var accelOrDecelDuration = 240;
@@ -30,7 +32,7 @@ thisModule.addSlots(animation, function(add) {
     var fullSpeed = 1 / ((totalMovingDuration - accelOrDecelDuration) / timePerStep);
     var acceleration = fullSpeed / (accelOrDecelDuration / timePerStep);
     
-    var path = Object.newChildOf(this.straightPath, morph.getPosition(), destinationPt);
+    var path = Object.newChildOf(this.arcPath, morph.getPosition(), destinationPt);
 
     var timeSegments = [];
     timeSegments.push(Object.newChildOf(this.timeSegment, "accelerating",    accelOrDecelDuration / timePerStep, Object.newChildOf(this.accelerator,  acceleration)));
@@ -145,17 +147,49 @@ thisModule.addSlots(animation.pathMover, function(add) {
 thisModule.addSlots(animation.straightPath, function(add) {
 
   add.method('initialize', function (from, to) {
-    this._source = from;
     this._destination = to;
     this._totalDistance = to.subPt(from).r();
   });
 
   add.method('move', function (speed, curPos) {
-    var distanceToMove = speed * this._totalDistance;
-    //console.log("speed: " + speed + ", distanceToMove: " + distanceToMove + ", curPos: " + curPos);
     var vector = this._destination.subPt(curPos);
     if (vector.r() < 0.1) {return curPos;}
+
+    var distanceToMove = speed * this._totalDistance;
+    //console.log("speed: " + speed + ", distanceToMove: " + distanceToMove + ", curPos: " + curPos);
     return curPos.addPt(vector.normalized().scaleBy(distanceToMove));
+  });
+
+});
+
+
+thisModule.addSlots(animation.arcPath, function(add) {
+
+  add.method('initialize', function (from, to) {
+    this._destination = to;
+
+    // Find the center of a circle that hits both points.
+    var vector = to.subPt(from);
+    var normal = vector.perpendicularVector().scaleToLength(vector.r() * 4); // can fiddle with the length until it looks good
+    this._center = from.midPt(to).addPt(normal);
+    var fromVector = from.subPt(this._center);
+    var   toVector =   to.subPt(this._center);
+    this._radius = fromVector.r();
+    this._destinationAngle = toVector.theta();
+    this._totalAngle = this._destinationAngle - fromVector.theta();
+  });
+
+  add.method('move', function (speed, curPos) {
+    var vector = this._destination.subPt(curPos);
+    if (vector.r() < 0.1) {return curPos;}
+
+    var angleToMove = speed * this._totalAngle;
+    var curAngle = curPos.subPt(this._center).theta();
+    if (this._destinationAngle - curAngle < 0.001) {return curPos;}
+    var newAngle = curAngle + angleToMove;
+    var newPos = this._center.pointOnCircle(this._radius, newAngle);;
+    //console.log("speed: " + speed + ", angleToMove: " + angleToMove + ", curAngle: " + curAngle + ", newAngle: " + newAngle + ", newPos: " + newPos + ", curPos: " + curPos);
+    return newPos;
   });
 
 });
