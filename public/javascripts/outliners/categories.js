@@ -238,6 +238,7 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
 
     var categoryMorph = this;
     this.titleLabel = new TwoModeTextMorph(pt(5, 10).extent(pt(20, 20)), category.lastPart());
+    this.titleLabel.setEmphasis({style: 'italic'});
     this.titleLabel.nameOfEditCommand = "rename";
     this.titleLabel.setFill(null);
     this.titleLabel.backgroundColorWhenWritable = null;
