@@ -33,7 +33,7 @@ thisModule.addSlots(animation, function(add) {
   add.method('newMovement', function (morph, destinationPt, shouldWiggleAtEnd, functionToCallWhenDone) {
     var shouldDecelerateAtEnd = ! shouldWiggleAtEnd;
 
-    var           timePerStep = 40;
+    var           timePerStep = 20;
 
     var  anticipationDuration = 120;
     var       waitingDuration = 120;
@@ -87,7 +87,7 @@ thisModule.addSlots(animation, function(add) {
 
     moverizer.timeSegments().push(Object.newChildOf(this.resetter,    "set final loc",     function(morph) {morph.setPosition(destinationPt);}));
 
-    return Object.newChildOf(this.wholeThing, morph, [speederizer, moverizer], functionToCallWhenDone);
+    return Object.newChildOf(this.wholeThing, morph, timePerStep, [speederizer, moverizer], functionToCallWhenDone);
   });
 
 });
@@ -95,11 +95,14 @@ thisModule.addSlots(animation, function(add) {
 
 thisModule.addSlots(animation.wholeThing, function(add) {
 
-  add.method('initialize', function (morph, simulaneousProcesses, functionToCallWhenDone) {
+  add.method('initialize', function (morph, timePerStep, simulaneousProcesses, functionToCallWhenDone) {
     this._morph = morph;
+    this._timePerStep = timePerStep;
     this._simulaneousProcesses = simulaneousProcesses;
     this._functionToCallWhenDone = functionToCallWhenDone;
   });
+
+  add.method('timePerStep', function () { return this._timePerStep; });
 
   add.method('doOneStep', function () {
     var anyAreNotDoneYet = false;

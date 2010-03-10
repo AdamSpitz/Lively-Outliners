@@ -1,58 +1,3 @@
-Object.subclass("Zoomer", {
-  initialize: function(morph, destinationPt, functionToCallWhenDone) {
-    this.morph = morph;
-    this.destinationPt = destinationPt;
-    this.done = functionToCallWhenDone;
-    this.originalPosition = morph.position();
-    this.distancePerStep = 75.0;
-    return this;
-  },
-
-  totalRemainingVector:   function() {return this.destinationPt.subPt(this.morph.position());},
-
-  estimatedNumberOfSteps: function() {return Math.ceil(this.totalRemainingVector().r() / this.distancePerStep);},
-
-  doOneStep: function(pe) {
-    var totalRemainingVector = this.totalRemainingVector();
-    var totalRemainingDistance = totalRemainingVector.r();
-    if (totalRemainingDistance < 10) {
-      pe.stop();
-      this.done();
-      return;
-    }
-    var stepVector = totalRemainingVector.scaleToLength(Math.min(totalRemainingDistance, this.distancePerStep));
-    this.morph.translateBy(stepVector);
-  },
-});
-
-Object.subclass("Scaler", {
-  initialize: function(morph, targetSize, numberOfSteps, functionToCallWhenDone) {
-    this.morph = morph;
-    this.targetSize = targetSize;
-    this.numberOfSteps = numberOfSteps;
-    this.done = functionToCallWhenDone;
-    this.scalingFactor = this.calculateScalingFactor();
-    return this;
-  },
-
-  calculateScalingFactor: function() {
-    var originalBounds = this.morph.bounds();
-    var targetRatio = Math.min(this.targetSize.x / originalBounds.width, this.targetSize.y / originalBounds.height);
-    var ratioForEachStep = Math.pow(targetRatio, 1.0 / this.numberOfSteps);
-    return ratioForEachStep;
-  },
-
-  doOneStep: function(pe) {
-    if (this.numberOfSteps <= 0) {
-      pe.stop();
-      this.done();
-      return;
-    }
-    this.numberOfSteps -= 1;
-    this.morph.scaleBy(this.scalingFactor);
-  },
-});
-
 Morph.addMethods({
   // zooming around
 
@@ -63,11 +8,10 @@ Morph.addMethods({
   startZoomingTo: function(loc, shouldWiggleAtEnd, functionToCallWhenDone) {
     this.stopZoomingAround();
     functionToCallWhenDone = functionToCallWhenDone || function() {};
-    //var zoomer = new Zoomer(this, loc, function() {this.stopZoomingAround(); functionToCallWhenDone();}.bind(this));
     var zoomer = animation.newMovement(this, loc, shouldWiggleAtEnd, function() {this.stopZoomingAround(); functionToCallWhenDone();}.bind(this));
     this._zoomerProcess = new PeriodicalExecuter(function(pe) {
       zoomer.doOneStep(pe);
-    }, 0.04);
+    }, zoomer.timePerStep() / 1000);
   },
 
   stopZoomingAround: function() {
@@ -120,3 +64,34 @@ Morph.addMethods({
     }
   }
 });
+
+
+
+Object.subclass("Scaler", {
+  initialize: function(morph, targetSize, numberOfSteps, functionToCallWhenDone) {
+    this.morph = morph;
+    this.targetSize = targetSize;
+    this.numberOfSteps = numberOfSteps;
+    this.done = functionToCallWhenDone;
+    this.scalingFactor = this.calculateScalingFactor();
+    return this;
+  },
+
+  calculateScalingFactor: function() {
+    var originalBounds = this.morph.bounds();
+    var targetRatio = Math.min(this.targetSize.x / originalBounds.width, this.targetSize.y / originalBounds.height);
+    var ratioForEachStep = Math.pow(targetRatio, 1.0 / this.numberOfSteps);
+    return ratioForEachStep;
+  },
+
+  doOneStep: function(pe) {
+    if (this.numberOfSteps <= 0) {
+      pe.stop();
+      this.done();
+      return;
+    }
+    this.numberOfSteps -= 1;
+    this.morph.scaleBy(this.scalingFactor);
+  },
+});
+
