@@ -16,7 +16,11 @@ thisModule.addSlots(animation, function(add) {
 
   add.creator('timeSegment', {});
 
+  add.creator('resetter', {});
+
   add.creator('accelerator', {});
+
+  add.creator('nothingDoer', {});
 
   add.creator('pathMover', {});
 
@@ -25,23 +29,33 @@ thisModule.addSlots(animation, function(add) {
   add.creator('arcPath', {});
 
   add.method('newMovement', function (morph, destinationPt, functionToCallWhenDone) {
-    var timePerStep = 40;
-    var accelOrDecelDuration = 240;
-    var totalMovingDuration = 600;
+    var           timePerStep = 40;
+    var   totalMovingDuration = 480;
+    var  accelOrDecelDuration = 200;
+    var  anticipationDuration = 120;
+    var       waitingDuration = 120;
     var constantSpeedDuration = totalMovingDuration - accelOrDecelDuration - accelOrDecelDuration;
-    var fullSpeed = 1 / ((totalMovingDuration - accelOrDecelDuration) / timePerStep);
-    var acceleration = fullSpeed / (accelOrDecelDuration / timePerStep);
+    var             fullSpeed = 1 / ((totalMovingDuration - accelOrDecelDuration) / timePerStep);
+    var          acceleration = fullSpeed / (accelOrDecelDuration / timePerStep);
     
-    var path = Object.newChildOf(this.arcPath, morph.getPosition(), destinationPt);
+    var currentPt = morph.getPosition();
+    var anticipationPt = currentPt.addPt(morph.getPosition().subPt(destinationPt).scaleToLength(50));
+    var anticPath = Object.newChildOf(this.straightPath,      currentPt, anticipationPt);
+    var  mainPath = Object.newChildOf(this.arcPath,      anticipationPt,  destinationPt);
 
-    var timeSegments = [];
-    timeSegments.push(Object.newChildOf(this.timeSegment, "accelerating",    accelOrDecelDuration / timePerStep, Object.newChildOf(this.accelerator,  acceleration)));
-    timeSegments.push(Object.newChildOf(this.timeSegment, "cruising along", constantSpeedDuration / timePerStep, Object.newChildOf(this.accelerator,  0           )));
-    timeSegments.push(Object.newChildOf(this.timeSegment, "decelerating",    accelOrDecelDuration / timePerStep, Object.newChildOf(this.accelerator, -acceleration)));
+    var speederizer = Object.newChildOf(this.multiSegment);
+    speederizer.timeSegments().push(Object.newChildOf(this.resetter,    "start antic.",    function(morph) {morph._speed = 1 / (anticipationDuration / timePerStep);}));
+    speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "anticipating",    anticipationDuration / timePerStep, Object.newChildOf(this.accelerator,  acceleration)));
+    speederizer.timeSegments().push(Object.newChildOf(this.resetter,    "done antic.",     function(morph) {morph._speed = 0;}));
+    speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "waiting",              waitingDuration / timePerStep, Object.newChildOf(this.nothingDoer               )));
+    speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "accelerating",    accelOrDecelDuration / timePerStep, Object.newChildOf(this.accelerator,  acceleration)));
+    speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "cruising along", constantSpeedDuration / timePerStep, Object.newChildOf(this.nothingDoer               )));
+    speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "decelerating",    accelOrDecelDuration / timePerStep, Object.newChildOf(this.accelerator, -acceleration)));
 
-    var speederizer = Object.newChildOf(this.multiSegment, timeSegments);
-
-    var moverizer = Object.newChildOf(this.timeSegment, "whole arc", totalMovingDuration / timePerStep, Object.newChildOf(this.pathMover, path));
+    var moverizer = Object.newChildOf(this.multiSegment);
+    moverizer.timeSegments().push(Object.newChildOf(this.timeSegment, "anticipation line", anticipationDuration / timePerStep, Object.newChildOf(this.pathMover, anticPath)));
+    moverizer.timeSegments().push(Object.newChildOf(this.timeSegment, "waiting to move",        waitingDuration / timePerStep, Object.newChildOf(this.nothingDoer         )));
+    moverizer.timeSegments().push(Object.newChildOf(this.timeSegment, "main arc",           totalMovingDuration / timePerStep, Object.newChildOf(this.pathMover,  mainPath)));
 
     return Object.newChildOf(this.wholeThing, morph, [speederizer, moverizer], functionToCallWhenDone);
 
@@ -77,8 +91,12 @@ thisModule.addSlots(animation.wholeThing, function(add) {
 thisModule.addSlots(animation.multiSegment, function(add) {
 
   add.method('initialize', function (timeSegments) {
-    this._timeSegments = timeSegments;
+    this._timeSegments = timeSegments || [];
     this._currentSegmentIndex = 0;
+  });
+
+  add.method('timeSegments', function () {
+    return this._timeSegments;
   });
 
   add.method('currentSegment', function () {
@@ -111,6 +129,32 @@ thisModule.addSlots(animation.timeSegment, function(add) {
     this._movement.doOneStep(morph, this._stepsLeft);
     --this._stepsLeft;
     return true;
+  });
+
+});
+
+
+thisModule.addSlots(animation.resetter, function(add) {
+
+  add.method('initialize', function (name, functionToRun) {
+    this._name = name;
+    this._functionToRun = functionToRun;
+  });
+
+  add.method('doOneStep', function (morph) {
+    this._functionToRun(morph);
+    return false;
+  });
+
+});
+
+
+thisModule.addSlots(animation.nothingDoer, function(add) {
+
+  add.method('initialize', function () {
+  });
+
+  add.method('doOneStep', function (morph, stepsLeft) {
   });
 
 });
