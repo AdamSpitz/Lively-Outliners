@@ -177,6 +177,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
 
   add.method('morphMenu', function (evt) {
     var menu = new MenuMorph([], this);
+
     if (this.mirror().canHaveSlots()) {
       menu.addSection([["add slot",     function(evt) { this.addSlot    (evt); }.bind(this)]]);
       menu.addSection([["add category", function(evt) { this.addCategory(evt); }.bind(this)]]);

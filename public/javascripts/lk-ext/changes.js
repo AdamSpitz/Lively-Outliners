@@ -24,7 +24,7 @@ PasteUpMorph.addMethods({
                 return true;
         }
         if (m == null) {
-          if (evt.isNormalMouseButton()) { // Added the isNormalMouseButton check, 'cause I like it better that way. -- Adam, Jan. 2009
+          if (evt.isLeftMouseButtonDown()) { // Added the isLeftMouseButtonDown check, 'cause I like it better that way. -- Adam, Jan. 2009
             this.makeSelection(evt);
             return true;
           } else {
@@ -44,12 +44,6 @@ PasteUpMorph.addMethods({
 Morph.addMethods({
     globalBoundsNotIncludingStickouts: function() {
       return this.getGlobalTransform().transformRectToRect(this.shape.bounds());
-    },
-
-    showMorphMenu: function(evt) {
-      var menu = this.morphMenu(evt);
-      if (menu == null) {return;} // Added by Adam, July 2008
-      menu.openIn(this.world(), evt.point(), false, Object.inspect(this).truncate());
     },
 
     checkForDoubleClick: function(evt) {
@@ -75,9 +69,7 @@ MenuMorph.addMethods({
 });
 
 Event.addMethods({
-  isNormalMouseButton: function() {return this.rawEvent.button == 0;},
-  isRightMouseButton:  function() {return this.rawEvent.button == 2;},
-  isForContextMenu:    function() {return this.isCommandKey() || this.isRightMouseButton();},
+  isForContextMenu:    function() {return this.isCommandKey() || this.isRightMouseButtonDown();},
 });
 
 HandMorph.addMethods({

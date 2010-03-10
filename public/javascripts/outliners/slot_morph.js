@@ -388,6 +388,10 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   }, {category: ['drag and drop']});
 
   add.method('morphMenu', function (evt) {
+    return this.contextMenu(evt);
+  }, {category: ['menu']});
+
+  add.method('contextMenu', function (evt) {
     var menu = new MenuMorph([], this);
 
     var copyDown = this.slot().copyDownParentThatIAmFrom();

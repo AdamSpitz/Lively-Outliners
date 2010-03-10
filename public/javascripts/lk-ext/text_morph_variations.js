@@ -287,7 +287,7 @@ TwoModeTextMorph.subclass("LinkingTextMorph", {
 
   onMouseDown: function($super, evt) {
     this.hideHelp();
-    if ((! this.isInWritableMode) && evt.isNormalMouseButton()) {
+    if ((! this.isInWritableMode) && evt.isLeftMouseButtonDown()) {
       this.followLink();
       return true;
     } else {

@@ -215,9 +215,7 @@ Morph.subclass("ArrowEndpoint", {
   okToBeGrabbedBy: function(evt) { return this.arrow.isReadOnly ? null : this; },
 
   morphMenu: function(evt) {
-    // This shouldn't really have a menu at all. How do I get rid of it?
-    var menu = new MenuMorph([], this);
-    return menu;
+    return new MenuMorph([], this);
   },
 
   wasJustDroppedOn: function(m) {

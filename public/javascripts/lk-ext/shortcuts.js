@@ -27,7 +27,7 @@ function createLabel(textOrFunction, pos, extent) {
   tf.acceptInput = false;
   tf.closeDnD();
   tf.beLabel();
-  tf.morphMenu = function(evt) {return null;};
+  tf.morphMenu = function(evt) {return new MenuMorph([], tf);};
   if (typeof textOrFunction === 'function') { tf.updateAppearance = tf.refreshText = function() {this.setText(textOrFunction());}; }
   return tf;
 }
