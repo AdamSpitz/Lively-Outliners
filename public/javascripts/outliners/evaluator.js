@@ -32,6 +32,7 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
 
     var tm = this._textMorph = createTextField();
     tm.setExtent(pt(150,60));
+    tm.setFontFamily('monospace');
     var thisEvaluator = this;
     tm.onKeyPress = function(evt) {
       if (evt.getKeyCode() == Event.KEY_RETURN && (evt.isMetaDown() || evt.isCtrlDown())) {

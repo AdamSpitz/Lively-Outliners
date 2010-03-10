@@ -190,6 +190,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
       }.bind(this), createFakeEvent());
     };
     m = createInputBox(getter, setter);
+    m.setFontFamily('monospace');
     m.horizontalLayoutMode = LayoutModes.SpaceFill;
     return this._sourceMorph = m;
   }, {category: ['source']});

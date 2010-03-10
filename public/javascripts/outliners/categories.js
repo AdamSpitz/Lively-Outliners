@@ -98,6 +98,7 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
     this._expander = new ExpanderMorph(this);
 
     this._modulesLabel = createLabel(function() {return this.modulesSummaryString();}.bind(this));
+    // this._modulesLabel.setFontSize(this._modulesLabel.getFontSize() - 1); // aaa - why does this create a little space at the beginning of the label?
     this._modulesLabelRow = createLeftJustifiedRow([this._modulesLabel], {left: 0, right: 0, top: 0, bottom: 2, between: 0});
     this._modulesLabelRow.updateAppearance = function() {this._modulesLabel.refreshText();}.bind(this);
   }, {category: ['initializing']});
