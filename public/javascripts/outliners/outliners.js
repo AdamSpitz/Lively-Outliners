@@ -39,6 +39,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this._evaluatorsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
 
     this.titleLabel = createLabel(function() {return m.inspect();});
+    // this.titleLabel.setFontFamily('serif'); // not sure I like it
     this.titleLabel.setEmphasis({style: 'bold'});
 
     this.commentButton   = createButton("'...'", function(evt) { this.toggleComment(evt); }.bind(this), 1);
@@ -321,6 +322,9 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
     menu.addLine();
 
+    // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
+    if (! URL.source.hostname.include("adamspitz.com")) {
+
     menu.addItem(["file in module...", function(evt) {
       var filenames = new FileDirectory(lobby.transporter.module.urlForModuleDirectory()).filenames().select(function(n) {return n.endsWith(".js");});
       
@@ -331,6 +335,8 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       
       modulesMenu.openIn(this, evt.point());
     }.bind(this)]);
+
+    }
 
     menu.addItem(["file out module...", function(evt) {
       var modulesMenu = new MenuMorph([], this);
