@@ -38,7 +38,9 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this._evaluatorsPanel = new ColumnMorph().beInvisible();
     this._evaluatorsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
 
-    this.titleLabel      = createLabel(function() {return m.inspect();});
+    this.titleLabel = createLabel(function() {return m.inspect();});
+    this.titleLabel.setEmphasis({style: 'bold'});
+
     this.commentButton   = createButton("'...'", function(evt) { this.toggleComment(evt); }.bind(this), 1);
     this.evaluatorButton = createButton("E", function(evt) { this.openEvaluator(evt); }.bind(this), 1);
     this.dismissButton   = this.createDismissButton();
