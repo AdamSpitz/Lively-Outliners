@@ -292,7 +292,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     for (var i = 0; i < sortedOutlinersToMove.length; ++i) {
       var outliner = sortedOutlinersToMove[i];
       outliner.expander().collapse();
-      outliner.startZoomingTo(pos);
+      outliner.startZoomingTo(pos, true);
       var extent = outliner.getExtent();
       pos = pos.withY(pos.y + extent.y);
       widest = Math.max(widest, extent.x);

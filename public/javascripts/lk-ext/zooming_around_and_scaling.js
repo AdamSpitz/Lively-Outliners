@@ -57,14 +57,14 @@ Morph.addMethods({
   // zooming around
 
   startZoomingOuttaHere: function() {
-    this.startZoomingTo(pt(this.world().getExtent().x + 300, -300), function() {this.remove();}.bind(this));
+    this.startZoomingTo(pt(this.world().getExtent().x + 300, -300), false, function() {this.remove();}.bind(this));
   },
 
-  startZoomingTo: function(loc, functionToCallWhenDone) {
+  startZoomingTo: function(loc, shouldWiggleAtEnd, functionToCallWhenDone) {
     this.stopZoomingAround();
     functionToCallWhenDone = functionToCallWhenDone || function() {};
     //var zoomer = new Zoomer(this, loc, function() {this.stopZoomingAround(); functionToCallWhenDone();}.bind(this));
-    var zoomer = animation.newMovement(this, loc, false, function() {this.stopZoomingAround(); functionToCallWhenDone();}.bind(this));
+    var zoomer = animation.newMovement(this, loc, shouldWiggleAtEnd, function() {this.stopZoomingAround(); functionToCallWhenDone();}.bind(this));
     this._zoomerProcess = new PeriodicalExecuter(function(pe) {
       zoomer.doOneStep(pe);
     }, 0.04);
@@ -85,11 +85,11 @@ Morph.addMethods({
     if (this.world() !== w) {
       w.addMorphAt(this, pt(-100,-100));
       if (desiredLoc) {
-        this.startZoomingTo(desiredLoc);
+        this.startZoomingTo(desiredLoc, true);
       }
     } else {
       if (desiredLoc && shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
-        this.startZoomingTo(desiredLoc);
+        this.startZoomingTo(desiredLoc, true);
       }
     }
   },

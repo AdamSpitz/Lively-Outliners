@@ -6,6 +6,12 @@ Object.extend(Number.prototype, {
       return (this <  n) ? 0 : this - n;
     }
   },
+
+  sign: function() {
+    if (this === 0) { return  0; }
+    if (this  <  0) { return -1; }
+    return 1;
+  },
 });
 
 Object.extend(Point.prototype, {

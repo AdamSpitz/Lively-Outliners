@@ -31,17 +31,29 @@ thisModule.addSlots(animation, function(add) {
   add.creator('arcPath', {});
 
   add.method('newMovement', function (morph, destinationPt, shouldWiggleAtEnd, functionToCallWhenDone) {
+    var shouldDecelerateAtEnd = ! shouldWiggleAtEnd;
+
     var           timePerStep = 40;
 
     var  anticipationDuration = 120;
     var       waitingDuration = 120;
-    var  accelOrDecelDuration = 200;
-    var    mainMovingDuration = 480;
+
+    if (shouldDecelerateAtEnd) {
+      var  accelOrDecelDuration = 200;
+      var    mainMovingDuration = 480;
+    } else {
+      var  accelOrDecelDuration = 200;
+      var    mainMovingDuration = 360;
+    }
+
     var      wigglingDuration = 200;
 
-    var constantSpeedDuration = mainMovingDuration - accelOrDecelDuration - accelOrDecelDuration;
-    var             fullSpeed = 1 / ((mainMovingDuration - accelOrDecelDuration) / timePerStep);
-    var          acceleration = fullSpeed / (accelOrDecelDuration / timePerStep);
+    // accelerating or decelerating is like travelling at half speed; use that as a shortcut in the math
+    var halfSpeedDuration = shouldDecelerateAtEnd ? accelOrDecelDuration + accelOrDecelDuration : accelOrDecelDuration;
+    var fullSpeedDuration = mainMovingDuration - halfSpeedDuration;
+    var imaginaryTotalDurationIfWeWereGoingFullSpeedTheWholeTime = fullSpeedDuration + (0.5 * halfSpeedDuration);
+    var    fullSpeed = timePerStep / imaginaryTotalDurationIfWeWereGoingFullSpeedTheWholeTime;
+    var acceleration = timePerStep * fullSpeed / accelOrDecelDuration;
     
     var currentPt = morph.getPosition();
     var vector = currentPt.subPt(destinationPt);
@@ -57,8 +69,10 @@ thisModule.addSlots(animation, function(add) {
     speederizer.timeSegments().push(Object.newChildOf(this.resetter,    "done antic.",     function(morph) {morph._speed = 0;}));
     speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "waiting",              waitingDuration / timePerStep, Object.newChildOf(this.nothingDoer               )));
     speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "accelerating",    accelOrDecelDuration / timePerStep, Object.newChildOf(this.accelerator,  acceleration)));
-    speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "cruising along", constantSpeedDuration / timePerStep, Object.newChildOf(this.nothingDoer               )));
-    speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "decelerating",    accelOrDecelDuration / timePerStep, Object.newChildOf(this.accelerator, -acceleration)));
+    speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "cruising along",     fullSpeedDuration / timePerStep, Object.newChildOf(this.nothingDoer               )));
+    if (shouldDecelerateAtEnd) {
+      speederizer.timeSegments().push(Object.newChildOf(this.timeSegment, "decelerating",    accelOrDecelDuration / timePerStep, Object.newChildOf(this.accelerator, -acceleration)));
+    }
     speederizer.timeSegments().push(Object.newChildOf(this.resetter,    "done",            function(morph) {morph._speed = 0;}));
 
     var moverizer = Object.newChildOf(this.multiSegment);
@@ -207,11 +221,11 @@ thisModule.addSlots(animation.wiggler, function(add) {
 
   add.method('initialize', function (loc) {
     this._center = loc;
-    var wiggleSize = 5;
+    var wiggleSize = 3;
     this._extreme1 = loc.addXY(-wiggleSize, 0);
     this._extreme2 = loc.addXY( wiggleSize, 0);
     this._isMovingTowardExtreme1 = false;
-    this._distanceToMovePerStep = wiggleSize / 2;
+    this._distanceToMovePerStep = wiggleSize * 1.5;
   });
 
   add.method('doOneStep', function (morph, stepsLeft) {
@@ -236,9 +250,10 @@ thisModule.addSlots(animation.straightPath, function(add) {
 
   add.method('move', function (speed, curPos) {
     var vector = this._destination.subPt(curPos);
-    if (vector.rSquared() < 0.01) {return curPos;}
+    var difference = vector.r();
+    if (difference < 0.1) {return curPos;}
 
-    var distanceToMove = speed * this._totalDistance;
+    var distanceToMove = Math.min(difference, speed * this._totalDistance);
     //console.log("speed: " + speed + ", distanceToMove: " + distanceToMove + ", curPos: " + curPos);
     return curPos.addPt(vector.normalized().scaleBy(distanceToMove));
   });
@@ -268,9 +283,12 @@ thisModule.addSlots(animation.arcPath, function(add) {
 
     var angleToMove = speed * this._totalAngle;
     var curAngle = curPos.subPt(this._center).theta();
-    if (this._destinationAngle - curAngle < 0.001) {return curPos;}
+    var angleDifference = this._destinationAngle - curAngle;
+    if (angleDifference < 0.001) {return curPos;}
     var newAngle = curAngle + angleToMove;
-    var newPos = this._center.pointOnCircle(this._radius, newAngle);;
+    var newAngleDifference = this._destinationAngle - newAngle;
+    if (newAngleDifference.sign() !== angleDifference.sign()) {newAngle = this._destinationAngle;} // don't go past it
+    var newPos = this._center.pointOnCircle(this._radius, newAngle);
     //console.log("speed: " + speed + ", angleToMove: " + angleToMove + ", curAngle: " + curAngle + ", newAngle: " + newAngle + ", newPos: " + newPos + ", curPos: " + curPos);
     return newPos;
   });
