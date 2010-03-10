@@ -66,7 +66,6 @@ function copyDownSlots(dst, src, slotsToOmit) {
         dst[name] = src[name];
         
         // Copy down the category (and maybe other stuff?).
-        try {if (name === 'addCategory') {throw "halt";}} catch (ex) {}
         var srcSlotAnno = existingSlotAnnotation(src, name);
         if (srcSlotAnno && srcSlotAnno.category) {
           var dstSlotAnno = dstAnno.slotAnnotations[annotationNameForSlotNamed(name)] = {};
