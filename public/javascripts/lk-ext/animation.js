@@ -30,7 +30,19 @@ thisModule.addSlots(animation, function(add) {
 
   add.creator('arcPath', {});
 
-  add.method('newMovement', function (morph, destinationPt, shouldWiggleAtEnd, functionToCallWhenDone) {
+  add.method('newWiggler', function (morph) {
+    var timePerStep = 20;
+    var wigglingDuration = 200;
+    var currentPt = morph.getPosition();
+
+    var wigglerizer = Object.newChildOf(this.multiSegment);
+    wigglerizer.timeSegments().push(Object.newChildOf(this.timeSegment, "wiggling",   wigglingDuration / timePerStep, Object.newChildOf(this.wiggler, currentPt)));
+    wigglerizer.timeSegments().push(Object.newChildOf(this.resetter,    "reset loc",  function(morph) {morph.setPosition(currentPt);}));
+
+    return Object.newChildOf(this.wholeThing, morph, timePerStep, [wigglerizer]);
+  });
+
+  add.method('newMovement', function (morph, destinationPt, shouldWiggleAtEnd) {
     var shouldDecelerateAtEnd = ! shouldWiggleAtEnd;
 
     var           timePerStep = 20;
@@ -87,7 +99,7 @@ thisModule.addSlots(animation, function(add) {
 
     moverizer.timeSegments().push(Object.newChildOf(this.resetter,    "set final loc",     function(morph) {morph.setPosition(destinationPt);}));
 
-    return Object.newChildOf(this.wholeThing, morph, timePerStep, [speederizer, moverizer], functionToCallWhenDone);
+    return Object.newChildOf(this.wholeThing, morph, timePerStep, [speederizer, moverizer]);
   });
 
 });
@@ -95,14 +107,15 @@ thisModule.addSlots(animation, function(add) {
 
 thisModule.addSlots(animation.wholeThing, function(add) {
 
-  add.method('initialize', function (morph, timePerStep, simulaneousProcesses, functionToCallWhenDone) {
+  add.method('initialize', function (morph, timePerStep, simulaneousProcesses) {
     this._morph = morph;
     this._timePerStep = timePerStep;
     this._simulaneousProcesses = simulaneousProcesses;
-    this._functionToCallWhenDone = functionToCallWhenDone;
   });
 
   add.method('timePerStep', function () { return this._timePerStep; });
+
+  add.method('whenDoneCall', function (f) { this._functionToCallWhenDone = f; return this; });
 
   add.method('doOneStep', function () {
     var anyAreNotDoneYet = false;
@@ -112,7 +125,8 @@ thisModule.addSlots(animation.wholeThing, function(add) {
       }
     }
     if (! anyAreNotDoneYet) {
-      this._functionToCallWhenDone();
+      var f = this._functionToCallWhenDone;
+      if (f) { f(); }
     }
     return anyAreNotDoneYet;
   });

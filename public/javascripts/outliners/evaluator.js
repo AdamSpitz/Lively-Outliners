@@ -67,7 +67,14 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
   }, {category: ['running the code']});
 
   add.method('getIt', function (evt) {
-    MessageNotifierMorph.showIfErrorDuring(function() { evt.hand.world().outlinerFor(reflect(this.runTheCode())).grabMe(evt); }.bind(this), evt);
+    MessageNotifierMorph.showIfErrorDuring(function() {
+      var resultOutliner = evt.hand.world().outlinerFor(reflect(this.runTheCode()));
+      if (resultOutliner === this.outliner()) {
+        resultOutliner.wiggle();
+      } else {
+        resultOutliner.grabMe(evt);
+      }
+    }.bind(this), evt);
   }, {category: ['running the code']});
 
   add.method('close', function (evt) {

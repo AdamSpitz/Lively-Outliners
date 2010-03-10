@@ -6,26 +6,39 @@ Morph.addMethods({
   },
 
   startZoomingTo: function(loc, shouldWiggleAtEnd, functionToCallWhenDone) {
-    this.stopZoomingAround();
-    functionToCallWhenDone = functionToCallWhenDone || function() {};
-    var zoomer = animation.newMovement(this, loc, shouldWiggleAtEnd, function() {this.stopZoomingAround(); functionToCallWhenDone();}.bind(this));
-    this._zoomerProcess = new PeriodicalExecuter(function(pe) {
-      zoomer.doOneStep(pe);
-    }, zoomer.timePerStep() / 1000);
+    this.startAnimating(animation.newMovement(this, loc, shouldWiggleAtEnd));
   },
 
-  stopZoomingAround: function() {
-    if (this._zoomerProcess) {
-      this._zoomerProcess.stop();
-      delete this._zoomerProcess;
+  startAnimating: function(animator, functionToCallWhenDone) {
+    this.stopAnimationProcess();
+
+    functionToCallWhenDone = functionToCallWhenDone || function() {};
+    animator.whenDoneCall(function() {this.stopAnimationProcess(); functionToCallWhenDone();}.bind(this))
+
+    this._animationProcess = new PeriodicalExecuter(function(pe) {
+      animator.doOneStep(pe);
+    }, animator.timePerStep() / 1000);
+  },
+
+  stopAnimationProcess: function() {
+    if (this._animationProcess) {
+      this._animationProcess.stop();
+      delete this._animationProcess;
     }
+  },
+
+
+  // wiggling
+
+  wiggle: function() {
+    this.startAnimating(animation.newWiggler(this));
   },
 
 
   // adding and removing to/from the world
 
   ensureIsInWorld: function(w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
-    this.stopZoomingAround();
+    this.stopAnimationProcess();
     if (this.world() !== w) {
       w.addMorphAt(this, pt(-100,-100));
       if (desiredLoc) {
