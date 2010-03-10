@@ -62,8 +62,25 @@ Morph.addMethods({
     beGrabbable:   function() {if ( this.old_okToBeGrabbedBy) {this.okToBeGrabbedBy = this.old_okToBeGrabbedBy; this.old_okToBeGrabbedBy = null;}},
 
   grabMe: function(evt) {
+    var shouldDoCoolAnimations = true;
+    if (shouldDoCoolAnimations) {
+      // aaa - Hmm. If I move the hand before the object has reached it, it looks weird - the
+      // morph doesn't chase the hand, it just heads to where the hand was when I initiated the
+      // request. (Then it jumps into the hand, because grabMeWithoutZoomingAroundFirst
+      // recalculates the right position.) It'd be cooler if it chased the hand.
+      var desiredPos = evt.hand.position().subPt(this.getExtent().scaleBy(0.5));
+      this.ensureIsInWorld(evt.hand.world(), desiredPos, true, false, function() {
+        this.grabMeWithoutZoomingAroundFirst(evt);
+      }.bind(this));
+    } else {
+      this.grabMeWithoutZoomingAroundFirst(evt);
+    }
+  },
+
+  grabMeWithoutZoomingAroundFirst: function(evt) {
     // Had to do this to make the morph be right under the hand, and to get the drop shadows right.
-    evt.hand.world().addMorphAt(this, evt.hand.position().subPt(this.getExtent().scaleBy(0.5)));
+    var desiredPos = evt.hand.position().subPt(this.getExtent().scaleBy(0.5));
+    evt.hand.world().addMorphAt(this, desiredPos);
     evt.hand.grabMorph(this, evt);
   },
 

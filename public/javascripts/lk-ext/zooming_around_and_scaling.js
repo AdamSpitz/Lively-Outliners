@@ -6,7 +6,7 @@ Morph.addMethods({
   },
 
   startZoomingTo: function(loc, shouldWiggleAtEnd, functionToCallWhenDone) {
-    this.startAnimating(animation.newMovement(this, loc, shouldWiggleAtEnd));
+    this.startAnimating(animation.newMovement(this, loc, shouldWiggleAtEnd), functionToCallWhenDone);
   },
 
   startAnimating: function(animator, functionToCallWhenDone) {
@@ -37,16 +37,18 @@ Morph.addMethods({
 
   // adding and removing to/from the world
 
-  ensureIsInWorld: function(w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
+  ensureIsInWorld: function(w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldWiggleAtEnd, functionToCallWhenDone) {
     this.stopAnimationProcess();
-    if (this.world() !== w) {
-      w.addMorphAt(this, pt(-100,-100));
+    var owner = this.owner;
+    if (owner !== w) {
+      var initialLoc = (!owner || this.world() !== w) ? pt(-100,-100) : owner.worldPoint(this.getPosition());
+      w.addMorphAt(this, initialLoc);
       if (desiredLoc) {
-        this.startZoomingTo(desiredLoc, true);
+        this.startZoomingTo(desiredLoc, shouldWiggleAtEnd, functionToCallWhenDone);
       }
     } else {
       if (desiredLoc && shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
-        this.startZoomingTo(desiredLoc, true);
+        this.startZoomingTo(desiredLoc, shouldWiggleAtEnd, functionToCallWhenDone);
       }
     }
   },
