@@ -42,20 +42,25 @@ thisModule.addSlots(animation, function(add) {
     return Object.newChildOf(this.wholeThing, morph, timePerStep, [wigglerizer]);
   });
 
-  add.method('newMovement', function (morph, destinationPt, shouldWiggleAtEnd) {
-    var shouldDecelerateAtEnd = ! shouldWiggleAtEnd;
+  add.method('newMovement', function (morph, destinationPt, shouldAccelerateAtStart, shouldWiggleAtEnd) {
+    var shouldDecelerateAtEnd   = ! shouldWiggleAtEnd;
 
     var           timePerStep = 20;
 
-    var  anticipationDuration = 120;
-    var       waitingDuration = 120;
+    if (shouldAccelerateAtStart) {
+      var  anticipationDuration = 120;
+      var       waitingDuration = 120;
+    } else {
+      var  anticipationDuration = 0;
+      var       waitingDuration = 0;
+    }
+
+    var  accelOrDecelDuration = 200;
 
     if (shouldDecelerateAtEnd) {
-      var  accelOrDecelDuration = 200;
-      var    mainMovingDuration = 480;
+      var  mainMovingDuration = 480;
     } else {
-      var  accelOrDecelDuration = 200;
-      var    mainMovingDuration = 360;
+      var  mainMovingDuration = 360;
     }
 
     var      wigglingDuration = 200;
