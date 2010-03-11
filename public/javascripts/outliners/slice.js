@@ -65,7 +65,15 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
 
   add.method('inspect', function () {return this.searcher().inspect();});
 
-  add.method('expander', function () { return this._expander; });
+  add.method('expander', function () { return this._expander; }, {category: ['expanding and collapsing']});
+
+  add.method('expand', function () {
+    this.expander().expand();
+  }, {category: ['expanding and collapsing']});
+
+  add.method('collapse', function () {
+    this.expander().collapse();
+  }, {category: ['expanding and collapsing']});
 
   add.method('updateExpandedness', function () {
     if (! this.world()) {return;}

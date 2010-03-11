@@ -103,7 +103,15 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
     this._modulesLabelRow.updateAppearance = function() {this._modulesLabel.refreshText();}.bind(this);
   }, {category: ['initializing']});
 
-  add.method('expander', function () { return this._expander; }, {category: ['accessing']});
+  add.method('expander', function () { return this._expander; }, {category: ['expanding and collapsing']});
+
+  add.method('expand', function () {
+    this.expander().expand();
+  }, {category: ['expanding and collapsing']});
+
+  add.method('collapse', function () {
+    this.expander().collapse();
+  }, {category: ['expanding and collapsing']});
 
   add.method('slotsPanel', function () {
     var sp = this._slotsPanel;

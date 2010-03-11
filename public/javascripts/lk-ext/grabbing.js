@@ -63,12 +63,12 @@ Morph.addMethods({
 
   grabMe: function(evt, inChasingMode) {
     var shouldDoCoolAnimations = true;
+    var shouldChaseHandIfItMoves = false; // sigh... it's fun, but annoying
     if (shouldDoCoolAnimations) {
       var originalHandPosition = evt.hand.position();
       var desiredPos = originalHandPosition.subPt(this.getExtent().scaleBy(0.5));
       this.ensureIsInWorld(evt.hand.world(), desiredPos, true, !inChasingMode, false, function() {
-        // It's fun if it chases the hand (if the hand has moved since you made the original request).
-        if (originalHandPosition.subPt(evt.hand.position()).r() > 30) {
+        if (shouldChaseHandIfItMoves && originalHandPosition.subPt(evt.hand.position()).r() > 30) {
           this.grabMe(evt, true);
         } else {
           this.grabMeWithoutZoomingAroundFirst(evt);

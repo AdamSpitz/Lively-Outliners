@@ -84,7 +84,7 @@ WindowMorph.addMethods({
     initiateShutdown: function() {
         if (this.isShutdown()) return;
         this.targetMorph.shutdown(); // shutdown may be prevented ...
-        this.ensureIsNotInWorld(); // Changed by Adam from this.remove(), so that it does the cool zooming-around thing
+        this.ensureIsNotInWorld(); // used to say this.remove(), changed by Adam so that it does the cool zooming-off-the-screen thing
         this.state = 'shutdown'; // no one will ever know...
         return true;
     },
