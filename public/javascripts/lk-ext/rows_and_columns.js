@@ -50,7 +50,7 @@ Morph.subclass("RowOrColumnMorph", {
 
     if (this._layoutIsStillValid && this._spaceUsedLastTime && this._spaceUsedLastTime.eqPt(availableSpaceToUse)) {
       if (this.aaaDebugMe) { console.log("Not gonna lay out " + this.inspect() + ", since it's already laid out in the appropriate amount of space."); }
-      return;
+      return this.getExtent();
     }
     this._spaceUsedLastTime = availableSpaceToUse;
 
@@ -85,11 +85,12 @@ Morph.subclass("RowOrColumnMorph", {
       if (direction.forwardLayoutModeOf(m) === LayoutModes.SpaceFill) {
         availableSpaceToPassOnToThisChild = availableSpaceToPassOnToThisChild.addPt(direction.point(extraForwardSpacePerSpaceFillingChild, 0));
       }
-      m.rejiggerTheLayout(availableSpaceToPassOnToThisChild);
+
+      var mExtent = m.rejiggerTheLayout(availableSpaceToPassOnToThisChild);
       
-      var f = direction.forwardCoordinateOfPoint(m.getExtent());
-      if (this.aaaDebugMe) { console.log("f is: " + f + ", m.extent is " + m.getExtent()); }
-      var unusedSidewaysSpace = direction.sidewaysCoordinateOfPoint(availableSpaceToPassOnToThisChild) - direction.sidewaysCoordinateOfPoint(m.getExtent());
+      var f = direction.forwardCoordinateOfPoint(mExtent);
+      if (this.aaaDebugMe) { console.log("f is: " + f + ", m.extent is " + mExtent); }
+      var unusedSidewaysSpace = direction.sidewaysCoordinateOfPoint(availableSpaceToPassOnToThisChild) - direction.sidewaysCoordinateOfPoint(mExtent);
       forward += paddingBeforeNextMorph;
       var p = direction.point(forward, direction.sidewaysPadding1(padding) + (unusedSidewaysSpace / 2));
       forward += f;
@@ -100,14 +101,14 @@ Morph.subclass("RowOrColumnMorph", {
     forward += direction.forwardPadding2(padding);
 
     if (this.aaaDebugMe) { console.log("Gonna set newExtent to availableSpaceToUse: " + availableSpaceToUse); }
-    var newExtent = availableSpaceToUse;
-    var shapeBounds = this.shape.bounds();
-    if (! newExtent.eqPt(shapeBounds.extent())) {
-      var b = shapeBounds.topLeft().addPt(this.origin).extent(newExtent.scaleBy(this.getScale()));
-      this.setBounds(b);
+    var newExtent = availableSpaceToUse.scaleBy(this.getScale());
+    if (! newExtent.eqPt(this.getExtent())) {
+      this.setExtent(newExtent);
+      //this.smoothlyResizeTo(newExtent); // aaa - doesn't quite work right yet
       if (this.aaaDebugMe) { console.log("Setting bounds to " + b); }
     }
     this._layoutIsStillValid = true;
+    return newExtent;
   },
 
      addThingy: function(m) {this.   addMorph(m); this.forceLayoutRejiggering();},

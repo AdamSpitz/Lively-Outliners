@@ -17,6 +17,7 @@ Morph.addMethods({
 
   rejiggerTheLayout: function(availableSpace) {
     // maybe nothing to do here, or maybe resize this morph
+    return this.getExtent();
   },
 
   hasMinimumExtentActuallyChanged: function() {

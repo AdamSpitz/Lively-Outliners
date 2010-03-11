@@ -2,7 +2,10 @@ Morph.addMethods({
   // zooming around
 
   startZoomingOuttaHere: function() {
-    this.startZoomingTo(pt(this.world().getExtent().x + 300, -300), true, false, function() {this.remove();}.bind(this));
+    var w = this.world();
+    if (w) {
+      this.startZoomingTo(pt(w.getExtent().x + 300, -300), true, false, function() {this.remove();}.bind(this));
+    }
   },
 
   startZoomingTo: function(loc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
@@ -63,6 +66,12 @@ Morph.addMethods({
     return b;
   },
 
+
+  // resizing
+
+  smoothlyResizeTo: function(desiredSize, functionToCallWhenDone) {
+    this.startAnimating(animation.newResizer(this, desiredSize), functionToCallWhenDone);
+  },
 
   // scaling
 
