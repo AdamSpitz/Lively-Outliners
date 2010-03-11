@@ -42,12 +42,19 @@ thisModule.addSlots(animation, function(add) {
     return Object.newChildOf(this.wholeThing, morph, timePerStep, [wigglerizer]);
   });
 
-  add.method('newMovement', function (morph, destinationPt, shouldAccelerateAtStart, shouldWiggleAtEnd) {
+  add.method('newMovement', function (morph, destinationPt, shouldAnticipateAtStart, shouldWiggleAtEnd) {
     var shouldDecelerateAtEnd   = ! shouldWiggleAtEnd;
 
-    var           timePerStep = 20;
+    // Don't bother anticipating if the morph is off-screen - it just feels like nothing's happening.
+    if (shouldAnticipateAtStart) {
+      var w = morph.world();
+      var isStartingOnScreen = w && w.bounds().containsPoint(morph.getPosition());
+      shouldAnticipateAtStart = isStartingOnScreen;
+    }
 
-    if (shouldAccelerateAtStart) {
+    var timePerStep = 20;
+
+    if (shouldAnticipateAtStart) {
       var  anticipationDuration = 120;
       var       waitingDuration = 120;
     } else {

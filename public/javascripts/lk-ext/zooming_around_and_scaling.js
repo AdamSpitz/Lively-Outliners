@@ -5,8 +5,8 @@ Morph.addMethods({
     this.startZoomingTo(pt(this.world().getExtent().x + 300, -300), true, false, function() {this.remove();}.bind(this));
   },
 
-  startZoomingTo: function(loc, shouldAccelerateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
-    this.startAnimating(animation.newMovement(this, loc, shouldAccelerateAtStart, shouldWiggleAtEnd), functionToCallWhenDone);
+  startZoomingTo: function(loc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
+    this.startAnimating(animation.newMovement(this, loc, shouldAnticipateAtStart, shouldWiggleAtEnd), functionToCallWhenDone);
   },
 
   startAnimating: function(animator, functionToCallWhenDone) {
@@ -37,20 +37,18 @@ Morph.addMethods({
 
   // adding and removing to/from the world
 
-  ensureIsInWorld: function(w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldWiggleAtEnd, functionToCallWhenDone) {
+  ensureIsInWorld: function(w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
     this.stopAnimationProcess();
     var owner = this.owner;
     if (owner !== w) {
       var initialLoc = (!owner || this.world() !== w) ? pt(-50,-20) : owner.worldPoint(this.getPosition());
-      var isStartingOnScreen = w.bounds().containsPoint(initialLoc);
       w.addMorphAt(this, initialLoc);
       if (desiredLoc) {
-        this.startZoomingTo(desiredLoc, isStartingOnScreen, shouldWiggleAtEnd, functionToCallWhenDone);
+        this.startZoomingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
       }
     } else {
       if (desiredLoc && shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
-        var isStartingOnScreen = this.world().bounds().containsPoint(this.getPosition());
-        this.startZoomingTo(desiredLoc, isStartingOnScreen, shouldWiggleAtEnd, functionToCallWhenDone);
+        this.startZoomingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
       }
     }
   },

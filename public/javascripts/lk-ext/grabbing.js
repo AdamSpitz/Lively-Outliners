@@ -61,19 +61,15 @@ Morph.addMethods({
     beUngrabbable: function() {if (!this.old_okToBeGrabbedBy) {this.old_okToBeGrabbedBy = this.okToBeGrabbedBy; this.okToBeGrabbedBy = function(evt) {return null;};}},
     beGrabbable:   function() {if ( this.old_okToBeGrabbedBy) {this.okToBeGrabbedBy = this.old_okToBeGrabbedBy; this.old_okToBeGrabbedBy = null;}},
 
-  grabMe: function(evt) {
+  grabMe: function(evt, inChasingMode) {
     var shouldDoCoolAnimations = true;
     if (shouldDoCoolAnimations) {
-      // aaa - Hmm. If I move the hand before the object has reached it, it looks weird - the
-      // morph doesn't chase the hand, it just heads to where the hand was when I initiated the
-      // request. (Then it jumps into the hand, because grabMeWithoutZoomingAroundFirst
-      // recalculates the right position.) It'd be cooler if it chased the hand.
       var originalHandPosition = evt.hand.position();
       var desiredPos = originalHandPosition.subPt(this.getExtent().scaleBy(0.5));
-      this.ensureIsInWorld(evt.hand.world(), desiredPos, true, false, function() {
+      this.ensureIsInWorld(evt.hand.world(), desiredPos, true, !inChasingMode, false, function() {
         // It's fun if it chases the hand (if the hand has moved since you made the original request).
-        if (originalHandPosition.subPt(evt.hand.position()).r() > 20) {
-          this.grabMe(evt);
+        if (originalHandPosition.subPt(evt.hand.position()).r() > 30) {
+          this.grabMe(evt, true);
         } else {
           this.grabMeWithoutZoomingAroundFirst(evt);
         }
