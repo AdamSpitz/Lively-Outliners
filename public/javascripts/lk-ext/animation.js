@@ -56,19 +56,19 @@ thisModule.addSlots(animation, function(add) {
       shouldAnticipateAtStart = isStartingOnScreen;
     }
 
-    var timePerStep = 20;
-
-    var  anticipationDuration = 120;
-    var       waitingDuration = 120;
-    var  accelOrDecelDuration = 200;
-    var    mainMovingDuration = shouldDecelerateAtEnd ? 480 : 360;
-    var      wigglingDuration = 200;
-
-    
     var currentPt = morph.getPosition();
     var vector = destinationPt.subPt(currentPt);
-    if (vector.rSquared() >= 0.01) {
+    var distance = vector.r();
+    if (distance >= 0.1) {
 
+      var timePerStep = 20;
+      
+      var  anticipationDuration = 120;
+      var       waitingDuration = 120;
+      console.log("distance: " + distance);
+      var    mainMovingDuration = (distance / 3) * (shouldDecelerateAtEnd ? 4/3 : 1);
+      var  accelOrDecelDuration = shouldDecelerateAtEnd ? mainMovingDuration * 5/12 : mainMovingDuration * 5/9;
+    
       var wholeThing = Object.newChildOf(this.sequential, "whole movement", timePerStep);
 
       var arcStartPt = currentPt;
@@ -170,10 +170,23 @@ thisModule.addSlots(animation.abstract, function(add) {
   add.method('whenDoneCall', function (f) { this._functionToCallWhenDone = f; return this; });
 
   add.method('done', function () {
+    this.stopAnimating();
     var f = this._functionToCallWhenDone;
     if (f) { f(); }
   });
 
+  add.method('startAnimating', function (morph) {
+    this._animationProcess = new PeriodicalExecuter(function(pe) {
+      this.doOneStep(morph);
+    }.bind(this), this.timePerStep() / 1000);
+  });
+
+  add.method('stopAnimating', function() {
+    if (this._animationProcess) {
+      this._animationProcess.stop();
+      delete this._animationProcess;
+    }
+  });
 });
 
 thisModule.addSlots(animation.simultaneous, function(add) {
