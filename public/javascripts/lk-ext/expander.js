@@ -12,7 +12,7 @@ ButtonMorph.subclass("ExpanderMorph", {
   focusHaloBorderWidth: 0, // I don't like the halo
 
   changeAppearanceFor: function($super, value) {
-    var baseColor = Color.blue; // Not sure how the new LK style system works. -- Adam, Jan. 2009
+    var baseColor = Color.blue; // Not sure how the LK style system works. -- Adam
     var vertices  = value ? [pt(0,0),pt(12,0),pt(6,12),pt(0,0)] : [pt(0,0),pt(12,6),pt(0,12),pt(0,0)];
     var direction = value ? lively.paint.LinearGradient.SouthNorth : lively.paint.LinearGradient.WestEast;
     var stops = [new lively.paint.Stop(0, baseColor          ),
@@ -21,7 +21,7 @@ ButtonMorph.subclass("ExpanderMorph", {
     var shape = new lively.scene.Polygon(vertices, Color.green, 1, Color.red); // I don't really understand what these colors do.
     this.setShape(shape);
     this.setFill(gradient);
-    // $super(value); // Messes things up, I think. -- Adam, Jan. 2009
+    // $super(value); // Messes things up, I think. -- Adam
   },
 
   isExpanded: function() {return this.getModel().getValue();},
