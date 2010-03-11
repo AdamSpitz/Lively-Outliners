@@ -80,6 +80,15 @@ Morph.addMethods({
   }
 });
 
+WindowMorph.addMethods({
+    initiateShutdown: function() {
+        if (this.isShutdown()) return;
+        this.targetMorph.shutdown(); // shutdown may be prevented ...
+        this.ensureIsNotInWorld(); // Changed by Adam from this.remove(), so that it does the cool zooming-around thing
+        this.state = 'shutdown'; // no one will ever know...
+        return true;
+    },
+});
 
 
 Object.subclass("Scaler", {
