@@ -16,8 +16,8 @@ Morph.addMethods({
     animator.whenDoneCall(function() {this.stopAnimationProcess(); functionToCallWhenDone();}.bind(this))
 
     this._animationProcess = new PeriodicalExecuter(function(pe) {
-      animator.doOneStep(pe);
-    }, animator.timePerStep() / 1000);
+      animator.doOneStep(this);
+    }.bind(this), animator.timePerStep() / 1000);
   },
 
   stopAnimationProcess: function() {

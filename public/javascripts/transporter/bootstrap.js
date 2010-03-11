@@ -82,7 +82,7 @@ function copyDownSlots(dst, src, slotsToOmit) {
 function hackToMakeSuperWork(holder, property, contents) {
   var value = contents;
   var superclass = holder.constructor && holder.constructor.superclass;
-  var ancestor = superclass && superclass.prototype;
+  var ancestor = superclass ? superclass.prototype : holder.__proto__;
   if (ancestor && Object.isFunction(value) && value.argumentNames && value.argumentNames().first() === "$super") {
     (function() { // wrapped in a method to save the value of 'method' for advice
       var method = value;
