@@ -2,7 +2,8 @@
 // So for now I just overwrite the old one. -- Adam
 WorldMorph.addMethods({
   inspect: function() { return "Lively"; },
-  morphMenu: function(evt) { return this.livelyOutlinersWorldMenu(evt); }
+  morphMenu: function(evt) { return this.livelyOutlinersWorldMenu(evt); },
+  contextMenu: function(evt) { return this.morphMenu(evt); },
 });
 
 Morph.suppressAllHandlesForever(); // those things are annoying

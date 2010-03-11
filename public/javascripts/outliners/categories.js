@@ -293,7 +293,7 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     this.mirror().eachSlotInCategory(this.category(), f);
   }, {category: ['iterating']});
 
-  add.method('morphMenu', function (evt) {
+  add.method('contextMenu', function (evt) {
     var menu = new MenuMorph([], this);
 
     if (this.mirror().canHaveSlots()) {
@@ -306,6 +306,7 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
 
   add.method('rename', function (newName, evt) {
     this.category().setLastPart(newName);
+    // aaa - if this thing has any slots already in it, gotta recategorize them
   }, {category: ['renaming']});
 
   add.method('acceptsDropping', function (m) { // aaa - could this be generalized?

@@ -32,7 +32,9 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
 
     var tm = this._textMorph = createTextField();
     tm.setExtent(pt(150,60));
+    tm.horizontalLayoutMode = LayoutModes.SpaceFill;
     tm.setFontFamily('monospace');
+    tm.setWrapStyle(lively.Text.WrapStyle.Shrink);
     var thisEvaluator = this;
     tm.onKeyPress = function(evt) {
       if (evt.getKeyCode() == Event.KEY_RETURN && (evt.isMetaDown() || evt.isCtrlDown())) {
@@ -43,13 +45,15 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
       return TextMorph.prototype.onKeyPress.call(this, evt);
     };
     
+    var textRow = createLeftJustifiedRow([tm], 0);
+
     var bp = this.buttonsPanel = new RowMorph().beInvisible();
     bp.replaceThingiesWith([createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)),
                             createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)),
                             createButton("Close",  function(evt) {this.close(evt);}.bind(this))]);
 
 
-    this.replaceThingiesWith([tm, bp]);
+    this.replaceThingiesWith([textRow, bp]);
   }, {category: ['creating']});
 
   add.method('outliner', function () { return this._outliner;  }, {category: ['accessing']});

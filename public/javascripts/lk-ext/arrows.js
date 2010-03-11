@@ -214,10 +214,6 @@ Morph.subclass("ArrowEndpoint", {
 
   okToBeGrabbedBy: function(evt) { return this.arrow.isReadOnly ? null : this; },
 
-  morphMenu: function(evt) {
-    return new MenuMorph([], this);
-  },
-
   wasJustDroppedOn: function(m) {
     if (this.shouldDisappearAfterAttaching) {
       this.topicRef.setterArrow = null;

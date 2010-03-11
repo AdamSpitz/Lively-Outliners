@@ -30,7 +30,7 @@ PasteUpMorph.addMethods({
           } else {
             return false;
           }
-        } else if (!evt.isForContextMenu()) { // Changed from a simple isCommandKey check. -- Adam, Jan. 2009
+        } else if (!evt.isForContextMenu() && !evt.isForMorphMenu()) { // Changed from a simple isCommandKey check. -- Adam, Jan. 2009
             if (m === this.world()) {
                 this.makeSelection(evt);
                 return true;
@@ -57,19 +57,6 @@ Morph.addMethods({
         return false;
       }
     },
-});
-
-MenuMorph.addMethods({
-  addSection: function(newItems) {
-    if (newItems.size() > 0) {
-      if (this.items.size() > 0) {this.addLine();}
-      newItems.each(function(item) {this.addItem(item);}.bind(this));
-    }
-  },
-});
-
-Event.addMethods({
-  isForContextMenu:    function() {return this.isCommandKey() || this.isRightMouseButtonDown();},
 });
 
 HandMorph.addMethods({
@@ -108,8 +95,12 @@ HandMorph.addMethods({
             grabbedMorph.copyToHand(this);
             return;
         }
-        if (evt.isForContextMenu()) { // Changed from a simple isCommandKey check. -- Adam, Jan. 2009
+        if (evt.isForMorphMenu()) {
             grabbedMorph.showMorphMenu(evt);
+            return;
+        }
+        if (evt.isForContextMenu()) { // Changed from a simple isCommandKey check. -- Adam, Jan. 2009
+            grabbedMorph.showContextMenu(evt);
             return;
         }
         // Give grabbed morph a chance to, eg, spawn a copy or other referent

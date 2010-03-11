@@ -139,13 +139,6 @@ TextMorph.subclass("TwoModeTextMorph", {
     if (this.notifier != null) {this.notifier.notify_all_observers();}
   },
 
-  setTextString: function($super, replacement, delayComposition, justMoreTyping) {
-    var x = $super(replacement, delayComposition, justMoreTyping);
-    this.adjustForNewBounds(); // makes the focus halo look right   // aaa should probably be outside the conditional, or even in the Core code
-    this.minimumExtentChanged();
-    return x;
-  },
-
   refreshText: function() {
     if (! this.isInWritableMode) {
       var newText = this.getSavedText();

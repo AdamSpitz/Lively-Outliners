@@ -56,11 +56,10 @@ Morph.addMethods({
 });
 
 TextMorph.addMethods({
-	fitText: function() { 
-		if (this.wrap == lively.Text.WrapStyle.Normal) 
-			this.fitHeight();
-		else 
-			this.fitWidth();
-                this.minimumExtentChanged(); // aaa - hack, added by Adam
-	},
+  layoutChanged: function($super) {
+    var r = $super();
+    this.adjustForNewBounds();   // make the focus halo look right
+    this.minimumExtentChanged(); // play nicely with my new layout system
+    return r;
+  },
 });

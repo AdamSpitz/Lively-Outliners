@@ -27,7 +27,6 @@ function createLabel(textOrFunction, pos, extent) {
   tf.acceptInput = false;
   tf.closeDnD();
   tf.beLabel();
-  tf.morphMenu = function(evt) {return new MenuMorph([], tf);};
   if (typeof textOrFunction === 'function') { tf.updateAppearance = tf.refreshText = function() {this.setText(textOrFunction());}; }
   return tf;
 }
@@ -94,5 +93,6 @@ function createFakeEvent() {
     hand: WorldMorph.current().hands[0],
     isShiftDown: Functions.False,
     isForContextMenu: Functions.False,
+    isForMorphMenu: Functions.False,
   };
 }

@@ -178,7 +178,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     e.textMorph().requestKeyboardFocus(evt.hand);
   }, {category: ['evaluators']});
 
-  add.method('morphMenu', function (evt) {
+  add.method('contextMenu', function (evt) {
     var menu = new MenuMorph([], this);
 
     if (this.mirror().canHaveSlots()) {
