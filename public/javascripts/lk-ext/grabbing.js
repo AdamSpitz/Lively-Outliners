@@ -68,9 +68,15 @@ Morph.addMethods({
       // morph doesn't chase the hand, it just heads to where the hand was when I initiated the
       // request. (Then it jumps into the hand, because grabMeWithoutZoomingAroundFirst
       // recalculates the right position.) It'd be cooler if it chased the hand.
-      var desiredPos = evt.hand.position().subPt(this.getExtent().scaleBy(0.5));
+      var originalHandPosition = evt.hand.position();
+      var desiredPos = originalHandPosition.subPt(this.getExtent().scaleBy(0.5));
       this.ensureIsInWorld(evt.hand.world(), desiredPos, true, false, function() {
-        this.grabMeWithoutZoomingAroundFirst(evt);
+        // It's fun if it chases the hand (if the hand has moved since you made the original request).
+        if (originalHandPosition.subPt(evt.hand.position()).r() > 20) {
+          this.grabMe(evt);
+        } else {
+          this.grabMeWithoutZoomingAroundFirst(evt);
+        }
       }.bind(this));
     } else {
       this.grabMeWithoutZoomingAroundFirst(evt);
