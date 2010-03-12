@@ -93,21 +93,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.method('isMethodThatShouldBeShownAsPartOfTheBox', function () {
-      if (this.slot().isFunctionBody()) { return true; }
-      if (! this.slot().isMethod()) { return false; }
-      var aaa_LK_slotNamesAttachedToMethods = ['declaredClass', 'methodName'];
-      var nonTrivialSlot = Object.newChildOf(enumerator, this.slot().contents(), 'eachNormalSlot').find(function(s) {
-        if (aaa_LK_slotNamesAttachedToMethods.include(s.name())) {return false;}
-
-        // Firefox seems to have a 'prototype' slot on every function (whereas Safari is lazier about it). I think.
-        if (s.name() === 'prototype') {
-          var proto = s.contents();
-          return ! (proto.size() === 0 && proto.parent().reflectee() === Object.prototype);
-        }
-
-        return true;
-      });
-      return ! nonTrivialSlot;
+    return this.slot().isSimpleMethod();
   }, {category: ['source']});
 
   add.method('determineSignatureRowContent', function () {

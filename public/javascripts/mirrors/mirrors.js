@@ -450,7 +450,7 @@ thisModule.addSlots(slots.functionBody, function(add) {
 
   add.method('contents', function () { return this._mirror; }, {category: ['accessing']});
 
-  add.method('isMethod', function () { return true; }, {category: ['testing']});
+  add.method('isSimpleMethod', function () { return true; }, {category: ['testing']});
 
   add.method('isFunctionBody', function () { return true; }, {category: ['testing']});
 
@@ -465,7 +465,7 @@ thisModule.addSlots(slots.parent, function(add) {
 
   add.method('setContents', function (m) { return this._mirror.setParent(m); }, {category: ['accessing']});
 
-  add.method('isMethod', function () { return false; }, {category: ['testing']});
+  add.method('isSimpleMethod', function () { return false; }, {category: ['testing']});
 
 });
 
@@ -502,8 +502,21 @@ thisModule.addSlots(slots.plain, function(add) {
     this.mirror().removeSlotAt(this.name());
   }, {category: ['removing']});
 
-  add.method('isMethod', function () {
-    return this.contents().isReflecteeFunction();
+  add.method('isSimpleMethod', function () {
+    if (! this.contents().isReflecteeFunction()) {return false;}
+    var aaa_LK_slotNamesAttachedToMethods = ['declaredClass', 'methodName'];
+    var nonTrivialSlot = Object.newChildOf(enumerator, this.contents(), 'eachNormalSlot').find(function(s) {
+      if (aaa_LK_slotNamesAttachedToMethods.include(s.name())) {return false;}
+        
+      // Firefox seems to have a 'prototype' slot on every function (whereas Safari is lazier about it). I think.
+      if (s.name() === 'prototype') {
+        var proto = s.contents();
+        return ! (proto.size() === 0 && proto.parent().reflectee() === Object.prototype);
+      }
+      
+      return true;
+    });
+    return ! nonTrivialSlot;
   }, {category: ['testing']});
 
   add.method('isCreator', function () {
