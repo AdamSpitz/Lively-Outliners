@@ -65,7 +65,6 @@ thisModule.addSlots(animation, function(add) {
       
       var  anticipationDuration = 120;
       var       waitingDuration = 120;
-      console.log("distance: " + distance);
       var    mainMovingDuration = (distance / 3) * (shouldDecelerateAtEnd ? 4/3 : 1);
       var  accelOrDecelDuration = shouldDecelerateAtEnd ? mainMovingDuration * 5/12 : mainMovingDuration * 5/9;
     

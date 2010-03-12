@@ -22,22 +22,18 @@ ButtonMorph.subclass("CheckBoxMorph", {
     return x;
   },
 
-  isChecked: function() {return this.getModel().getValue();},
+   isChecked: function( ) {return this.getModel().getValue( );},
   setChecked: function(b) {return this.getModel().setValue(b);},
 
-  toggleCheckBoxAppearance: function(v) {
+  changeAppearanceFor: function(v) {
     if (v) {
       if (this.checkedMorph.owner !== this) {
         this.addMorph(this.checkedMorph);
       }
     } else {
-      if (this.checkedMorph.owner == this) {
+      if (this.checkedMorph.owner === this) {
         this.removeMorph(this.checkedMorph);
       }
     }
-  },
-
-  changeAppearanceFor: function(v) {
-    this.toggleCheckBoxAppearance(v);
   }
 });

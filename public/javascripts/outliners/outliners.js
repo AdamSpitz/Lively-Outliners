@@ -87,7 +87,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
 
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
     this._copyDownParentsLabel = createInputBox(this.copyDownParentsString.bind(this), this.setCopyDownParentsString.bind(this));
-    m.addRow(createLabelledNode("Copy-down parents", this._copyDownParentsLabel));
+    m.setRows([createLabelledNode("Copy-down parents", this._copyDownParentsLabel)]);
     return m;
   }, {category: ['annotation']});
 

@@ -45,7 +45,7 @@ Morph.subclass("ArrowMorph", {
   // Optimization suggested by Dan Ingalls: slow down ticking when things are pretty quiet.
   tickQuickly: function() { this.shouldUpdateOnEveryTick = true;  },
   tickSlowly:  function() { this.shouldUpdateOnEveryTick = false; },
-  shouldUpdateOnThisTick: function(n) {return this.shouldUpdateOnEveryTick || n == 0;},
+  shouldUpdateOnThisTick: function(n) {return this.shouldUpdateOnEveryTick || n === 0;},
 
   noLongerNeedsToBeVisible: function() {
     this.noLongerNeedsToBeUpdated = true;

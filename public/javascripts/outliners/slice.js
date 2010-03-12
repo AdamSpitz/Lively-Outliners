@@ -41,6 +41,7 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
     this.dismissButton = this.createDismissButton();
 
     this.createHeaderRow();
+    this.setRows([this._headerRow]);
   });
 
   add.method('searcher', function () { return this._searcher; });
@@ -52,8 +53,7 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
     r.inspect = function() {return "the header row";};
     // aaa - redo doesn't work yet because we don't unmark the objects after we're done
-    r.replaceThingiesWith([this._expander, this.titleLabel, this._headerRowSpacer, /* this.redoButton, */ this.dismissButton]); 
-    this.addRow(r);
+    r.setColumns([this._expander, this.titleLabel, this._headerRowSpacer, /* this.redoButton, */ this.dismissButton]); 
     return r;
   });
 

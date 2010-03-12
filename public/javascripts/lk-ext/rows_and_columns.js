@@ -114,6 +114,9 @@ Morph.subclass("RowOrColumnMorph", {
      addThingy: function(m) {this.   addMorph(m); this.forceLayoutRejiggering();},
   removeThingy: function(m) {this.removeMorph(m); this.forceLayoutRejiggering();},
 
+     addMorph: function($super, m, shouldNotForceLayoutRejiggering) {$super(m); if (!shouldNotForceLayoutRejiggering && !m.shouldNotBePartOfRowOrColumn) {this.forceLayoutRejiggering();}},
+  removeMorph: function($super, m, shouldNotForceLayoutRejiggering) {$super(m); if (!shouldNotForceLayoutRejiggering && !m.shouldNotBePartOfRowOrColumn) {this.forceLayoutRejiggering();}},
+
   areArraysEqual: function(a1, a2) {
     if (a1.length !== a2.length) { return false; }
     for (var i = 0, n = a1.length; i < n; ++i) {
@@ -155,6 +158,7 @@ RowOrColumnMorph.subclass("ColumnMorph", {
     return this;
   },
   addRow: function(m) {this.addThingy(m);},
+  setRows: function(ms) {this.replaceThingiesWith(ms);}
 });
 
 RowOrColumnMorph.subclass("RowMorph", {
@@ -162,7 +166,8 @@ RowOrColumnMorph.subclass("RowMorph", {
     $super(HorizontalDirection);
     return this;
   },
-  addColumn: function(m) {this.addThingy(m);}
+   addColumn: function(m) {this.addThingy(m);},
+  setColumns: function(ms) {this.replaceThingiesWith(ms);}
 });
 
 var VerticalDirection = {

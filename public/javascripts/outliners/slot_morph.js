@@ -206,8 +206,8 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     m.setPadding({left: 0, right: 0, top: 0, bottom: 0, between: 2});
     this._moduleMorph      = createInputBox(this.moduleName.bind(this), this.setModuleName.bind(this));
     this._initializerMorph = createInputBox(this.initializationExpression.bind(this), this.setInitializationExpression.bind(this));
-    m.addRow(createLabelledNode("Module",        this._moduleMorph     ));
-    m.addRow(createLabelledNode("Initialize to", this._initializerMorph));
+    m.setRows([createLabelledNode("Module",        this._moduleMorph     ),
+               createLabelledNode("Initialize to", this._initializerMorph)]);
     return m;
   }, {category: ['annotation']});
 

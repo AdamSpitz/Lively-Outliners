@@ -78,9 +78,7 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
   }, {category: ['running the code']});
 
   add.method('close', function (evt) {
-    var owner = this.owner;
-    this.remove();
-    owner.minimumExtentChanged();
+    this.owner.removeThingy(this);
   }, {category: ['closing']});
 
 });

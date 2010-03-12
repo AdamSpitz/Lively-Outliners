@@ -4,7 +4,7 @@ ColumnMorph.subclass("MessageNotifierMorph", {
     this.shape.roundEdgesBy(10);
     this._message = "" + msg;
     this.setFill(defaultFillWithColor(color || Color.red));
-    this.addThingy(createLabel(this._message));
+    this.setRows([createLabel(this._message)]);
   },
 
   wasJustDroppedOnWorld: function(world) {
