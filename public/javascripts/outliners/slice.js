@@ -33,24 +33,21 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
 
     this._slotsPanel = new ColumnMorph().beInvisible();
     this._slotsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
-    this._slotsPanel.inspect = function() {return "the slots panel";};
 
     this._expander = new ExpanderMorph(this);
     this.titleLabel = createLabel(function() {return searcher.inspect();});
     this.redoButton = createButton("Redo", function(evt) { this.redo(evt); }.bind(this), 1);
     this.dismissButton = this.createDismissButton();
 
-    this.createHeaderRow();
-    this.setRows([this._headerRow]);
+    // aaa - redo doesn't work yet because we don't unmark the objects after we're done
+    this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel, createSpacer(), /* this.redoButton, */ this.dismissButton],
+                                            {top: 0, bottom: 0, left: 3, right: 3, between: 3});
+
+    this.setPotentialContent([this._headerRow, createOptionalMorph(this._slotsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
+    this.refreshContent();
   });
 
   add.method('searcher', function () { return this._searcher; });
-
-  add.method('createHeaderRow', function () {
-    // aaa - redo doesn't work yet because we don't unmark the objects after we're done
-    return this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel, createSpacer(), /* this.redoButton, */ this.dismissButton],
-                                                   {top: 0, bottom: 0, left: 3, right: 3, between: 3});
-  });
 
   add.method('updateAppearance', function () {
     if (! this.world()) {return;}
@@ -72,26 +69,20 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
 
   add.method('updateExpandedness', function () {
     if (! this.world()) {return;}
-    var thingies = [this._headerRow];
-    if (this.expander().isExpanded()) { thingies.push(this._slotsPanel); }
-    this.replaceThingiesWith(thingies);
+    this.refreshContentOfMeAndSubmorphs();
   });
 
   add.method('redo', function () {
     var ss = this.searcher().go().sort(function(sp1, sp2) {var n1 = sp1.holder().name(); var n2 = sp2.holder().name(); n1 === n2 ? 0 : n1 < n2 ? -1 : 1});
     var sms = ss.map(function(s) { return this.createRowForSlot(s); }.bind(this));
-    this._slotsPanel.replaceThingiesWith(sms);
+    this._slotsPanel.setRows(sms);
     this.expander().expand();
   });
 
   add.method('createRowForSlot', function (s) {
-    var r = new RowMorph().beInvisible();
-    r.horizontalLayoutMode = LayoutModes.SpaceFill;
-    r.setPadding({top: 0, bottom: 0, left: 3, right: 3, between: 3});
     var inSituButton = createButton("in situ", function() { this.showInSitu(s, inSituButton); }.bind(this), 2);
-    var ms = [createLabel(s.holder().name()), createSpacer(), new SlotMorph(s), inSituButton];
-    r.replaceThingiesWith(ms);
-    return r;
+    return createSpaceFillingRow([createLabel(s.holder().name()), createSpacer(), new SlotMorph(s), inSituButton],
+                                 {top: 0, bottom: 0, left: 3, right: 3, between: 3});
   });
 
   add.method('showInSitu', function (s, inSituButton) {
