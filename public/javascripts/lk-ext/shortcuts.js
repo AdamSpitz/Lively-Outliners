@@ -80,11 +80,17 @@ function createCheckBoxWithImage(imageURL, size) {
   return button;
 }
 
-function createLeftJustifiedRow(ms, padding) {
+function createSpaceFillingRow(ms, padding) {
   var row = new RowMorph().beInvisible();
   if (typeof(padding) !== 'undefined') { row.setPadding(padding); }
   row.horizontalLayoutMode = LayoutModes.SpaceFill;
-  row.replaceThingiesWith(ms.concat([createSpacer()]));
+
+  // default to left-justifying the contents
+  if (ms.all(function(m) {return m.horizontalLayoutMode !== LayoutModes.SpaceFill;})) {
+    ms = ms.concat([createSpacer()]);
+  }
+
+  row.replaceThingiesWith(ms);
   return row;
 }
 

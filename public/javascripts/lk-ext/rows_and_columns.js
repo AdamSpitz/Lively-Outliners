@@ -138,6 +138,12 @@ Morph.subclass("RowOrColumnMorph", {
     });
   },
 
+  refreshContent: function() {
+    if (this.determineContent) {
+      this.replaceThingiesWith(this.determineContent());
+    }
+  },
+
   beInvisible: function() {
     this.setPadding(0);
     this.setFill(null);

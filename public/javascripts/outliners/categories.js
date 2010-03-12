@@ -99,7 +99,7 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
 
     this._modulesLabel = createLabel(function() {return this.modulesSummaryString();}.bind(this));
     // this._modulesLabel.setFontSize(this._modulesLabel.getFontSize() - 1); // aaa - why does this create a little space at the beginning of the label?
-    this._modulesLabelRow = createLeftJustifiedRow([this._modulesLabel], {left: 0, right: 0, top: 0, bottom: 2, between: 0});
+    this._modulesLabelRow = createSpaceFillingRow([this._modulesLabel], {left: 0, right: 0, top: 0, bottom: 2, between: 0});
     this._modulesLabelRow.updateAppearance = function() {this._modulesLabel.refreshText();}.bind(this);
   }, {category: ['initializing']});
 
@@ -269,13 +269,8 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
   add.method('category', function () { return this._category;          }, {category: ['accessing']});
 
   add.method('createHeaderRow', function () {
-    var r = this._headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
-    this._headerRowSpacer = createSpacer();
-    r.setPadding({top: 0, bottom: 0, left: 0, right: 0, between: 3});
-    r.horizontalLayoutMode = LayoutModes.SpaceFill;
-    r.inspect = function() {return "the header row";};
-    this._headerRow.replaceThingiesWith([this._expander, this.titleLabel, this._headerRowSpacer]);
-    return r;
+    return this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel],
+                                                   {top: 0, bottom: 0, left: 0, right: 0, between: 3});
   }, {category: ['creating']});
 
   add.method('updateAppearance', function () {

@@ -87,7 +87,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.signatureRow = new RowMorph().beInvisible();
     this.signatureRow.setPadding({left: 0, right: 2, top: 0, bottom: 0, between: 0});
     this.signatureRow.horizontalLayoutMode = LayoutModes.SpaceFill;
-    this.signatureRow.refreshContent = function() { this.populateSignatureRow(); }.bind(this);
+    this.signatureRow.determineContent = function() { return this.determineSignatureRowContent(); }.bind(this);
 
     this.updateAppearance();
   }, {category: ['creating']});
@@ -110,12 +110,12 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
       return ! nonTrivialSlot;
   }, {category: ['source']});
 
-  add.method('populateSignatureRow', function () {
+  add.method('determineSignatureRowContent', function () {
     var ms = [this.labelMorph];
     if (this._shouldShowComment || (this.slot().comment && this.slot().comment())) { ms.push(this.commentButton); }
     ms.push(this.signatureRowSpacer);
     ms.push(this.isMethodThatShouldBeShownAsPartOfTheBox() ? this.sourceButton() : this.contentsPointer());
-    this.signatureRow.replaceThingiesWith(ms);
+    return ms;
   }, {category: ['updating']});
 
   add.method('contentsPointer', function () {
@@ -167,7 +167,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.method('createRow', function (m) {
-    return createLeftJustifiedRow([m], {left: 15, right: 2, top: 2, bottom: 2, between: 0});
+    return createSpaceFillingRow([m], {left: 15, right: 2, top: 2, bottom: 2, between: 0});
   }, {category: ['creating']});
 
   add.method('sourceMorph', function () {
@@ -316,12 +316,12 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.setFill(defaultFillWithColor(color));
   }, {category: ['updating']});
 
-  add.method('refreshContent', function () {
+  add.method('determineContent', function () {
     var rows = [this.signatureRow];
     if (this._shouldShowAnnotation) { rows.push(this.annotationRow()); }
     if (this._shouldShowComment   ) { rows.push(this.   commentRow()); }
     if (this._shouldShowSource    ) { rows.push(this.    sourceRow()); }
-    this.replaceThingiesWith(rows);
+    return rows;
   }, {category: ['updating']});
 
   add.method('wasJustDroppedOnOutliner', function (outliner) {

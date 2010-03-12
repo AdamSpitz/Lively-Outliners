@@ -64,19 +64,18 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this._headerRowSpacer = createSpacer();
     r.setPadding({top: 0, bottom: 0, left: 0, right: 0, between: 3});
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
-    r.inspect = function() {return "the header row";};
-    r.refreshContent = function() { this.refreshHeaderRow(); }.bind(this);
-    this.refreshHeaderRow();
+    r.determineContent = function() { return this.determineHeaderRowContent(); }.bind(this);
+    r.refreshContent();
     return r;
   }, {category: ['initializing']});
 
-  add.method('refreshHeaderRow', function () {
+  add.method('determineHeaderRowContent', function () {
     var ms = [this._expander, this.titleLabel];
     if (this._shouldShowComment || (this.mirror().comment && this.mirror().comment())) { ms.push(this.commentButton); }
     ms.push(this._headerRowSpacer);
     ms.push(this.evaluatorButton);
     ms.push(this.dismissButton);
-    this._headerRow.replaceThingiesWith(ms);
+    return ms;
   }, {category: ['updating']});
 
   add.method('annotationMorph', function () {
