@@ -85,9 +85,13 @@ function createSpaceFillingRow(ms, padding) {
   if (typeof(padding) !== 'undefined') { row.setPadding(padding); }
   row.horizontalLayoutMode = LayoutModes.SpaceFill;
 
-  // default to left-justifying the contents
-  if (ms.all(function(m) {return m.horizontalLayoutMode !== LayoutModes.SpaceFill;})) {
-    ms = ms.concat([createSpacer()]);
+  if (typeof(ms) === 'function') {
+    row.potentialContent = ms;
+  } else {
+    // default to left-justifying the contents
+    if (ms.all(function(m) {return m.horizontalLayoutMode !== LayoutModes.SpaceFill;})) {
+      ms = ms.concat([createSpacer()]);
+    }
   }
 
   row.replaceThingiesWith(ms);

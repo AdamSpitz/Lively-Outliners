@@ -92,11 +92,9 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
 
     this.optionalCommentButtonMorph = createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.slot().comment && this.slot().comment()); }.bind(this));
 
-    this.signatureRowSpacer = createSpacer();
-    this.signatureRow = new RowMorph().beInvisible();
-    this.signatureRow.setPadding({left: 0, right: 2, top: 0, bottom: 0, between: 0});
-    this.signatureRow.horizontalLayoutMode = LayoutModes.SpaceFill;
-    this.signatureRow.setPotentialContent([this.labelMorph, this.optionalCommentButtonMorph, this.signatureRowSpacer, this.buttonChooserMorph]);
+    var signatureRowContent = [this.labelMorph, this.optionalCommentButtonMorph, createSpacer(), this.buttonChooserMorph];
+    this.signatureRow = createSpaceFillingRow(function () { return signatureRowContent; },
+                                              {left: 0, right: 2, top: 0, bottom: 0, between: 0});
 
     this.updateAppearance();
   }, {category: ['creating']});
