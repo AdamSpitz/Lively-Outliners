@@ -87,11 +87,16 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.labelMorph.refreshText();
 
     this.commentButton = createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
+
+    this.buttonChooserMorph = createEitherOrMorph(this.sourceButton(), this.contentsPointer(), function() { return this.isMethodThatShouldBeShownAsPartOfTheBox() }.bind(this));
+
+    this.optionalCommentButtonMorph = createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.slot().comment && this.slot().comment()); }.bind(this));
+
     this.signatureRowSpacer = createSpacer();
     this.signatureRow = new RowMorph().beInvisible();
     this.signatureRow.setPadding({left: 0, right: 2, top: 0, bottom: 0, between: 0});
     this.signatureRow.horizontalLayoutMode = LayoutModes.SpaceFill;
-    this.signatureRow.potentialContent = function() { return this.determineSignatureRowContent(); }.bind(this);
+    this.signatureRow.setPotentialContent([this.labelMorph, this.optionalCommentButtonMorph, this.signatureRowSpacer, this.buttonChooserMorph]);
 
     this.updateAppearance();
   }, {category: ['creating']});
@@ -99,14 +104,6 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   add.method('isMethodThatShouldBeShownAsPartOfTheBox', function () {
     return this.slot().isSimpleMethod();
   }, {category: ['source']});
-
-  add.method('determineSignatureRowContent', function () {
-    var ms = [this.labelMorph];
-    if (this._commentToggler.isOn() || (this.slot().comment && this.slot().comment())) { ms.push(this.commentButton); }
-    ms.push(this.signatureRowSpacer);
-    ms.push(this.isMethodThatShouldBeShownAsPartOfTheBox() ? this.sourceButton() : this.contentsPointer());
-    return ms;
-  }, {category: ['updating']});
 
   add.method('contentsPointer', function () {
     var m = this._contentsPointer;
@@ -226,9 +223,9 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
 
   add.method('transferUIStateTo', function (otherSlotMorph, evt) {
     // used after renaming, since it's actually a whole nother slot and slotMorph but we want it to feel like the same one
-    otherSlotMorph._sourceToggler    .setValue(this._sourceToggler    .isOn(), evt);
-    otherSlotMorph._commentToggler   .setValue(this._commentToggler   .isOn(), evt);
-    otherSlotMorph._annotationToggler.setValue(this._annotationToggler.isOn(), evt);
+    this._sourceToggler    .transferUIStateTo(otherSlotMorph._sourceToggler,     evt);
+    this._commentToggler   .transferUIStateTo(otherSlotMorph._commentToggler,    evt);
+    this._annotationToggler.transferUIStateTo(otherSlotMorph._annotationToggler, evt);
   }, {category: ['renaming']});
 
   add.method('slot', function () { return this._slot; }, {category: ['accessing']});
@@ -265,11 +262,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
 
   add.method('updateAppearance', function () {
     this.labelMorph.refreshText();
-    this.signatureRow.refreshContent();
-    if (this._commentMorph)    { this._commentMorph.refreshText(); }
-    if (this._sourceMorph)     { this._sourceMorph .refreshText(); }
-    if (this._moduleMorph)     { this._moduleMorph .refreshText(); }
-    this.refreshContent();
+    this.refreshContentOfMeAndSubmorphs();
     this.updateFill();
   }, {category: ['updating']});
 

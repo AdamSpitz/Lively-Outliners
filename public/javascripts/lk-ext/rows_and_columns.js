@@ -151,6 +151,10 @@ Morph.subclass("RowOrColumnMorph", {
     }
   },
 
+  setPotentialContent: function(ms) {
+    this.potentialContent = function() { return ms; };
+  },
+
   beInvisible: function() {
     this.setPadding(0);
     this.setFill(null);

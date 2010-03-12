@@ -64,19 +64,11 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this._headerRowSpacer = createSpacer();
     r.setPadding({top: 0, bottom: 0, left: 0, right: 0, between: 3});
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
-    r.potentialContent = function() { return this.determineHeaderRowContent(); }.bind(this);
+    this.optionalCommentButtonMorph = createOptionalMorph(this.commentButton, function() { return this._shouldShowComment || (this.mirror().comment && this.mirror().comment()); }.bind(this));
+    r.setPotentialContent([this._expander, this.titleLabel, this.optionalCommentButtonMorph, this._headerRowSpacer, this.evaluatorButton, this.dismissButton]);
     r.refreshContent();
     return r;
   }, {category: ['initializing']});
-
-  add.method('determineHeaderRowContent', function () {
-    var ms = [this._expander, this.titleLabel];
-    if (this._shouldShowComment || (this.mirror().comment && this.mirror().comment())) { ms.push(this.commentButton); }
-    ms.push(this._headerRowSpacer);
-    ms.push(this.evaluatorButton);
-    ms.push(this.dismissButton);
-    return ms;
-  }, {category: ['updating']});
 
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
@@ -111,10 +103,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this.populateSlotsPanel();
     this._slotsPanel.submorphs.each(function(m) { m.updateAppearance(); }); // aaa is this gonna cause us to redo a lot of work?
     this.refillWithAppropriateColor();
-    this.titleLabel.refreshText();
-    this._modulesLabel.refreshText();
-    if (this._copyDownParentsLabel) {this._copyDownParentsLabel.refreshText();}
-    this._headerRow.refreshContent();
+    this.refreshContentOfMeAndSubmorphs();
     this.minimumExtentChanged();
   }, {category: ['updating']});
 
