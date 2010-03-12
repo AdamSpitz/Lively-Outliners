@@ -14,7 +14,9 @@ thisModule.addSlots(lobby.booleanHolder, function(add) {
 
   add.method('isChecked', function () { return this.getValue();     }, {}, {});
 
-  add.method('setChecked', function (b) { return this.setValue(b);    }, {}, {});
+  add.method('setChecked', function (b, evt) { return this.setValue(b, evt);    }, {}, {});
+
+  add.method('toggle', function (evt) { return this.setValue(! this.getValue(), evt); }, {}, {});
 
   add.method('areValuesDifferent', function (v1, v2) { return (!v1) !== (!v2); }, {}, {});
 
@@ -32,16 +34,16 @@ thisModule.addSlots(lobby.valueHolder, function(add) {
 
   add.method('getValue', function () { return this.value; }, {}, {});
 
-  add.method('setValue', function (v) {
+  add.method('setValue', function (v, evt) {
     var oldValue = this.value;
     var changed = this.areValuesDifferent(oldValue, v);
     this.value = v;
-    if (changed) {this.notifier.notify_all_observers();}
+    if (changed) {this.notifier.notify_all_observers(evt);}
     return v;
   }, {}, {});
 
   add.method('areValuesDifferent', function (v1, v2) {
-    return v1 != v2;
+    return v1 !== v2;
   }, {}, {});
 
   add.method('add_observer', function (o) {

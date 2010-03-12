@@ -64,7 +64,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this._headerRowSpacer = createSpacer();
     r.setPadding({top: 0, bottom: 0, left: 0, right: 0, between: 3});
     r.horizontalLayoutMode = LayoutModes.SpaceFill;
-    r.determineContent = function() { return this.determineHeaderRowContent(); }.bind(this);
+    r.potentialContent = function() { return this.determineHeaderRowContent(); }.bind(this);
     r.refreshContent();
     return r;
   }, {category: ['initializing']});

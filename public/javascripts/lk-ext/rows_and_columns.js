@@ -139,8 +139,15 @@ Morph.subclass("RowOrColumnMorph", {
   },
 
   refreshContent: function() {
-    if (this.determineContent) {
-      this.replaceThingiesWith(this.determineContent());
+    if (this.potentialContent) {
+      var potentialContent = this.potentialContent();
+      var actualContent = [];
+      potentialContent.each(function(morphOrToggler) {
+        if (! morphOrToggler.shouldNotBeShown()) {
+          actualContent.push(morphOrToggler.actualMorphToShow());
+        }
+      });
+      this.replaceThingiesWith(actualContent);
     }
   },
 
@@ -208,6 +215,11 @@ var HorizontalDirection = {
   point: function(f, s) {return pt(f, s);},
   forwardLayoutModeOf: function(m) {return m.horizontalLayoutMode;}
 };
+
+Morph.addMethods({
+  shouldNotBeShown: function() { return false; },
+  actualMorphToShow: function() { return this; }
+});
 
 HandMorph.addMethods({
   shouldNotBePartOfRowOrColumn: true

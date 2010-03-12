@@ -73,6 +73,10 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.setBorderColor(Color.black);
     this.beUngrabbable();
 
+    this._sourceToggler     = Object.newChildOf(toggler, this,                   this.createRow(this.    sourceMorph())       );
+    this._commentToggler    = Object.newChildOf(toggler, this, slot.comment    ? this.createRow(this.   commentMorph()) : null);
+    this._annotationToggler = Object.newChildOf(toggler, this, slot.annotation ? this.createRow(this.annotationMorph()) : null);
+
     var slotMorph = this;
     this.labelMorph = new TwoModeTextMorph(pt(5, 10).extent(pt(140, 20)), slotMorph.slot().name());
     this.labelMorph.nameOfEditCommand = "rename";
@@ -82,12 +86,12 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.labelMorph.setSavedText = function(newName) { slotMorph.rename(newName, createFakeEvent()); };
     this.labelMorph.refreshText();
 
-    this.commentButton = createButton("'...'", function(evt) { this.toggleComment(evt); }.bind(this), 1);
+    this.commentButton = createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
     this.signatureRowSpacer = createSpacer();
     this.signatureRow = new RowMorph().beInvisible();
     this.signatureRow.setPadding({left: 0, right: 2, top: 0, bottom: 0, between: 0});
     this.signatureRow.horizontalLayoutMode = LayoutModes.SpaceFill;
-    this.signatureRow.determineContent = function() { return this.determineSignatureRowContent(); }.bind(this);
+    this.signatureRow.potentialContent = function() { return this.determineSignatureRowContent(); }.bind(this);
 
     this.updateAppearance();
   }, {category: ['creating']});
@@ -98,7 +102,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
 
   add.method('determineSignatureRowContent', function () {
     var ms = [this.labelMorph];
-    if (this._shouldShowComment || (this.slot().comment && this.slot().comment())) { ms.push(this.commentButton); }
+    if (this._commentToggler.isOn() || (this.slot().comment && this.slot().comment())) { ms.push(this.commentButton); }
     ms.push(this.signatureRowSpacer);
     ms.push(this.isMethodThatShouldBeShownAsPartOfTheBox() ? this.sourceButton() : this.contentsPointer());
     return ms;
@@ -141,7 +145,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     icon.setFill(null);
     icon.beUngrabbable();
     icon.ignoreEvents();
-    m = this._sourceButton = createButton(icon, function(evt) {this.toggleSource();}.bind(this), 1);
+    m = this._sourceButton = createButton(icon, function(evt) {this._sourceToggler.toggle(evt);}.bind(this), 1);
     return m;
   }, {category: ['source']});
 
@@ -153,7 +157,9 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   }, {category: ['creating']});
 
   add.method('createRow', function (m) {
-    return createSpaceFillingRow([m], {left: 15, right: 2, top: 2, bottom: 2, between: 0});
+    var r = createSpaceFillingRow([m], {left: 15, right: 2, top: 2, bottom: 2, between: 0});
+    r.wasJustShown = function(evt) { m.requestKeyboardFocus(evt.hand); };
+    return r;
   }, {category: ['creating']});
 
   add.method('sourceMorph', function () {
@@ -179,10 +185,6 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     return this._sourceMorph = m;
   }, {category: ['source']});
 
-  add.method('sourceRow', function () {
-    return this._sourceRow || (this._sourceRow = this.createRow(this.sourceMorph()));
-  }, {category: ['source']});
-
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
     if (m) { return m; }
@@ -195,10 +197,6 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     return m;
   }, {category: ['annotation']});
 
-  add.method('annotationRow', function () {
-    return this._annotationRow || (this._annotationRow = this.createRow(this.annotationMorph()));
-  }, {category: ['annotation']});
-
   add.method('commentMorph', function () {
     var m = this._commentMorph;
     if (m) { return m; }
@@ -207,30 +205,9 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
                                                function(c) { thisSlotMorph.slot().setComment(c); });
   }, {category: ['comment']});
 
-  add.method('commentRow', function () {
-    return this._commentRow || (this._commentRow = this.createRow(this.commentMorph()));
-  }, {category: ['comment']});
-
-  add.method('showSource', function () {
-    this._shouldShowSource = true;
-    this.updateAppearance();
+  add.method('showSource', function (evt) {
+    this._sourceToggler.beOn(evt);
   }, {category: ['source']});
-
-  add.method('toggleSource', function () {
-    this._shouldShowSource = ! this._shouldShowSource;
-    this.updateAppearance();
-  }, {category: ['source']});
-
-  add.method('toggleAnnotation', function () {
-    this._shouldShowAnnotation = ! this._shouldShowAnnotation;
-    this.updateAppearance();
-  }, {category: ['annotation']});
-
-  add.method('toggleComment', function (evt) {
-    this._shouldShowComment = ! this._shouldShowComment;
-    this.updateAppearance();
-    if (this._shouldShowComment) { this.commentMorph().requestKeyboardFocus(evt.hand); }
-  }, {category: ['comment']});
 
   add.method('rename', function (newName, evt) {
     MessageNotifierMorph.showIfErrorDuring(function() {
@@ -240,19 +217,18 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
         outliner.updateAppearance();
         var newSlot = outliner.mirror().slotAt(newName);
         var newSlotMorph = outliner.slotMorphFor(newSlot);
-        this.transferUIStateTo(newSlotMorph);
+        this.transferUIStateTo(newSlotMorph, evt);
         newSlotMorph.sourceMorph().requestKeyboardFocus(evt.hand);
         newSlotMorph.sourceMorph().doSelectAll();
       }
     }.bind(this), evt);
   }, {category: ['renaming']});
 
-  add.method('transferUIStateTo', function (otherSlotMorph) {
+  add.method('transferUIStateTo', function (otherSlotMorph, evt) {
     // used after renaming, since it's actually a whole nother slot and slotMorph but we want it to feel like the same one
-    otherSlotMorph._shouldShowSource     = this._shouldShowSource;
-    otherSlotMorph._shouldShowComment    = this._shouldShowComment;
-    otherSlotMorph._shouldShowAnnotation = this._shouldShowAnnotation;
-    otherSlotMorph.updateAppearance();
+    otherSlotMorph._sourceToggler    .setValue(this._sourceToggler    .isOn(), evt);
+    otherSlotMorph._commentToggler   .setValue(this._commentToggler   .isOn(), evt);
+    otherSlotMorph._annotationToggler.setValue(this._annotationToggler.isOn(), evt);
   }, {category: ['renaming']});
 
   add.method('slot', function () { return this._slot; }, {category: ['accessing']});
@@ -302,12 +278,8 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.setFill(defaultFillWithColor(color));
   }, {category: ['updating']});
 
-  add.method('determineContent', function () {
-    var rows = [this.signatureRow];
-    if (this._shouldShowAnnotation) { rows.push(this.annotationRow()); }
-    if (this._shouldShowComment   ) { rows.push(this.   commentRow()); }
-    if (this._shouldShowSource    ) { rows.push(this.    sourceRow()); }
-    return rows;
+  add.method('potentialContent', function () {
+    return [this.signatureRow, this._annotationToggler, this._commentToggler, this._sourceToggler];
   }, {category: ['updating']});
 
   add.method('wasJustDroppedOnOutliner', function (outliner) {
@@ -351,7 +323,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     // a method. (The method I'm likely to be editing again. But editing the
     // source of a data slot is usually just done when initially creating the
     // slot.)
-    if (! this.isMethodThatShouldBeShownAsPartOfTheBox()) { this._shouldShowSource = false; }
+    if (! this.isMethodThatShouldBeShownAsPartOfTheBox()) { this._sourceToggler.beOff(evt); }
 
     this.updateAppearance();
   }, {category: ['contents']});
@@ -387,8 +359,8 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
         this.labelMorph.addEditingMenuItemsTo(menu, evt);
       }
 
-      menu.addItem([this._shouldShowSource ? "hide contents" : "edit contents", function(evt) {
-        this.toggleSource();
+      menu.addItem([this._sourceToggler.isOn() ? "hide contents" : "edit contents", function(evt) {
+        this._sourceToggler.toggle(evt);
       }.bind(this)]);
 
       if (this.slot().copyTo) {
@@ -405,8 +377,8 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
       }
 
       if (this.slot().comment) {
-        menu.addItem([this._shouldShowComment ? "hide comment" : "edit comment", function(evt) {
-          this.toggleComment(evt);
+        menu.addItem([this._commentToggler.isOn() ? "hide comment" : "edit comment", function(evt) {
+          this._commentToggler.toggle(evt);
         }.bind(this)]);
       }
 
@@ -424,8 +396,8 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
       }
 
       if (this.slot().annotation) {
-        menu.addItem([this._shouldShowAnnotation ? "hide annotation" : "show annotation", function(evt) {
-          this.toggleAnnotation();
+        menu.addItem([this._annotationToggler.isOn() ? "hide annotation" : "show annotation", function(evt) {
+          this._annotationToggler.toggle(evt);
         }.bind(this)]);
       }
     }
