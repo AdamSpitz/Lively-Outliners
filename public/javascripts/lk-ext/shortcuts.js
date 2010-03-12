@@ -57,7 +57,7 @@ function createInputBox(getFunction, setFunction) {
   m.closeDnD();
   m.setFill(null);
   m.getSavedText = getFunction;
-  m.setSavedText = function(str) { if (str !== this.getSavedText()) { setFunction(str); } };
+  m.setSavedText = setFunction;
   m.refreshText();
   return m;
 }

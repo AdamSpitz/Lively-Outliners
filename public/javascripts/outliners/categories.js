@@ -254,7 +254,7 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     this.titleLabel.ignoreEvents();
 
     this.titleLabel.getSavedText = function() { return category.lastPart(); };
-    this.titleLabel.setSavedText = function(newName) { if (newName !== this.getSavedText()) { categoryMorph.rename(newName, createFakeEvent()); } };
+    this.titleLabel.setSavedText = function(newName) { categoryMorph.rename(newName, createFakeEvent()); };
     this.titleLabel.refreshText();
 
     this.createHeaderRow();

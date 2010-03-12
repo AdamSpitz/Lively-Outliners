@@ -10,6 +10,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     this.changed();
     this.beUngrabbable();
     this.setSavedText(textString);
+    this.justAcceptedOrCancelled();
   },
 
   getSavedText: function( )  {
@@ -91,16 +92,22 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
     }
   },
 
-  acceptChanges: function() {
-    this.setSavedText(this.getText());
+  justAcceptedOrCancelled: function() {
     this.changed();
     this.updateLayoutIfNecessary();
   },
 
+  acceptChanges: function() {
+    var newText = this.getText();
+    if (newText !== this.getSavedText()) {
+      this.setSavedText(newText);
+    }
+    this.justAcceptedOrCancelled();
+  },
+
   cancelChanges: function() {
     this.setText(this.getSavedText());
-    this.changed();
-    this.updateLayoutIfNecessary();
+    this.justAcceptedOrCancelled();
   },
 
   handlesMouseDown: function(evt) { return true; },
@@ -131,11 +138,6 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
 });
 
 TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
-  initialize: function($super, rect, textString, modelPlugSpec) {
-    $super(rect, textString, modelPlugSpec);
-    this.beUnwritable();
-  },
-
   hasChangedFromSavedText: function() {
     return this.isInWritableMode;
   },
@@ -165,14 +167,7 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
 
   normalBorderWidth: 0,
 
-  acceptChanges: function() {
-    this.setSavedText(this.getText());
-    this.beUnwritable();
-    this.updateLayoutIfNecessary();
-  },
-
-  cancelChanges: function() {
-    this.setText(this.getSavedText());
+  justAcceptedOrCancelled: function() {
     this.beUnwritable();
     this.updateLayoutIfNecessary();
   },
@@ -209,11 +204,4 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
     }
     $super(menu, evt);
   },
-});
-
-
-TextMorph.addMethods({
-  // For compatibility with TwoModeTextMorphs.
-  getSavedText: function()  {return this.getText( );},
-  setSavedText: function(t) {return this.setText(t);}
 });
