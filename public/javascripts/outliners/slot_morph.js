@@ -87,7 +87,6 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.signatureRow = new RowMorph().beInvisible();
     this.signatureRow.setPadding({left: 0, right: 2, top: 0, bottom: 0, between: 0});
     this.signatureRow.horizontalLayoutMode = LayoutModes.SpaceFill;
-    this.signatureRow.inspect = function() { return "signature row"; };
     this.signatureRow.refreshContent = function() { this.populateSignatureRow(); }.bind(this);
 
     this.updateAppearance();
@@ -115,8 +114,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     var ms = [this.labelMorph];
     if (this._shouldShowComment || (this.slot().comment && this.slot().comment())) { ms.push(this.commentButton); }
     ms.push(this.signatureRowSpacer);
-    var button = this.isMethodThatShouldBeShownAsPartOfTheBox() ? this.sourceButton() : this.contentsPointer();
-    ms.push(button);
+    ms.push(this.isMethodThatShouldBeShownAsPartOfTheBox() ? this.sourceButton() : this.contentsPointer());
     this.signatureRow.replaceThingiesWith(ms);
   }, {category: ['updating']});
 

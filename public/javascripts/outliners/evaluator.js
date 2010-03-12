@@ -47,7 +47,7 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
     var bp = this.buttonsPanel = new RowMorph().beInvisible();
     bp.replaceThingiesWith([createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)),
                             createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)),
-                            createButton("Close",  function(evt) {this.close(evt);}.bind(this))]);
+                            createButton("Close",  function(evt) {this.remove(  );}.bind(this))]);
 
     this.replaceThingiesWith([tm, bp]);
   }, {category: ['creating']});
@@ -76,10 +76,6 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
       }
     }.bind(this), evt);
   }, {category: ['running the code']});
-
-  add.method('close', function (evt) {
-    this.owner.removeThingy(this);
-  }, {category: ['closing']});
 
 });
 

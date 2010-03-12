@@ -111,9 +111,6 @@ Morph.subclass("RowOrColumnMorph", {
     return newExtent;
   },
 
-     addThingy: function(m) {this.   addMorph(m); this.forceLayoutRejiggering();},
-  removeThingy: function(m) {this.removeMorph(m); this.forceLayoutRejiggering();},
-
      addMorph: function($super, m, shouldNotForceLayoutRejiggering) {$super(m); if (!shouldNotForceLayoutRejiggering && !m.shouldNotBePartOfRowOrColumn) {this.forceLayoutRejiggering();}},
   removeMorph: function($super, m, shouldNotForceLayoutRejiggering) {$super(m); if (!shouldNotForceLayoutRejiggering && !m.shouldNotBePartOfRowOrColumn) {this.forceLayoutRejiggering();}},
 
@@ -130,8 +127,8 @@ Morph.subclass("RowOrColumnMorph", {
 
     if (this.areArraysEqual(old, ms)) { return; }
 
-    for (var i = 0, n = old.length; i < n; ++i) { var m = old[i]; if (! m.shouldNotBePartOfRowOrColumn) {this.removeMorph(m);}}
-    for (var i = 0, n =  ms.length; i < n; ++i) { this.addMorph(ms[i]); }
+    for (var i = 0, n = old.length; i < n; ++i) { var m = old[i]; if (! m.shouldNotBePartOfRowOrColumn) {this.removeMorph(m, true);}}
+    for (var i = 0, n =  ms.length; i < n; ++i) { this.addMorph(ms[i], true); }
     this.forceLayoutRejiggering();
   },
 
@@ -157,7 +154,7 @@ RowOrColumnMorph.subclass("ColumnMorph", {
     $super(VerticalDirection);
     return this;
   },
-  addRow: function(m) {this.addThingy(m);},
+  addRow: function(m) {this.addMorph(m);},
   setRows: function(ms) {this.replaceThingiesWith(ms);}
 });
 
@@ -166,7 +163,7 @@ RowOrColumnMorph.subclass("RowMorph", {
     $super(HorizontalDirection);
     return this;
   },
-   addColumn: function(m) {this.addThingy(m);},
+   addColumn: function(m) {this.addMorph(m);},
   setColumns: function(ms) {this.replaceThingiesWith(ms);}
 });
 
