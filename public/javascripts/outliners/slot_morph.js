@@ -67,6 +67,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   add.method('initialize', function ($super, slot) {
     $super();
     this._slot = slot;
+
     this.setPadding(0);
     this.setFill(defaultFillWithColor(Color.gray));
     this.setBorderWidth(1);
@@ -259,7 +260,6 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   }, {category: ['annotation', 'initialization expression']});
 
   add.method('updateAppearance', function () {
-    this.labelMorph.refreshText();
     this.refreshContentOfMeAndSubmorphs();
     this.updateFill();
   }, {category: ['updating']});

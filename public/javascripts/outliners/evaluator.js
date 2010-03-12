@@ -27,8 +27,8 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
     $super();
     this._outliner = outliner;
     
-    this.setFill(Color.gray);
-    this.beUngrabbable();
+    this.setFill(null);
+    this.ignoreEvents(); // so we can drag through it, since it doesn't need a menu
 
     var tm = this._textMorph = createTextField();
     tm.setExtent(pt(150,60));
@@ -45,19 +45,19 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
     };
     
     var bp = this.buttonsPanel = new RowMorph().beInvisible();
-    bp.replaceThingiesWith([createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)),
-                            createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)),
-                            createButton("Close",  function(evt) {this.remove(  );}.bind(this))]);
+    bp.setColumns([createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)),
+                   createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)),
+                   createButton("Close",  function(evt) {this.remove(  );}.bind(this))]);
 
-    this.replaceThingiesWith([tm, bp]);
+    this.setRows([tm, bp]);
   }, {category: ['creating']});
 
   add.method('outliner', function () { return this._outliner;  }, {category: ['accessing']});
 
-  add.method('textMorph', function () { return this._textMorph; }, {category: ['accessing']});
+  add.method('wasJustShown', function (evt) { this._textMorph.requestKeyboardFocus(evt.hand); }, {category: ['events']});
 
   add.method('runTheCode', function () {
-    var __codeToRun__ = this.textMorph().getText();
+    var __codeToRun__ = this._textMorph.getText();
     // run the code with "this" set to the outliner's object
     return (function() { return eval("(" + __codeToRun__ + ")"); }).call(this.outliner().mirror().reflectee());
   }, {category: ['running the code']});

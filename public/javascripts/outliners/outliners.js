@@ -163,7 +163,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
   add.method('openEvaluator', function (evt) {
     var e = new EvaluatorMorph(this);
     this._evaluatorsPanel.addRow(e);
-    e.textMorph().requestKeyboardFocus(evt.hand);
+    e.wasJustShown(evt);
   }, {category: ['evaluators']});
 
   add.method('contextMenu', function (evt) {
