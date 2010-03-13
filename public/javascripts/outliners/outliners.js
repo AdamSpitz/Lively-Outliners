@@ -212,7 +212,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
       var w = evt.hand.world();
       var parentFunction = function(o) { return o.mirror().hasParent() ? w.outlinerFor(o.mirror().parent()) : null; };
       var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.outlinerFor(reflect(child)); }); };
-      w.assumePose(Object.newChildOf(poses.tree, this, parentFunction, childrenFunction));
+      w.assumePose(Object.newChildOf(poses.tree, this.mirror().inspect() + " inheritance tree", this, parentFunction, childrenFunction));
     }.bind(this)]);
 
     return menu;
@@ -304,11 +304,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       modulesMenu.openIn(this, evt.point());
     }.bind(this)]);
 
-    menu.addLine();
-
-    menu.addItem(["clean up", function(evt) {
-      this.cleanUp(evt);
-    }.bind(this)]);
+    this.addPoseMenuItemsTo(menu, evt);
 
     return menu;
   });
