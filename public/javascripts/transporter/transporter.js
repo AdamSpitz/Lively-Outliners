@@ -75,6 +75,9 @@ thisModule.addSlots(transporter.module, function(add) {
     var url = this.urlForModuleName(name);
     var code = FileDirectory.getContent(url);
     eval(code);
+    var module = this.existingOneNamed(name);
+    if (module.postFileIn) { module.postFileIn(); }
+    return module;
   }, {category: ['transporting']});
 
   add.method('eachModule', function (f) {
@@ -86,6 +89,5 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['accessing modules']});
 
 });
-
 
 });

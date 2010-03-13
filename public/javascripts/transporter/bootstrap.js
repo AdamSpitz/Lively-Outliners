@@ -44,6 +44,10 @@ function setCreatorSlot(annotation, name, holder) {
   annotation.creatorSlotHolder = holder;
 }
 
+function setSlotAnnotation(holder, name, slotAnnotation) {
+  annotationOf(holder).slotAnnotations[annotationNameForSlotNamed(name)] = slotAnnotation;
+}
+
 function creatorChainLength(o) {
   if (o === lobby) { return 0; }
   if (! o.hasOwnProperty('__annotation__')) { return null; }
@@ -107,10 +111,12 @@ function hackToMakeSuperWork(holder, property, contents) {
 var lobby = window; // still not sure whether I want this to be window, or Object.create(window), or {}
 
 lobby.modules = {};
-setCreatorSlot(annotationOf(lobby.modules), 'modules', lobby);
+setCreatorSlot(annotationOf(lobby.modules), 'modules', lobby, 'transporter');
+setSlotAnnotation(lobby, 'modules', {category: ['transporter']});
 
 lobby.transporter = {};
-setCreatorSlot(annotationOf(lobby.transporter), 'transporter', lobby);
+setCreatorSlot(annotationOf(lobby.transporter), 'transporter', lobby, 'transporter');
+setSlotAnnotation(lobby, 'transporter', {category: ['transporter']});
 
 lobby.transporter.module = {};
 setCreatorSlot(annotationOf(lobby.transporter.module), 'module', lobby.transporter);
@@ -136,7 +142,7 @@ lobby.transporter.module.slotAdder = {
     if (! slotAnnotation) { slotAnnotation = {}; }
     this.holder[name] = contents;
     slotAnnotation.module = this.module;
-    annotationOf(this.holder).slotAnnotations[annotationNameForSlotNamed(name)] = slotAnnotation;
+    setSlotAnnotation(this.holder, name, slotAnnotation);
     if (contentsAnnotation) { // used for creator slots
       var a = annotationOf(contents);
       a.creatorSlotName   = name;
