@@ -123,7 +123,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
         arrow.noLongerNeedsToBeVisible();
       }
     }.bind(this), 1);
-    arrow = new SlotContentsPointerArrow(this, m);
+    arrow = this._contentsPointer.arrow = new SlotContentsPointerArrow(this, m);
     arrow.noLongerNeedsToBeUpdated = true;
 
     m.determineWhichMorphToAttachTo = function() {return !!this.world();};
@@ -227,7 +227,8 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     return {
       isSourceOpen: this._sourceToggler.isOn(),
       isCommentOpen: this._commentToggler.isOn(),
-      isAnnotationOpen: this._annotationToggler.isOn()
+      isAnnotationOpen: this._annotationToggler.isOn(),
+      isArrowVisible: ! this.contentsPointer().arrow.noLongerNeedsToBeUpdated
     };
   }, {category: ['UI state']});
 
@@ -236,6 +237,9 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this._sourceToggler    .setValue( uiState.isSourceOpen,     evt );
     this._commentToggler   .setValue( uiState.isCommentOpen,    evt );
     this._annotationToggler.setValue( uiState.isAnnotationOpen, evt );
+    
+    var arrow = this.contentsPointer().arrow;
+    if (uiState.isArrowVisible) {arrow.needsToBeVisible();} else {arrow.noLongerNeedsToBeVisible();}
   }, {category: ['UI state']});
 
   add.method('slot', function () { return this._slot; }, {category: ['accessing']});

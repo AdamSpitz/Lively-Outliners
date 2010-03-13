@@ -113,6 +113,8 @@ Morph.subclass("ArrowMorph", {
   grabEndpoint:  function(evt, endpoint) {endpoint.grabMe(evt);},
   grabEndpoint1: function(evt) {this.grabEndpoint(evt, this.endpoint1);},
   grabEndpoint2: function(evt) {this.grabEndpoint(evt, this.endpoint2);},
+
+  shouldIgnorePoses: function(uiState) { return true; },
 });
 
 Morph.subclass("ArrowEndpoint", {
