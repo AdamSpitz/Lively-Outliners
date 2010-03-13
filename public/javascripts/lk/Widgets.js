@@ -1734,7 +1734,7 @@ PseudoMorph.subclass('MenuItem', {
 
     invoke: function(evt, targetMorph) {
                 // aaa annoying: console.log("-------------------------------------------")
-                item = this;
+                var item = this;
                 // aaa annoying: console.log("invoke "+ targetMorph)
         if (this.action instanceof Function) { // alternative style, items ['menu entry', function] pairs
             this.action.call(targetMorph || this, evt);

@@ -1064,7 +1064,7 @@ Array.from = $A;
   function concat() {
     var array = slice.call(this, 0), item;
     for (var i = 0, length = arguments.length; i < length; i++) {
-      item = arguments[i];
+      var item = arguments[i];
       if (Object.isArray(item) && !('callee' in item)) {
         for (var j = 0, arrayLength = item.length; j < arrayLength; j++)
           array.push(item[j]);
