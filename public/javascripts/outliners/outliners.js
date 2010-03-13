@@ -206,6 +206,15 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
       evt.hand.world().outlinerFor(reflect(this.mirror().wellKnownChildren())).grabMe(evt);
     }.bind(this)]);
 
+    menu.addLine();
+    
+    menu.addItem(["show object inheritance hierarchy", function(evt) {
+      var w = evt.hand.world();
+      var parentFunction = function(o) { return o.mirror().hasParent() ? w.outlinerFor(o.mirror().parent()) : null; };
+      var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.outlinerFor(reflect(child)); }); };
+      w.assumePose(Object.newChildOf(poses.tree, this, parentFunction, childrenFunction));
+    }.bind(this)]);
+
     return menu;
   }, {category: ['menu']});
 

@@ -431,6 +431,8 @@ thisModule.addSlots(slots.abstract, function(add) {
     return this;
   }, {category: ['creating']});
 
+  add.data('_mirror', reflect({}), {category: ['accessing'], initializeTo: 'reflect({})'});
+
   add.method('mirror', function () { return this._mirror; }, {category: ['accessing']});
 
   add.method('holder', function () { return this._mirror; }, {category: ['accessing']});
@@ -477,6 +479,8 @@ thisModule.addSlots(slots.plain, function(add) {
     this._name = n;
     return this;
   }, {category: ['creating']});
+
+  add.data('_name', 'argleBargle', {category: ['accessing']});
 
   add.method('name', function () { return this._name; }, {category: ['accessing']});
 
