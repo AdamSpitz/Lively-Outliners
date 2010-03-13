@@ -503,10 +503,17 @@ thisModule.addSlots(slots.plain, function(add) {
   }, {category: ['removing']});
 
   add.method('isSimpleMethod', function () {
-    if (! this.contents().isReflecteeFunction()) {return false;}
+    var contents = this.contents();
+    if (! contents.isReflecteeFunction()) {return false;}
+
     var aaa_LK_slotNamesAttachedToMethods = ['declaredClass', 'methodName'];
-    var nonTrivialSlot = Object.newChildOf(enumerator, this.contents(), 'eachNormalSlot').find(function(s) {
-      if (aaa_LK_slotNamesAttachedToMethods.include(s.name())) {return false;}
+    var aaa_LK_slotNamesUsedForSuperHack = ['valueOf', 'toString', 'originalFunction'];
+
+    var hasSuper = contents.reflectee().argumentNames && contents.reflectee().argumentNames().first() === '$super';
+
+    var nonTrivialSlot = Object.newChildOf(enumerator, contents, 'eachNormalSlot').find(function(s) {
+      if (            aaa_LK_slotNamesAttachedToMethods.include(s.name())) {return false;}
+      if (hasSuper && aaa_LK_slotNamesUsedForSuperHack .include(s.name())) {return false;}
         
       // Firefox seems to have a 'prototype' slot on every function (whereas Safari is lazier about it). I think.
       if (s.name() === 'prototype') {
