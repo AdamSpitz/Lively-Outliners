@@ -132,7 +132,7 @@ thisModule.addSlots(poses.snapshot, function(add) {
     this._elements = [];
     morphs.each(function(m) {
       if (! m.shouldIgnorePoses()) {
-        this._elements.push({morph: m, position: m.getPosition(), uiState: m.constructUIStateMemento && m.constructUIStateMemento()});
+        this._elements.push({morph: m, position: m.getPosition(), uiState: m.constructUIStateMemento()});
       }
     }.bind(this));
   });
@@ -156,6 +156,10 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('assumeUIState', function(uiState) {
     // override this and constructUIStateMemento in children if you want them to be recalled in a particular state
+  }, {category: ['poses']});
+
+  add.method('transferUIStateTo', function (otherMorph, evt) {
+    otherMorph.assumeUIState(this.constructUIStateMemento());
   }, {category: ['poses']});
 
 });

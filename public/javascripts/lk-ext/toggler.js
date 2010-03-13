@@ -37,10 +37,6 @@ thisModule.addSlots(toggler, function(add) {
 
   add.method('actualMorphToShow', function() { return this._morphToShowOrHide; });
 
-  add.method('transferUIStateTo', function (other, evt) {
-    other.setValue(this.isOn(), evt);
-  });
-
 });
 
 

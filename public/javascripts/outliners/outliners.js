@@ -117,8 +117,9 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('expandCategory', function (c) {
-    var expander = c.isRoot() ? this.expander() : this.categoryMorphFor(c).expander();
-    expander.expand();
+    var m = c.isRoot() ? this : this.categoryMorphFor(c);
+    m.expander().expand();
+    m.populateSlotsPanel();
   }, {category: ['categories']});
 
   add.method('eachSlot', function (f) {
@@ -238,6 +239,30 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
       m.wasJustDroppedOnOutliner(this);
     }
   }, {category: ['drag and drop']});
+
+  add.method('constructUIStateMemento', function () {
+    var mem = {
+      isExpanded: this.expander().isExpanded(),
+      isCommentOpen: this._commentToggler.isOn(),
+      isAnnotationOpen: this._annotationToggler.isOn(),
+      categories: [],
+      slots: []
+    };
+    
+    this._categoryMorphs.eachValue(function(cm) { mem.categories.push([cm.category(), cm.constructUIStateMemento()]); });
+    this.    _slotMorphs.eachValue(function(sm) { mem.slots     .push([sm.slot(),     sm.constructUIStateMemento()]); });
+
+    return mem;
+  }, {category: ['UI state']});
+
+  add.method('assumeUIState', function (uiState, evt) {
+    evt = evt || createFakeEvent();
+    this._commentToggler   .setValue( uiState.isCommentOpen,    evt );
+    this._annotationToggler.setValue( uiState.isAnnotationOpen, evt );
+    this.expander().setExpanded(uiState.isExpanded);
+    uiState.categories.each(function(a) { this.categoryMorphFor(a[0]).assumeUIState(a[1]); }.bind(this));
+    uiState.slots     .each(function(a) { this.    slotMorphFor(a[0]).assumeUIState(a[1]); }.bind(this));
+  }, {category: ['UI state']});
 
 });
 

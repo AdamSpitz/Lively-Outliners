@@ -113,6 +113,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     icon.setFill(null);
     icon.beUngrabbable();
     icon.ignoreEvents();
+    // aaa - This is a mess. Make it make sense.
     m = this._contentsPointer = createButton(icon, function() {
       if (arrow.noLongerNeedsToBeUpdated || ! arrow.world()) {
         var w = this.world();
@@ -211,21 +212,31 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
       var outliner = this.outliner();
       if (outliner) {
         outliner.updateAppearance();
+
+        // it's actually a whole nother slot and slotMorph but we want it to feel like the same one
         var newSlot = outliner.mirror().slotAt(newName);
         var newSlotMorph = outliner.slotMorphFor(newSlot);
-        this.transferUIStateTo(newSlotMorph, evt);
+        this.transferUIStateTo(newSlotMorph);
         newSlotMorph.sourceMorph().requestKeyboardFocus(evt.hand);
         newSlotMorph.sourceMorph().doSelectAll();
       }
     }.bind(this), evt);
   }, {category: ['renaming']});
 
-  add.method('transferUIStateTo', function (otherSlotMorph, evt) {
-    // used after renaming, since it's actually a whole nother slot and slotMorph but we want it to feel like the same one
-    this._sourceToggler    .transferUIStateTo(otherSlotMorph._sourceToggler,     evt);
-    this._commentToggler   .transferUIStateTo(otherSlotMorph._commentToggler,    evt);
-    this._annotationToggler.transferUIStateTo(otherSlotMorph._annotationToggler, evt);
-  }, {category: ['renaming']});
+  add.method('constructUIStateMemento', function () {
+    return {
+      isSourceOpen: this._sourceToggler.isOn(),
+      isCommentOpen: this._commentToggler.isOn(),
+      isAnnotationOpen: this._annotationToggler.isOn()
+    };
+  }, {category: ['UI state']});
+
+  add.method('assumeUIState', function (uiState, evt) {
+    evt = evt || createFakeEvent();
+    this._sourceToggler    .setValue( uiState.isSourceOpen,     evt );
+    this._commentToggler   .setValue( uiState.isCommentOpen,    evt );
+    this._annotationToggler.setValue( uiState.isAnnotationOpen, evt );
+  }, {category: ['UI state']});
 
   add.method('slot', function () { return this._slot; }, {category: ['accessing']});
 

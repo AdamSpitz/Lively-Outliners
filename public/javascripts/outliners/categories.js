@@ -322,6 +322,13 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     }
   }, {category: ['drag and drop']});
 
+  add.method('constructUIStateMemento', function () {
+    return { isExpanded: this.expander().isExpanded() };
+  }, {category: ['UI state']});
+
+  add.method('assumeUIState', function (uiState, evt) {
+    this.expander().setExpanded(uiState.isExpanded);
+  }, {category: ['UI state']});
 });
 
 

@@ -24,7 +24,8 @@ ButtonMorph.subclass("ExpanderMorph", {
     // $super(value); // Messes things up, I think. -- Adam
   },
 
-  isExpanded: function() {return this.getModel().getValue();},
-      expand: function() {if (!this.isExpanded()) {this.setModelValue("setValue", true ); this.updateView("all");}},
-    collapse: function() {if ( this.isExpanded()) {this.setModelValue("setValue", false); this.updateView("all");}},
+   isExpanded: function( ) {return this.getModel().getValue();},
+       expand: function( ) {this.setExpanded(true );},
+     collapse: function( ) {this.setExpanded(false);},
+  setExpanded: function(b) {if (!!this.isExpanded() !== !!b) {this.setModelValue("setValue", !!b); this.updateView("all");}},
 });
