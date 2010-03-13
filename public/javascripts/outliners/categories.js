@@ -257,8 +257,8 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     this.titleLabel.setSavedText = function(newName) { categoryMorph.rename(newName, createFakeEvent()); };
     this.titleLabel.refreshText();
 
-    this.createHeaderRow();
-
+    this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel],
+                                            {top: 0, bottom: 0, left: 0, right: 0, between: 3});
     this.replaceThingiesWith([this._headerRow]);
   }, {category: ['creating']});
 
@@ -269,8 +269,6 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
   add.method('category', function () { return this._category;          }, {category: ['accessing']});
 
   add.method('createHeaderRow', function () {
-    return this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel],
-                                                   {top: 0, bottom: 0, left: 0, right: 0, between: 3});
   }, {category: ['creating']});
 
   add.method('updateAppearance', function () {
