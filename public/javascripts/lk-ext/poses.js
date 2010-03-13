@@ -13,6 +13,7 @@ thisModule.addSlots(poses, function(add) {
   add.creator('abstract', {});
   add.creator('tree', Object.create(poses.abstract));
   add.creator('snapshot', Object.create(poses.abstract));
+  add.creator('cleanUp', Object.create(poses.abstract));
 
 });
 
@@ -95,6 +96,34 @@ thisModule.addSlots(poses.tree, function(add) {
 
 });
 
+thisModule.addSlots(poses.cleanUp, function(add) {
+
+  add.method('initialize', function($super, name, world, morphs) {
+    $super(name);
+    this._world = world;
+    this._morphs = morphs;
+  });
+
+  add.method('eachElement', function (f) {
+    var sortedMorphsToMove = this._morphs.sort(function(m1, m2) {
+      var n1 = m1.inspect();
+      var n2 = m2.inspect();
+      return n1 < n2 ? -1 : n1 === n2 ? 0 : 1;
+    });
+
+    var pos = pt(20,20);
+    var widest = 0;
+    for (var i = 0; i < sortedMorphsToMove.length; ++i) {
+      var morph = sortedMorphsToMove[i];
+      f({morph: morph, position: pos});
+      var extent = morph.getExtent();
+      pos = pos.withY(pos.y + extent.y);
+      widest = Math.max(widest, extent.x);
+      if (pos.y >= this._world.getExtent().y - 30) { pos = pt(pos.x + widest + 20, 20); }
+    }
+  }, {category: ['poses', 'cleaning up']});
+
+});
 
 thisModule.addSlots(poses.snapshot, function(add) {
 
@@ -136,64 +165,107 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
   add.method('nextPoseID', function() {
     this._nextPoseID = (this._nextPoseID || 0) + 1;
     return this._nextPoseID;
+  }, {category: ['poses', 'taking snapshots']});
+
+  add.method('explicitlyRememberedPoses', function() {
+    return this._rememberedPoses || (this._rememberedPoses = []);
+  }, {category: ['poses', 'explicitly remembering']});
+
+  add.method('undoPoseStack', function() {
+    return this._undoPoseStack || (this._undoPoseStack = []);
+  }, {category: ['poses', 'undo']});
+
+  add.method('undoPoseStackIndex', function() {
+    if (this._undoPoseStackIndex === undefined) { this._undoPoseStackIndex = this.undoPoseStack().size(); }
+    return this._undoPoseStackIndex;
+  }, {category: ['poses', 'undo']});
+
+  add.method('addToUndoPoseStack', function(pose) {
+    var i = this.undoPoseStackIndex();
+    var stack = this.undoPoseStack();
+    stack.splice(i, stack.size() - i, pose);
+    this._undoPoseStackIndex += 1;
+  }, {category: ['poses', 'undo']});
+
+  add.method('canGoBackToPreviousPose', function() {
+    return this.undoPoseStackIndex() > 0;
   });
 
-  add.method('rememberedPoses', function() {
-    return this._rememberedPoses || (this._rememberedPoses = []);
-  }, {category: ['poses']});
+  add.method('canGoForwardToNextPose', function() {
+    return this.undoPoseStackIndex() < this.undoPoseStack().size() - 1;
+  });
+
+  add.method('goBackToPreviousPose', function() {
+    if (! this.canGoBackToPreviousPose()) { throw "there is nothing to go back to"; }
+
+    if (this.undoPoseStackIndex() === this.undoPoseStack().size()) {
+      this.addToUndoPoseStack(this.createSnapshotOfCurrentPose()); // so that we can go forward to it
+      this._undoPoseStackIndex -= 1; // reset the index
+    }
+
+    var pose = this.undoPoseStack()[this._undoPoseStackIndex -= 1];
+    pose.recreateInWorld(this);
+  });
+
+  add.method('goForwardToNextPose', function() {
+    if (! this.canGoForwardToNextPose()) { throw "there is nothing to go forward to"; }
+    var pose = this.undoPoseStack()[this._undoPoseStackIndex += 1];
+    pose.recreateInWorld(this);
+  });
 
   add.method('assumePose', function(pose) {
+    this.addToUndoPoseStack(this.createSnapshotOfCurrentPose());
     pose.recreateInWorld(this);
   }, {category: ['poses']});
 
-  add.method('rememberThisPose', function(evt) {
-    var pose = Object.newChildOf(poses.snapshot, "pose " + this.nextPoseID(), this.submorphs);
-    this.rememberedPoses().push(pose);
+  add.method('createSnapshotOfCurrentPose', function() {
+    return Object.newChildOf(poses.snapshot, "pose " + this.nextPoseID(), this.submorphs);
+  }, {category: ['poses', 'taking snapshots']});
+
+  add.method('rememberThisPose', function() {
+    var pose = this.createSnapshotOfCurrentPose();
+    this.explicitlyRememberedPoses().push(pose);
     return pose;
-  }, {category: ['poses']});
+  }, {category: ['poses', 'taking snapshots']});
 
   add.method('addPoseMenuItemsTo', function(menu, evt) {
+    menu.addLine();
+    
+    menu.addItem(["clean up", function(evt) {
+      this.cleanUp(evt);
+    }.bind(this)]);
 
-    menu.addSection([
-      ["clean up", function(evt) {
-        this.cleanUp(evt);
-      }.bind(this)],
+    menu.addItem(["remember this pose", function(evt) {
+      this.rememberThisPose();
+    }.bind(this)]);
 
-      ["remember this pose", function(evt) {
-        this.rememberThisPose(evt);
-      }.bind(this)],
-
-      ["assume a pose...", function(evt) {
+    if (this.explicitlyRememberedPoses().length > 0) {
+      menu.addItem(["assume a pose...", function(evt) {
         var rememberedPosesMenu = new MenuMorph([], this);
-        this.rememberedPoses().each(function(pose) {
+        this.explicitlyRememberedPoses().each(function(pose) {
           rememberedPosesMenu.addItem([pose.name(), function(evt) { this.assumePose(pose); }]);
         }.bind(this));
         rememberedPosesMenu.openIn(this, evt.point());
-      }.bind(this)],
-    ]);
-  }, {category: ['poses']});
+      }.bind(this)]);
+    }
+
+    if (this.canGoBackToPreviousPose()) {
+      menu.addItem(["back to previous pose", function(evt) {
+        this.goBackToPreviousPose();
+      }.bind(this)]);
+    }
+
+    if (this.canGoForwardToNextPose()) {
+      menu.addItem(["forward to next pose", function(evt) {
+        this.goForwardToNextPose();
+      }.bind(this)]);
+    }
+  }, {category: ['poses', 'menu']});
 
   add.method('cleanUp', function (evt) {
-    var morphsToMove = this.submorphs.reject(function(m) { return m.shouldNotBeCleanedUp; });
-
-    var sortedMorphsToMove = morphsToMove.sort(function(m1, m2) {
-      var n1 = m1.inspect();
-      var n2 = m2.inspect();
-      return n1 < n2 ? -1 : n1 === n2 ? 0 : 1;
-    });
-
-    var pos = pt(20,20);
-    var widest = 0;
-    for (var i = 0; i < sortedMorphsToMove.length; ++i) {
-      var morph = sortedMorphsToMove[i];
-      if (typeof(morph.collapse) === 'function') { morph.collapse(); }
-      morph.startZoomingTo(pos, true, true);
-      var extent = morph.getExtent();
-      pos = pos.withY(pos.y + extent.y);
-      widest = Math.max(widest, extent.x);
-      if (pos.y >= this.getExtent().y - 30) { pos = pt(pos.x + widest + 20, 20); }
-    }
-  }, {category: ['poses']});
+    var morphsToMove = this.submorphs.reject(function(m) { return m.shouldIgnorePoses(); });
+    this.assumePose(Object.newChildOf(poses.cleanUp, "clean up", this, morphsToMove));
+  }, {category: ['poses', 'cleaning up']});
 
 });
 

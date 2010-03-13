@@ -208,7 +208,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
 
     menu.addLine();
     
-    menu.addItem(["show object inheritance hierarchy", function(evt) {
+    menu.addItem(["show inheritance hierarchy", function(evt) {
       var w = evt.hand.world();
       var parentFunction = function(o) { return o.mirror().hasParent() ? w.outlinerFor(o.mirror().parent()) : null; };
       var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.outlinerFor(reflect(child)); }); };
