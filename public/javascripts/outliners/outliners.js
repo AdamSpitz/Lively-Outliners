@@ -42,13 +42,23 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     // this.titleLabel.setFontFamily('serif'); // not sure I like it
     this.titleLabel.setEmphasis({style: 'bold'});
 
-    this.commentButton   = createButton("'...'", function(evt) { this.toggleComment(evt); }.bind(this), 1);
+    this._commentToggler    = Object.newChildOf(toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ? this.createRow(this.   commentMorph()) : null);
+    this._annotationToggler = Object.newChildOf(toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ?                this.annotationMorph()  : null);
+
+    this.commentButton   = createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
     this.evaluatorButton = createButton("E", function(evt) { this.openEvaluator(evt); }.bind(this), 1);
     this.dismissButton   = this.createDismissButton();
 
-    this.createHeaderRow();
+    this.optionalCommentButtonMorph = createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
 
-    this.replaceThingiesWith([this._headerRow, this._evaluatorsPanel]);
+    this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel, this.optionalCommentButtonMorph, createSpacer(), this.evaluatorButton, this.dismissButton],
+                                            {top: 0, bottom: 0, left: 0, right: 0, between: 3});
+    this._headerRow.refreshContent();
+
+    this.optionalSlotsPanel = createOptionalMorph(this.slotsPanel(), function() {return this.expander().isExpanded();}.bind(this));
+    this.setPotentialContent([this._headerRow, this._annotationToggler, this._commentToggler, this.optionalSlotsPanel, this._evaluatorsPanel]);
+
+    this.refreshContent();
 
     this.startPeriodicallyUpdating();
   }, {category: ['creating']});
@@ -59,16 +69,11 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
 
   add.method('category', function () { return Category.root(); }, {category: ['accessing']});
 
-  add.method('createHeaderRow', function () {
-    var r = this._headerRow = new RowMorph().beInvisible(); // aaa - put underscores in front of the instvars
-    this._headerRowSpacer = createSpacer();
-    r.setPadding({top: 0, bottom: 0, left: 0, right: 0, between: 3});
-    r.horizontalLayoutMode = LayoutModes.SpaceFill;
-    this.optionalCommentButtonMorph = createOptionalMorph(this.commentButton, function() { return this._shouldShowComment || (this.mirror().comment && this.mirror().comment()); }.bind(this));
-    r.setPotentialContent([this._expander, this.titleLabel, this.optionalCommentButtonMorph, this._headerRowSpacer, this.evaluatorButton, this.dismissButton]);
-    r.refreshContent();
+  add.method('createRow', function (m) {
+    var r = createSpaceFillingRow([m], {left: 15, right: 2, top: 2, bottom: 2, between: 0});
+    r.wasJustShown = function(evt) { m.requestKeyboardFocus(evt.hand); };
     return r;
-  }, {category: ['initializing']});
+  }, {category: ['creating']});
 
   add.method('annotationMorph', function () {
     var m = this._annotationMorph;
@@ -80,11 +85,6 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this._copyDownParentsLabel = createInputBox(this.copyDownParentsString.bind(this), this.setCopyDownParentsString.bind(this));
     m.setRows([createLabelledNode("Copy-down parents", this._copyDownParentsLabel)]);
     return m;
-  }, {category: ['annotation']});
-
-  add.method('toggleAnnotation', function (evt) {
-    this._shouldShowAnnotation = !this._shouldShowAnnotation;
-    this.updateExpandedness();
   }, {category: ['annotation']});
 
   add.method('copyDownParentsString', function () {
@@ -100,11 +100,8 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
 
   add.method('updateAppearance', function () {
     if (! this.world()) {return;}
-    this.populateSlotsPanel();
-    this._slotsPanel.submorphs.each(function(m) { m.updateAppearance(); }); // aaa is this gonna cause us to redo a lot of work?
-    this.refillWithAppropriateColor();
+    this.populateSlotsPanelInMeAndExistingSubcategoryMorphs();
     this.refreshContentOfMeAndSubmorphs();
-    this.minimumExtentChanged();
   }, {category: ['updating']});
 
   add.method('startPeriodicallyUpdating', function () {
@@ -115,12 +112,8 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
 
   add.method('updateExpandedness', function () {
     if (! this.world()) {return;}
-    var thingies = [this._headerRow];
-    if (this._shouldShowAnnotation) { thingies.push(this.annotationMorph()); }
-    if (this._shouldShowComment   ) { thingies.push(this.   commentMorph()); }
-    if (this.expander().isExpanded()) { thingies.push(this.slotsPanel()); }
-    thingies.push(this._evaluatorsPanel);
-    this.replaceThingiesWith(thingies);
+    this.optionalSlotsPanel.refreshContent();
+    this.refreshContent();
   }, {category: ['updating']});
 
   add.method('expandCategory', function (c) {
@@ -153,13 +146,6 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
                                                function(c) { thisOutliner.mirror().setComment(c); });
   }, {category: ['comment']});
 
-  add.method('toggleComment', function (evt) {
-    this._shouldShowComment = !this._shouldShowComment;
-    this.updateExpandedness();
-    this.updateAppearance();
-    if (this._shouldShowComment) { this.commentMorph().requestKeyboardFocus(evt.hand); }
-  }, {category: ['comment']});
-
   add.method('openEvaluator', function (evt) {
     var e = new EvaluatorMorph(this);
     this._evaluatorsPanel.addRow(e);
@@ -181,10 +167,10 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
       menu.addLine();
 
       if (this.mirror().comment) {
-        menu.addItem([this._shouldShowComment ? "hide comment" : "show comment", function(evt) { this.toggleComment(evt); }.bind(this)]);
+        menu.addItem([this._commentToggler.isOn() ? "hide comment" : "show comment", function(evt) { this._commentToggler.toggle(evt); }.bind(this)]);
       }
 
-      menu.addItem([this._shouldShowAnnotation ? "hide annotation" : "show annotation", function(evt) { this.toggleAnnotation(evt); }.bind(this)]);
+      menu.addItem([this._annotationToggler.isOn() ? "hide annotation" : "show annotation", function(evt) { this._annotationToggler.toggle(evt); }.bind(this)]);
 
       menu.addItem(["set module...", function(evt) {
         var all = {};

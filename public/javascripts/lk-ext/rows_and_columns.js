@@ -138,7 +138,8 @@ Morph.subclass("RowOrColumnMorph", {
     });
   },
 
-  refreshContent: function() {
+  refreshContent: function($super) {
+    $super();
     if (this.potentialContent) {
       var potentialContent = this.potentialContent();
       var actualContent = [];

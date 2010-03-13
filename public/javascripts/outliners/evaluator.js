@@ -28,11 +28,12 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
     this._outliner = outliner;
     
     this.setFill(null);
+    this.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.ignoreEvents(); // so we can drag through it, since it doesn't need a menu
 
     var tm = this._textMorph = createTextField();
     tm.setExtent(pt(150,60));
-    tm.horizontalLayoutMode = LayoutModes.SpaceFill;
+    // tm.horizontalLayoutMode = LayoutModes.SpaceFill; // doesn't work yet
     tm.setFontFamily('monospace');
     var thisEvaluator = this;
     tm.onKeyPress = function(evt) {
@@ -44,17 +45,16 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
       return TextMorph.prototype.onKeyPress.call(this, evt);
     };
     
-    var bp = this.buttonsPanel = new RowMorph().beInvisible();
-    bp.setColumns([createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)),
+    var buttons = [createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)),
                    createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)),
-                   createButton("Close",  function(evt) {this.remove(  );}.bind(this))]);
+                   createButton("Close",  function(evt) {this.remove(  );}.bind(this))];
 
-    this.setRows([tm, bp]);
+    this.setRows([createSpaceFillingRow([tm]), createSpaceFillingRow(buttons)]);
   }, {category: ['creating']});
 
   add.method('outliner', function () { return this._outliner;  }, {category: ['accessing']});
 
-  add.method('wasJustShown', function (evt) { this._textMorph.requestKeyboardFocus(evt.hand); }, {category: ['events']});
+  add.method('wasJustShown', function (evt) { this._textMorph.wasJustShown(evt); }, {category: ['events']});
 
   add.method('runTheCode', function () {
     var __codeToRun__ = this._textMorph.getText();

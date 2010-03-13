@@ -11,8 +11,8 @@ thisModule.addSlots(lobby, function(add) {
 
 thisModule.addSlots(toggler, function(add) {
 
-  add.method('initialize', function(morphToUpdate, morphToShowOrHide) {
-    this._morphToUpdate = morphToUpdate;
+  add.method('initialize', function(updateFunction, morphToShowOrHide) {
+    this._updateFunction = updateFunction;
     this._morphToShowOrHide = morphToShowOrHide;
     this._valueHolder = booleanHolder.containing(false);
     this._valueHolder.add_observer(this.valueChanged.bind(this));
@@ -29,7 +29,7 @@ thisModule.addSlots(toggler, function(add) {
   add.method('beOff', function(evt) { this.setValue(false, evt); });
 
   add.method('valueChanged', function(valueHolder, evt) {
-    this._morphToUpdate.updateAppearance();
+    this._updateFunction();
     if (this.isOn()) { this._morphToShowOrHide.wasJustShown(evt); }
   });
 
@@ -46,6 +46,10 @@ thisModule.addSlots(toggler, function(add) {
 
 thisModule.addSlots(Morph.prototype, function(add) {
   add.method('wasJustShown', function(evt) { });
+});
+
+thisModule.addSlots(TextMorph.prototype, function(add) {
+  add.method('wasJustShown', function(evt) { this.requestKeyboardFocus(evt.hand); });
 });
 
 

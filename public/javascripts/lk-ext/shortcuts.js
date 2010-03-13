@@ -100,8 +100,8 @@ function createSpaceFillingRow(ms, padding) {
 
 function createEitherOrMorph(m1, m2, condition) {
   var r = new RowMorph().beInvisible();
-  var t1 =  Object.newChildOf(toggler, r, m1);
-  var t2 =  Object.newChildOf(toggler, r, m2);
+  var t1 =  Object.newChildOf(toggler, function() {}, m1);
+  var t2 =  Object.newChildOf(toggler, function() {}, m2);
   r.setPotentialContent([t1, t2]);
   r.refreshContent = hackToMakeSuperWork(r, "refreshContent", function($super) {
     var c = condition();
@@ -110,12 +110,14 @@ function createEitherOrMorph(m1, m2, condition) {
     t2.setValue( !c, evt);
     return $super();
   });
-  r.updateAppearance = function() {}; // called by the togglers
   return r;
 }
 
 function createOptionalMorph(m, condition) {
-  return createEitherOrMorph(m, new RowMorph().beInvisible(), condition);
+  var om = createEitherOrMorph(m, new RowMorph().beInvisible(), condition);
+  om.horizontalLayoutMode = m.horizontalLayoutMode;
+  om.verticalLayoutMode = m.verticalLayoutMode;
+  return om;
 }
 
 function createFakeEvent() {

@@ -106,7 +106,7 @@ thisModule.addSlots(mirror, function(add) {
 
     var s = stringBuffer.create(lobby === window ? "" : "lobby."); // don't need to say "lobby" if the lobby is the global JS namespace
     
-    sep = "";
+    var sep = "";
     for (var i = chain.length - 1; i >= 0; i -= 1) {
       s.append(sep).append(chain[i].name());
       sep = ".";

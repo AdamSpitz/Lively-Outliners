@@ -74,9 +74,9 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.setBorderColor(Color.black);
     this.beUngrabbable();
 
-    this._sourceToggler     = Object.newChildOf(toggler, this,                   this.createRow(this.    sourceMorph())       );
-    this._commentToggler    = Object.newChildOf(toggler, this, slot.comment    ? this.createRow(this.   commentMorph()) : null);
-    this._annotationToggler = Object.newChildOf(toggler, this, slot.annotation ? this.createRow(this.annotationMorph()) : null);
+    this._sourceToggler     = Object.newChildOf(toggler, this.updateAppearance.bind(this),                   this.createRow(this.    sourceMorph())       );
+    this._commentToggler    = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.comment    ? this.createRow(this.   commentMorph()) : null);
+    this._annotationToggler = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.annotation ? this.createRow(this.annotationMorph()) : null);
 
     var slotMorph = this;
     this.labelMorph = new TwoModeTextMorph(pt(5, 10).extent(pt(140, 20)), slotMorph.slot().name());
@@ -259,7 +259,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.slot().setInitializationExpression(e);
   }, {category: ['annotation', 'initialization expression']});
 
-  add.method('updateAppearance', function () {
+  add.method('updateAppearance', function () { // aaa get rid of me once I'm being done through refreshContentOfMeAndSubmorphs from the outliner
     this.refreshContentOfMeAndSubmorphs();
     this.updateFill();
   }, {category: ['updating']});

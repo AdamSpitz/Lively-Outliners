@@ -2847,8 +2847,9 @@ Object.subclass('RunArray', {
 	var stop = beyondStop-1;
 	// return the subrange from start to stop
 	if (stop < start) return new RunArray([0], [null]);
-	mStart = this.markAt(start);
-	mStop = this.markAt(stop);
+	var mStart = this.markAt(start);
+	var mStop = this.markAt(stop);
+        var newRuns;
 	if (mStart.runIndex == mStop.runIndex) {
 	    newRuns = [mStop.offset - mStart.offset +1];
 	} else {

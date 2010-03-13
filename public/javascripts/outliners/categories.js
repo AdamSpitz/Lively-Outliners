@@ -92,7 +92,7 @@ thisModule.addSlots(Category.prototype, function(add) {
 thisModule.addSlots(CategoryMorphMixin, function(add) {
 
   add.method('initializeCategoryUI', function () {
-    this._highlighter = booleanHolder.containing(true).add_observer(function() {this.refillWithAppropriateColor();}.bind(this));
+    this._highlighter = booleanHolder.containing(true).add_observer(function() {this.updateFill();}.bind(this));
     this._highlighter.setChecked(false);
 
     this._expander = new ExpanderMorph(this);
@@ -125,7 +125,7 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
 
   add.method('populateSlotsPanel', function () {
     if (! this._slotsPanel) { return this.slotsPanel(); } // that'll end up calling back here
-
+    
     var sms = [];
     this.eachSlot(function(s) { sms.push(this.outliner().slotMorphFor(s)); }.bind(this));
     sms.sort(function(sm1, sm2) {return sm1.slot().name() < sm2.slot().name() ? -1 : 1});
@@ -143,9 +143,19 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
 
   add.method('immediateSubcategoryMorphs', function () {
     var scms = [];
-    this.mirror().eachImmediateSubcategoryOf(this.category(), function(sc) { scms.push(this.outliner().categoryMorphFor(sc)); }.bind(this));
+    this.eachImmediateSubcategoryMorph(function(scm) { scms.push(scm); });
     return scms;
   }, {category: ['slots panel']});
+
+  add.method('eachImmediateSubcategoryMorph', function (f) {
+    this.mirror().eachImmediateSubcategoryOf(this.category(), function(sc) { f(this.outliner().categoryMorphFor(sc)); }.bind(this));
+  }, {category: ['slots panel']});
+
+  add.method('populateSlotsPanelInMeAndExistingSubcategoryMorphs', function () {
+    if (! this.expander().isExpanded()) { return; }
+    this.populateSlotsPanel();
+    this._slotsPanel.submorphs.each(function(m) { if (m.constructor === CategoryMorph) { m.populateSlotsPanelInMeAndExistingSubcategoryMorphs(); } });;
+  }, {category: ['updating']});
 
   add.method('addSlot', function (evt) {
     var name = this.mirror().findUnusedSlotName("slot");
@@ -199,7 +209,7 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
     return defaultFillWithColor(color);
   }, {category: ['highlighting']});
 
-  add.method('refillWithAppropriateColor', function () {
+  add.method('updateFill', function () {
     this.setFill(this.calculateAppropriateFill());
   }, {category: ['highlighting']});
 
@@ -252,9 +262,8 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     this.titleLabel.setFill(null);
     this.titleLabel.backgroundColorWhenWritable = null;
     this.titleLabel.ignoreEvents();
-
-    this.titleLabel.getSavedText = function() { return category.lastPart(); };
-    this.titleLabel.setSavedText = function(newName) { categoryMorph.rename(newName, createFakeEvent()); };
+    this.titleLabel.getSavedText = function( ) { return category.lastPart(); };
+    this.titleLabel.setSavedText = function(n) { categoryMorph.rename(n, createFakeEvent()); };
     this.titleLabel.refreshText();
 
     this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel],
@@ -268,17 +277,10 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
 
   add.method('category', function () { return this._category;          }, {category: ['accessing']});
 
-  add.method('createHeaderRow', function () {
-  }, {category: ['creating']});
-
   add.method('updateAppearance', function () {
     if (! this.world() || ! this.expander().isExpanded()) {return;}
     this.populateSlotsPanel();
     this._slotsPanel.submorphs.each(function(m) { m.updateAppearance(); }); // aaa is this gonna cause us to redo a lot of work?
-    this.refillWithAppropriateColor();
-    this.titleLabel.refreshText();
-    this._modulesLabel.refreshText();
-    this.minimumExtentChanged();
   }, {category: ['updating']});
 
   add.method('inspect', function () {return this._category.toString();}, {category: ['printing']});
