@@ -1,6 +1,13 @@
 lobby.transporter.module.create('enumerator', function(thisModule) {
 
 
+thisModule.addSlots(modules.enumerator, function(add) {
+    
+    add.data('_directory', 'core');
+
+});
+
+
 thisModule.addSlots(lobby, function(add) {
 
   add.creator('enumerator', {}, {category: ['collections']}, {comment: 'An Enumerable whose contents are whatever is yielded by calling the specified method.', copyDownParents: [{parent: Enumerable}]});

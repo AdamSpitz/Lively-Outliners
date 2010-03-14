@@ -1,6 +1,13 @@
 lobby.transporter.module.create('hash_table', function(thisModule) {
 
 
+thisModule.addSlots(modules.hash_table, function(add) {
+    
+    add.data('_directory', 'core');
+
+});
+
+
 thisModule.addSlots(lobby, function(add) {
 
   add.creator('bloodyHashTable', {}, {category: ['collections']}, {comment: 'I don\'t mean to keep this class around forever - hopefully sooner or later Javascript will\rhave a working hash table that can handle arbitrary objects (rather than just strings) as\rkeys. Maybe it exists already, but I couldn\'t find it. So for now I\'ll just use this bloody\rthing. -- Adam', copyDownParents: [{parent: Enumerable}]});

@@ -1,13 +1,11 @@
 lobby.transporter.module.create('mirrors', function(thisModule) {
 
 
-/*
 thisModule.addSlots(modules.mirrors, function(add) {
     
     add.data('_directory', 'mirrors');
 
 });
-*/
 
 
 thisModule.addSlots(lobby, function(add) {

@@ -1,6 +1,13 @@
 lobby.transporter.module.create('evaluator', function(thisModule) {
 
 
+thisModule.addSlots(modules.evaluator, function(add) {
+    
+    add.data('_directory', 'outliners');
+
+});
+
+
 thisModule.addSlots(lobby, function(add) {
 
   add.method('EvaluatorMorph', function EvaluatorMorph() { Class.initializer.apply(this, arguments); }, {category: ['outliners']});

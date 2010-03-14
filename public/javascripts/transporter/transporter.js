@@ -1,6 +1,13 @@
 lobby.transporter.module.create('transporter', function(thisModule) {
 
 
+thisModule.addSlots(modules.transporter, function(add) {
+    
+    add.data('_directory', 'transporter');
+
+});
+
+
 thisModule.addSlots(transporter.module, function(add) {
 
   add.data('_directory', '', {category: ['accessing']});

@@ -1,6 +1,13 @@
 lobby.transporter.module.create('poses', function(thisModule) {
 
 
+thisModule.addSlots(modules.poses, function(add) {
+    
+    add.data('_directory', 'lk-ext');
+
+});
+
+
 thisModule.addSlots(lobby, function(add) {
 
   add.creator('poses', {}, {category: ['ui', 'poses']});

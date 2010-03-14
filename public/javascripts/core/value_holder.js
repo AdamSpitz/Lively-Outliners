@@ -1,6 +1,13 @@
 lobby.transporter.module.create('value_holder', function(thisModule) {
 
 
+thisModule.addSlots(modules.value_holder, function(add) {
+    
+    add.data('_directory', 'core');
+
+});
+
+
 thisModule.addSlots(lobby, function(add) {
 
   add.creator('valueHolder', {}, {category: ['core']}, {comment: 'Stores a value and notifies you when someone changes it.'});

@@ -1,6 +1,13 @@
 lobby.transporter.module.create('slice', function(thisModule) {
 
 
+thisModule.addSlots(modules.slice, function(add) {
+    
+    add.data('_directory', 'outliners');
+
+});
+
+
 thisModule.addSlots(lobby, function(add) {
 
   add.method('SliceMorph', function SliceMorph() { Class.initializer.apply(this, arguments); }, {category: ['outliners']});

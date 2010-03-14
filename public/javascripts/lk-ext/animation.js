@@ -1,6 +1,13 @@
 lobby.transporter.module.create('animation', function(thisModule) {
 
 
+thisModule.addSlots(modules.animation, function(add) {
+    
+    add.data('_directory', 'lk-ext');
+
+});
+
+
 thisModule.addSlots(lobby, function(add) {
 
   add.creator('animation', {}, {category: ['animation']}, {comment: 'Taking a crack at some of those cartoon animation techniques that Self\'s UI1 uses.\nhttp://selflanguage.org/documentation/published/animation.html'});

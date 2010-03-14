@@ -1,6 +1,13 @@
 lobby.transporter.module.create('outliners', function(thisModule) {
 
 
+thisModule.addSlots(modules.outliners, function(add) {
+    
+    add.data('_directory', 'outliners');
+
+});
+
+
 thisModule.addSlots(lobby, function(add) {
 
   add.method('OutlinerMorph', function OutlinerMorph() { Class.initializer.apply(this, arguments); }, {category: ['outliners']});

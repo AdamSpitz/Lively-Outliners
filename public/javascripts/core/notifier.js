@@ -1,6 +1,13 @@
 lobby.transporter.module.create('notifier', function(thisModule) {
 
 
+thisModule.addSlots(modules.notifier, function(add) {
+    
+    add.data('_directory', 'core');
+
+});
+
+
 thisModule.addSlots(lobby, function(add) {
 
   add.creator('notifier', {}, {category: ['core']}, {comment: 'Keeps track of a list of observers and notifies them when requested.'});

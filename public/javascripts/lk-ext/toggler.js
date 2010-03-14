@@ -1,6 +1,12 @@
 lobby.transporter.module.create('toggler', function(thisModule) {
 
 
+thisModule.addSlots(modules.toggler, function(add) {
+    
+    add.data('_directory', 'lk-ext');
+
+});
+
 
 thisModule.addSlots(lobby, function(add) {
 
