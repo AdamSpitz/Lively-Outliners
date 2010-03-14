@@ -126,9 +126,11 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
   add.method('populateSlotsPanel', function () {
     if (! this._slotsPanel) { return this.slotsPanel(); } // that'll end up calling back here
     
+    var outliner = this.outliner();
+
     var sms = [];
-    this.eachSlot(function(s) { sms.push(this.outliner().slotMorphFor(s)); }.bind(this));
-    sms.sort(function(sm1, sm2) {return sm1.slot().name() < sm2.slot().name() ? -1 : 1});
+    this.eachSlot(function(s) { sms.push(outliner.slotMorphFor(s)); });
+    sms.sort(function(sm1, sm2) {var n1 = sm1.slot().name(), n2 = sm2.slot().name(); return n1 < n2 ? -1 : n1 === n2 ? 0 : 1});
 
     var scms = this.immediateSubcategoryMorphs();
     scms = scms.concat(this._slotsPanel.submorphs.select(function(m) {return m.isNewCategory && ! this.outliner().existingCategoryMorphFor(m.category());}.bind(this)));
@@ -138,7 +140,7 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
     sms .each(function(sm ) {allSubmorphs.push(sm );});
     scms.each(function(scm) {allSubmorphs.push(scm);});
     allSubmorphs.each(function(m) { m.horizontalLayoutMode = LayoutModes.SpaceFill; });
-    this._slotsPanel.replaceThingiesWith(allSubmorphs);
+    this._slotsPanel.setRows(allSubmorphs);
   }, {category: ['slots panel']});
 
   add.method('immediateSubcategoryMorphs', function () {

@@ -6,7 +6,11 @@ Morph.addMethods({
   
   refreshContent: function() {
     // children can override
-    if (this.updateFill) { this.updateFill(); }
+    this.updateFill();
+  },
+
+  updateFill: function() {
+    // children can override
   },
 });
 

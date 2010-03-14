@@ -74,6 +74,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.setBorderColor(Color.black);
     this.beUngrabbable();
 
+    // aaa - I don't like that we're not being lazy about the three morphs anymore. (They can actually be expensive - figuring out the source string, etc.)
     this._sourceToggler     = Object.newChildOf(toggler, this.updateAppearance.bind(this),                   this.createRow(this.    sourceMorph())       );
     this._commentToggler    = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.comment    ? this.createRow(this.   commentMorph()) : null);
     this._annotationToggler = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.annotation ? this.createRow(this.annotationMorph()) : null);
@@ -166,7 +167,8 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     var getter = function() {
       try {
         var slot = thisSlotMorph.slot();
-        return slot.contents().expressionEvaluatingToMe(slot.isFunctionBody() || slot.isCreator());
+        var expr = slot.contents().expressionEvaluatingToMe(slot.isFunctionBody() || slot.isCreator());
+        return expr;
       } catch (ex) {
         return "cannot display contents";
       }

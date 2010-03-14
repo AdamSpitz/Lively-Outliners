@@ -269,6 +269,13 @@ thisModule.addSlots(mirror, function(add) {
     if (this.isReflecteeFunction()) { return this.source(); }
     if (this.isReflecteeArray()) { return "[" + this.reflectee().map(function(elem) {return reflect(elem).expressionEvaluatingToMe();}).join(", ") + "]"; }
 
+    // aaa not thread-safe
+    if (this.reflectee().__already_calculating_expressionEvaluatingToMe__) { throw "encountered circular structure"; }
+    this.reflectee().__already_calculating_expressionEvaluatingToMe__ = true;
+
+    recursionMarker = recursionMarker || {};
+    var recursionMarkers = this.reflectee().__recursionMarkers__
+
     var str = stringBuffer.create("{");
     var sep = "";
     this.eachNormalSlot(function(slot) {
@@ -276,6 +283,9 @@ thisModule.addSlots(mirror, function(add) {
         sep = ", ";
     });
     str.append("}");
+
+    delete this.reflectee().__already_calculating_expressionEvaluatingToMe__;
+
     return str.toString();
 
     // aaa - try something like Self's 1 _AsObject, except of course in JS it'll have to be a hack

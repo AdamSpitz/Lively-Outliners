@@ -95,7 +95,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     MessageNotifierMorph.showIfErrorDuring(function() {
       this.mirror().setCopyDownParents(eval(str));
     }.bind(this), createFakeEvent());
-    this.updateAppearance();
+    this.updateAppearance(); // to make the copied-down slots appear
   }, {category: ['annotation']});
 
   add.method('updateAppearance', function () {
