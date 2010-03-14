@@ -1,6 +1,15 @@
 lobby.transporter.module.create('mirrors', function(thisModule) {
 
 
+/*
+thisModule.addSlots(modules.mirrors, function(add) {
+    
+    add.data('_directory', 'mirrors');
+
+});
+*/
+
+
 thisModule.addSlots(lobby, function(add) {
 
   add.creator('mirror', {}, {category: ['mirrors']});
@@ -276,8 +285,10 @@ thisModule.addSlots(mirror, function(add) {
     var str = stringBuffer.create("{");
     var sep = "";
     this.eachNormalSlot(function(slot) {
-        str.append(sep).append(slot.name()).append(": ").append(slot.contents().expressionEvaluatingToMe());
-        sep = ", ";
+        if (slot.name() !== '__already_calculating_expressionEvaluatingToMe__') {
+          str.append(sep).append(slot.name()).append(": ").append(slot.contents().expressionEvaluatingToMe());
+          sep = ", ";
+        }
     });
     str.append("}");
 
@@ -286,7 +297,6 @@ thisModule.addSlots(mirror, function(add) {
     return str.toString();
 
     // aaa - try something like Self's 1 _AsObject, except of course in JS it'll have to be a hack
-    //throw "Not implemented yet - don't know how to make an expression evaluating to this object: " + this.name();
   }, {category: ['naming']});
 
   add.method('size', function () {
@@ -582,9 +592,8 @@ thisModule.addSlots(slots.plain, function(add) {
   }, {category: ['creator slots']});
 
   add.method('module', function () {
-    var a = this.annotation();
-    if (! a) { return null; }
-    return a.module;
+    if (! this.hasAnnotation()) { return null; }
+    return this.annotation().module;
   }, {category: ['accessing annotation', 'module']});
 
   add.method('setModule', function (m) {
@@ -593,9 +602,8 @@ thisModule.addSlots(slots.plain, function(add) {
   }, {category: ['accessing annotation', 'module']});
 
   add.method('initializationExpression', function () {
-    var a = this.annotation();
-    if (! a) { return ""; }
-    return a.initializeTo || "";
+    if (! this.hasAnnotation()) { return ""; }
+    return this.annotation().initializeTo || "";
   }, {category: ['accessing annotation', 'initialization expression']});
 
   add.method('setInitializationExpression', function (e) {
@@ -603,9 +611,8 @@ thisModule.addSlots(slots.plain, function(add) {
   }, {category: ['accessing annotation', 'initialization expression']});
 
   add.method('comment', function () {
-    var a = this.annotation();
-    if (! a) { return ""; }
-    return a.comment || "";
+    if (! this.hasAnnotation()) { return ""; }
+    return this.annotation().comment || "";
   }, {category: ['accessing annotation', 'comment']});
 
   add.method('setComment', function (c) {
@@ -613,8 +620,9 @@ thisModule.addSlots(slots.plain, function(add) {
   }, {category: ['accessing annotation', 'comment']});
 
   add.method('category', function () {
+    if (! this.hasAnnotation()) { return Category.root(); }
     var a = this.annotation();
-    if (!a || !a.category) { return Category.root(); }
+    if (!a.category) { return Category.root(); }
     return new Category(a.category);
   }, {category: ['accessing annotation', 'category']});
 

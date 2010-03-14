@@ -135,3 +135,13 @@ TextMorph.addMethods({
     this.composeAfterEdits();
   },
 });
+    
+Class.newInitializer = function(name) {
+  // this hack ensures that class instances have a name
+  var c = eval(Class.initializerTemplate.replace(/CLASS/g, name) + ";" + name);
+  
+  // Put it in a category so that it doesn't clutter up the Global object. -- Adam
+  if (setSlotAnnotation && name.startsWith('anonymous_')) { setSlotAnnotation(Global, name, {category: ['anonymous classes']}); }
+
+  return c;
+},

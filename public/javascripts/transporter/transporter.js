@@ -3,7 +3,13 @@ lobby.transporter.module.create('transporter', function(thisModule) {
 
 thisModule.addSlots(transporter.module, function(add) {
 
+  add.data('_directory', '', {category: ['accessing']});
+
   add.method('name', function () { return this._name; }, {category: ['accessing']});
+
+  add.method('directory', function () { return this._directory; }, {category: ['accessing']});
+
+  add.method('setDirectory', function (d) { this._directory = d; }, {category: ['accessing']});
 
   add.method('toString', function () { return this.name(); }, {category: ['printing']});
 
@@ -42,7 +48,11 @@ thisModule.addSlots(transporter.module, function(add) {
         onException: function(r,      e) {alert("Exception. :(");}.bind(this),
       });
     } else {
-      var url = this.urlForModuleName(this.name());
+      
+      var baseDirURL = URL.source.getDirectory().withRelativePath("javascripts/");
+      //new FileDirectory(baseDirURL.withRelativePath("javascripts/")).createDirectory(this.directory());
+      var moduleDirURL = this.urlForModuleDirectory("non-core/" + this.directory());
+      var url = moduleDirURL.withFilename(this.name() + ".js");
       var status = new Resource(Record.newPlainInstance({URL: url})).store(doc, true).getStatus();
       if (! status.isSuccess()) {
         throw "failed to file out " + this + ", status is " + status.code();
@@ -63,16 +73,28 @@ thisModule.addSlots(transporter.module, function(add) {
     }.bind(this));
   }, {category: ['transporting']});
 
-  add.method('urlForModuleDirectory', function () {
-    return URL.source.getDirectory().withRelativePath("../jsdemo/");
+  add.method('urlForModuleDirectory', function (directory) {
+    if (! directory) { directory = ""; }
+    if (directory && directory[directory.length] !== '/') { directory += '/'; }
+    var baseDirURL = URL.source.getDirectory().withRelativePath("javascripts/");
+    return baseDirURL.withRelativePath(directory);
   }, {category: ['saving to WebDAV']});
 
-  add.method('urlForModuleName', function (name) {
-    return this.urlForModuleDirectory().withFilename(name + ".js");
+  add.method('urlForCoreModulesDirectory', function () {
+    return URL.source.getDirectory().withRelativePath("javascripts/fileouts/");
+  }, {category: ['saving to WebDAV']});
+
+  add.method('urlForNonCoreModulesDirectory', function () {
+    return URL.source.getDirectory().withRelativePath("javascripts/non-core/");
+  }, {category: ['saving to WebDAV']});
+
+  add.method('urlForModuleName', function (name, directory) {
+    var moduleDirURL = this.urlForModuleDirectory(directory);
+    return moduleDirURL.withFilename(name + ".js");
   }, {category: ['saving to WebDAV']});
 
   add.method('fileIn', function (name) {
-    var url = this.urlForModuleName(name);
+    var url = this.urlForModuleName(name, "non-core/");
     var code = FileDirectory.getContent(url);
     eval(code);
     var module = this.existingOneNamed(name);

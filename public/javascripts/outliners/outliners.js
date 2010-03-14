@@ -307,7 +307,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     if (! URL.source.hostname.include("adamspitz.com")) {
 
     menu.addItem(["file in module...", function(evt) {
-      var filenames = new FileDirectory(lobby.transporter.module.urlForModuleDirectory()).filenames().select(function(n) {return n.endsWith(".js");});
+      var filenames = new FileDirectory(lobby.transporter.module.urlForNonCoreModulesDirectory()).filenames().select(function(n) {return n.endsWith(".js");});
       
       var modulesMenu = new MenuMorph(filenames.map(function(n) {return [n, function(evt) {
         var moduleName = n.substring(0, n.length - 3);

@@ -111,11 +111,11 @@ function hackToMakeSuperWork(holder, property, contents) {
 var lobby = window; // still not sure whether I want this to be window, or Object.create(window), or {}
 
 lobby.modules = {};
-setCreatorSlot(annotationOf(lobby.modules), 'modules', lobby, 'transporter');
+setCreatorSlot(annotationOf(lobby.modules), 'modules', lobby);
 setSlotAnnotation(lobby, 'modules', {category: ['transporter']});
 
 lobby.transporter = {};
-setCreatorSlot(annotationOf(lobby.transporter), 'transporter', lobby, 'transporter');
+setCreatorSlot(annotationOf(lobby.transporter), 'transporter', lobby);
 setSlotAnnotation(lobby, 'transporter', {category: ['transporter']});
 
 lobby.transporter.module = {};
@@ -128,6 +128,7 @@ lobby.transporter.module.named = function(n) {
   if (m) {return m;}
   m = lobby.modules[n] = Object.create(this);
   m._name = n;
+  setCreatorSlot(annotationOf(m), n, lobby.modules);
   lobby.transporter.module.cache[n] = [];
   return m;
 };
