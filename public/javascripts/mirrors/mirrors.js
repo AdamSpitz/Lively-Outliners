@@ -273,9 +273,6 @@ thisModule.addSlots(mirror, function(add) {
     if (this.reflectee().__already_calculating_expressionEvaluatingToMe__) { throw "encountered circular structure"; }
     this.reflectee().__already_calculating_expressionEvaluatingToMe__ = true;
 
-    recursionMarker = recursionMarker || {};
-    var recursionMarkers = this.reflectee().__recursionMarkers__
-
     var str = stringBuffer.create("{");
     var sep = "";
     this.eachNormalSlot(function(slot) {
