@@ -25,7 +25,7 @@ thisModule.addSlots(Category, function(add) {
 
   add.creator('prototype', {});
 
-  add.data('type', Category);
+  add.data('type', 'Category');
 
   add.method('root', function () { return new Category([]); }, {category: ['creating']});
 
@@ -243,7 +243,7 @@ thisModule.addSlots(CategoryMorph, function(add) {
 
   add.creator('prototype', Object.create(ColumnMorph.prototype), {}, {copyDownParents: [{parent: CategoryMorphMixin}]});
 
-  add.data('type', CategoryMorph);
+  add.data('type', 'CategoryMorph');
 
 });
 
@@ -257,7 +257,7 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     this._outliner = outliner;
     this._category = category;
 
-    this.setPadding(2);
+    this.setPadding({top: 0, bottom: 0, left: 2, right: 2, between: 2});
     this.closeDnD();
     this.beUngrabbable();
     // this.ignoreEvents();  // aaa - This makes grabbing-the-outliner-through-me work, but breaks the category's menu. Can't I have both?

@@ -6,3 +6,4 @@ Config.showStar = false;  // true to show star
 Config.spinningStar = false;  // true to enable spinning
 Config.showSampleMorphs = false;
 Config.disableNoConsoleWarning = true;
+Config.showTesterRunnerForDevelopment = true;

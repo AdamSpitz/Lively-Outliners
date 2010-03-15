@@ -14,6 +14,12 @@ thisModule.addSlots(lobby, function(add) {
 
   add.creator('slots', {}, {category: ['mirrors']});
 
+  add.method('reflect', function (o) {
+    var m = Object.create(lobby.mirror);
+    m.initialize(o);
+    return m;
+  }, {category: ['mirrors']});
+
 });
 
 
@@ -30,7 +36,14 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['comparing']});
 
   add.method('hashCode', function () {
-    return "a mirror"; // aaa - crap, hash tables will be linear time now; can I get an object ID hash somehow?;
+    // Damned JavaScript. Can I get a proper object ID hash somehow?;
+    var o = this.reflectee();
+    try {
+      if (o.identityHashCode) { return o.identityHashCode(); }
+    } catch (ex) {
+      // don't want mirrors to crash if the object is broken
+    }
+    return "a mirror";
   }, {category: ['comparing']});
 
   add.method('reflecteeToString', function () {
@@ -415,6 +428,8 @@ thisModule.addSlots(mirror, function(add) {
     });
   }, {category: ['organizing']});
 
+  add.method('Tests', function Tests() { Class.initializer.apply(this, arguments); }, {category: ['tests']});
+
 });
 
 
@@ -751,6 +766,28 @@ thisModule.addSlots(slots.plain, function(add) {
   add.method('hashCode', function () {
     return this.name().hashCode() + this.mirror().hashCode();
   }, {category: ['comparing']});
+
+});
+
+
+thisModule.addSlots(mirror.Tests, function(add) {
+
+  add.data('superclass', TestCase);
+
+  add.creator('prototype', Object.create(TestCase.prototype));
+
+  add.data('type', 'mirror.Tests');
+
+});
+
+
+thisModule.addSlots(mirror.Tests.prototype, function(add) {
+
+  add.data('constructor', mirror.Tests);
+
+  add.method('testNumbers', function ($super, module) {
+    this.assert(true);
+  });
 
 });
 

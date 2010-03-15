@@ -23,7 +23,7 @@ thisModule.addSlots(SlotContentsPointerArrow, function(add) {
 
   add.creator('prototype', Object.create(ArrowMorph.prototype));
 
-  add.data('type', SlotContentsPointerArrow);
+  add.data('type', 'SlotContentsPointerArrow');
 
 });
 
@@ -62,7 +62,7 @@ thisModule.addSlots(SlotMorph, function(add) {
 
   add.creator('prototype', Object.create(ColumnMorph.prototype));
 
-  add.data('type', SlotMorph);
+  add.data('type', 'SlotMorph');
 
 });
 

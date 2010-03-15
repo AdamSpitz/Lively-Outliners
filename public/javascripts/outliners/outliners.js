@@ -21,7 +21,7 @@ thisModule.addSlots(OutlinerMorph, function(add) {
 
   add.creator('prototype', Object.create(ColumnMorph.prototype), {}, {copyDownParents: [{parent: CanHaveArrowsAttachedToIt}, {parent: CategoryMorphMixin}]});
 
-  add.data('type', OutlinerMorph);
+  add.data('type', 'OutlinerMorph');
 
 });
 
@@ -286,18 +286,11 @@ thisModule.addSlots(mirror, function(add) {
 
 thisModule.addSlots(WorldMorph.prototype, function(add) {
 
-  add.method('acceptsDropping', function (m) {
-    return typeof m.wasJustDroppedOnWorld === 'function';
-  });
-
-  add.method('justReceivedDrop', function (m) {
-    if (this.acceptsDropping(m)) { 
-      m.wasJustDroppedOnWorld(this);
-    }
-  });
-
   add.method('livelyOutlinersWorldMenu', function (evt) {
+    var world = this;
+
     var menu = new MenuMorph([], this);
+
     menu.addItem(["create new object", function(evt) {
       this.morphFor(reflect({})).grabMe(evt);
     }]);
@@ -306,9 +299,19 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       this.morphFor(reflect(Global)).grabMe(evt);
     }]);
 
-    this.addTransporterMenuItemsTo(menu, evt);
+    transporter.addMenuItemsTo(menu, evt);
 
-    this.addPoseMenuItemsTo(menu, evt);
+    poses.addMenuItemsTo(menu, evt);
+
+    if (debugMode) {
+      menu.addLine();
+
+      menu.addItem(["get tests", function(evt) {
+        var testCaseClasses = [mirror.Tests];
+        var testCases = testCaseClasses.map(function(c) {return new c();});
+        world.assumePose(world.listPoseOfMorphsFor(testCases, "test cases for the outliner stuff"));
+      }]);
+    }
 
     return menu;
   });
@@ -318,7 +321,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
 thisModule.addSlots(transporter, function(add) {
 
-    add.method('chooseOrCreateAModule', function (evt, targetMorph, menuCaption, callback) {
+  add.method('chooseOrCreateAModule', function (evt, targetMorph, menuCaption, callback) {
     var modulesMenu = new MenuMorph([], targetMorph);
     modulesMenu.addItem(["new module...", function(evt) {
       evt.hand.world().prompt("Module name?", function(name) {
@@ -337,7 +340,7 @@ thisModule.addSlots(transporter, function(add) {
       }]);
     });
     modulesMenu.openIn(targetMorph.world(), evt.point(), false, menuCaption);
-  });
+  }, {category: 'menu'});
 
 });
 

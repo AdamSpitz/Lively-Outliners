@@ -22,6 +22,42 @@ thisModule.addSlots(poses, function(add) {
   add.creator('list', Object.create(poses.abstract));
   add.creator('snapshot', Object.create(poses.abstract));
 
+  add.method('addMenuItemsTo', function(menu, evt) {
+    var world = evt.hand.world();
+
+    menu.addLine();
+    
+    menu.addItem(["clean up", function(evt) {
+      world.cleanUp(evt);
+    }]);
+
+    menu.addItem(["remember this pose", function(evt) {
+      world.rememberThisPose();
+    }]);
+
+    if (world.explicitlyRememberedPoses().length > 0) {
+      menu.addItem(["assume a pose...", function(evt) {
+        var rememberedPosesMenu = new MenuMorph([], world);
+        world.explicitlyRememberedPoses().each(function(pose) {
+          rememberedPosesMenu.addItem([pose.name(), function(evt) { world.assumePose(pose); }]);
+        });
+        rememberedPosesMenu.openIn(world, evt.point());
+      }]);
+    }
+
+    if (world.canGoBackToPreviousPose()) {
+      menu.addItem(["back to previous pose", function(evt) {
+        world.goBackToPreviousPose();
+      }]);
+    }
+
+    if (world.canGoForwardToNextPose()) {
+      menu.addItem(["forward to next pose", function(evt) {
+        world.goForwardToNextPose();
+      }]);
+    }
+  }, {category: ['menu']});
+
 });
 
 thisModule.addSlots(poses.abstract, function(add) {
@@ -238,40 +274,6 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
     this.explicitlyRememberedPoses().push(pose);
     return pose;
   }, {category: ['poses', 'taking snapshots']});
-
-  add.method('addPoseMenuItemsTo', function(menu, evt) {
-    menu.addLine();
-    
-    menu.addItem(["clean up", function(evt) {
-      this.cleanUp(evt);
-    }.bind(this)]);
-
-    menu.addItem(["remember this pose", function(evt) {
-      this.rememberThisPose();
-    }.bind(this)]);
-
-    if (this.explicitlyRememberedPoses().length > 0) {
-      menu.addItem(["assume a pose...", function(evt) {
-        var rememberedPosesMenu = new MenuMorph([], this);
-        this.explicitlyRememberedPoses().each(function(pose) {
-          rememberedPosesMenu.addItem([pose.name(), function(evt) { this.assumePose(pose); }]);
-        }.bind(this));
-        rememberedPosesMenu.openIn(this, evt.point());
-      }.bind(this)]);
-    }
-
-    if (this.canGoBackToPreviousPose()) {
-      menu.addItem(["back to previous pose", function(evt) {
-        this.goBackToPreviousPose();
-      }.bind(this)]);
-    }
-
-    if (this.canGoForwardToNextPose()) {
-      menu.addItem(["forward to next pose", function(evt) {
-        this.goForwardToNextPose();
-      }.bind(this)]);
-    }
-  }, {category: ['poses', 'menu']});
 
   add.method('cleanUp', function (evt) {
     var morphsToMove = this.submorphs.reject(function(m) { return m.shouldIgnorePoses(); });

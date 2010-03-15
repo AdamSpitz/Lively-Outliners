@@ -17,14 +17,18 @@ thisModule.addSlots(lobby, function(add) {
 
 thisModule.addSlots(Number.prototype, function(add) {
 
-  add.method('hashCode', function () {return this;});
+  add.method('hashCode', function () {return this;}, {category: ['hashing']});
+
+  add.method('identityHashCode', function () {return this;}, {category: ['hashing']});
 
 });
 
 
 thisModule.addSlots(String.prototype, function(add) {
 
-  add.method('hashCode', function () {return this;});
+  add.method('hashCode', function () {return this;}, {category: ['hashing']});
+
+  add.method('identityHashCode', function () {return this;}, {category: ['hashing']});
 
 });
 
@@ -197,6 +201,7 @@ thisModule.addSlots(bloodyHashTable.identityComparator, function(add) {
 
   add.method('hashCodeForKey', function (k) {
     // aaa - Blecch, why does JS not support identity hashes?
+    if (k.identityHashCode) { return k.identityHashCode(); }
     return 42;
   }, {category: ['hashing']});
 

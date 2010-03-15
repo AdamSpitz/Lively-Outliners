@@ -15,7 +15,7 @@ thisModule.addSlots(transporter.module, function(add) {
     return new this.Morph(this);
   }, {category: ['user interface']});
 
-  add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['outliners']});
+  add.method('Morph', function Morph() { Class.initializer.apply(this, arguments); }, {category: ['user interface']});
 
 });
 
@@ -26,7 +26,7 @@ thisModule.addSlots(transporter.module.Morph, function(add) {
 
   add.creator('prototype', Object.create(RowMorph.prototype));
 
-  add.data('type', transporter.module.Morph);
+  add.data('type', 'transporter.module.Morph');
 
 });
 
@@ -95,18 +95,20 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
 });
 
 
-thisModule.addSlots(WorldMorph.prototype, function(add) {
+thisModule.addSlots(transporter, function(add) {
 
-  add.method('addTransporterMenuItemsTo', function(menu, evt) {
+  add.method('addMenuItemsTo', function(menu, evt) {
+    var world = evt.hand.world();
+
     menu.addLine();
 
     menu.addItem(["all modules", function(evt) {
-      this.assumePose(this.listPoseOfMorphsFor(Object.newChildOf(enumerator, transporter.module, 'eachModule'), "all modules"));
-    }.bind(this)]);
+      world.assumePose(world.listPoseOfMorphsFor(Object.newChildOf(enumerator, transporter.module, 'eachModule'), "all modules"));
+    }]);
 
     menu.addItem(["changed modules", function(evt) {
-      this.assumePose(this.listPoseOfMorphsFor(transporter.module.changedOnes(), "all modules"));
-    }.bind(this)]);
+      world.assumePose(world.listPoseOfMorphsFor(transporter.module.changedOnes(), "all modules"));
+    }]);
 
     // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
     if (! URL.source.hostname.include("adamspitz.com")) {
@@ -117,14 +119,14 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       var modulesMenu = new MenuMorph(filenames.map(function(n) {return [n, function(evt) {
         var moduleName = n.substring(0, n.length - 3);
         MessageNotifierMorph.showIfErrorDuring(function() { lobby.transporter.module.fileIn(moduleName); }, evt);
-      }];}), this);
+      }];}), world);
       
-      modulesMenu.openIn(this, evt.point());
-    }.bind(this)]);
+      modulesMenu.openIn(world, evt.point());
+    }]);
 
     }
 
-  }, {category: ['transporter', 'menu']});
+  }, {category: ['menu']});
 
 });
 

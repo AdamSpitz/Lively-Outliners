@@ -21,7 +21,7 @@ thisModule.addSlots(SliceMorph, function(add) {
 
   add.creator('prototype', Object.create(ColumnMorph.prototype));
 
-  add.data('type', SliceMorph);
+  add.data('type', 'SliceMorph');
 
 });
 

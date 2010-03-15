@@ -87,3 +87,19 @@ Morph.addMethods({
   },
 
 });
+
+
+WorldMorph.addMethods({
+
+  acceptsDropping: function (m) {
+    return typeof m.wasJustDroppedOnWorld === 'function';
+  },
+
+  justReceivedDrop: function (m) {
+    if (this.acceptsDropping(m)) { 
+      m.wasJustDroppedOnWorld(this);
+    }
+  },
+
+});
+

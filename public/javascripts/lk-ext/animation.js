@@ -17,6 +17,8 @@ thisModule.addSlots(lobby, function(add) {
 
 thisModule.addSlots(animation, function(add) {
 
+  add.data('timePerStep', 20);
+
   add.creator('abstract', {});
 
   add.creator('simultaneous', Object.create(animation.abstract));
@@ -42,7 +44,7 @@ thisModule.addSlots(animation, function(add) {
   add.creator('arcPath', {});
 
   add.method('newWiggler', function (morph, centerPt) {
-    var timePerStep = 20;
+    var timePerStep = animation.timePerStep;
     var wigglingDuration = 200;
     centerPt = centerPt || morph.getPosition();
 
@@ -68,7 +70,7 @@ thisModule.addSlots(animation, function(add) {
     var distance = vector.r();
     if (distance >= 0.1) {
 
-      var timePerStep = 20;
+      var timePerStep = animation.timePerStep;
       
       var  anticipationDuration = 120;
       var       waitingDuration = 120;
@@ -148,7 +150,7 @@ thisModule.addSlots(animation, function(add) {
       return Object.newChildOf(this.resetter, "set final size", function(morph) {morph.setExtent(endingSize);});
     }
 
-    var timePerStep = 20;
+    var timePerStep = animation.timePerStep;
     var accelOrDecelDuration = 40;
     var mainResizingDuration = 100;
     var startingSize = morph.getExtent();

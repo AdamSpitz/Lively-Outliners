@@ -21,7 +21,7 @@ thisModule.addSlots(EvaluatorMorph, function(add) {
 
   add.creator('prototype', Object.create(ColumnMorph.prototype));
 
-  add.data('type', EvaluatorMorph);
+  add.data('type', 'EvaluatorMorph');
 
 });
 

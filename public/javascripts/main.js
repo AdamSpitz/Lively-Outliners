@@ -5,6 +5,7 @@ WorldMorph.addMethods({
   contextMenu: function(evt) { return this.livelyOutlinersWorldMenu(evt); },
 });
 
+var debugMode = true;
 Morph.suppressAllHandlesForever(); // those things are annoying
 startUpdatingAllArrows();
 CreatorSlotMarker.annotateExternalObjects();
