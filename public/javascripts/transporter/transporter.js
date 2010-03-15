@@ -62,7 +62,7 @@ thisModule.addSlots(transporter.module, function(add) {
         contentType: 'text/plain',
         parameters: {fileName: this.name() + ".js", fileContents: doc},
         asynchronous: true,
-        onSuccess:   function(transport) { var urlToDownload = transport.responseText; window.open(urlToDownload, 'Download'); }.bind(this),
+        onSuccess:   function(transport) { var urlToDownload = transport.responseText; window.open(urlToDownload, 'Download'); this.markAsUnchanged();  }.bind(this),
         onFailure:   function(         ) {alert("Failure. :(");}.bind(this),
         onException: function(r,      e) {alert("Exception. :(");}.bind(this),
       });
@@ -76,6 +76,7 @@ thisModule.addSlots(transporter.module, function(add) {
       if (! status.isSuccess()) {
         throw "failed to file out " + this + ", status is " + status.code();
       }
+      this.markAsUnchanged();
     }
   }, {category: ['transporting']});
 
