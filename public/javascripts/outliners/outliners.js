@@ -207,19 +207,19 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     menu.addLine();
 
     menu.addItem(["well-known references", function(evt) {
-      evt.hand.world().outlinerFor(reflect(this.mirror().wellKnownReferences())).grabMe(evt);
+      evt.hand.world().morphFor(reflect(this.mirror().wellKnownReferences())).grabMe(evt);
     }.bind(this)]);
     
     menu.addItem(["well-known children", function(evt) {
-      evt.hand.world().outlinerFor(reflect(this.mirror().wellKnownChildren())).grabMe(evt);
+      evt.hand.world().morphFor(reflect(this.mirror().wellKnownChildren())).grabMe(evt);
     }.bind(this)]);
 
     menu.addLine();
     
     menu.addItem(["show inheritance hierarchy", function(evt) {
       var w = evt.hand.world();
-      var parentFunction = function(o) { return o.mirror().hasParent() ? w.outlinerFor(o.mirror().parent()) : null; };
-      var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.outlinerFor(reflect(child)); }); };
+      var parentFunction = function(o) { return o.mirror().hasParent() ? w.morphFor(o.mirror().parent()) : null; };
+      var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.morphFor(reflect(child)); }); };
       w.assumePose(Object.newChildOf(poses.tree, this.mirror().inspect() + " inheritance tree", this, parentFunction, childrenFunction));
     }.bind(this)]);
 
@@ -228,7 +228,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
 
   add.method('createChild', function (evt) {
     var child = this.mirror().createChild();
-    var childOutliner = this.world().outlinerFor(child);
+    var childOutliner = this.world().morphFor(child);
     childOutliner.grabMe(evt);
 
     // might as well show the arrow from the child to the parent
@@ -273,20 +273,18 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
 
 });
 
+thisModule.addSlots(mirror, function(add) {
+
+  add.method('newMorph', function () {
+    return new OutlinerMorph(this);
+  }, {category: ['user interface']});
+
+  add.data('isImmutableForMorphIdentity', true, {category: ['user interface']});
+
+});
+
 
 thisModule.addSlots(WorldMorph.prototype, function(add) {
-
-  add.method('outliners', function () {
-    return this._outliners || (this._outliners = bloodyHashTable.copyRemoveAll());
-  });
-
-  add.method('existingOutlinerFor', function (mir) {
-    return this.outliners().get(mir);
-  });
-
-  add.method('outlinerFor', function (mir) {
-    return this.outliners().getOrIfAbsentPut(mir, function() {return new OutlinerMorph(mir);});
-  });
 
   add.method('acceptsDropping', function (m) {
     return typeof m.wasJustDroppedOnWorld === 'function';
@@ -301,11 +299,11 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
   add.method('livelyOutlinersWorldMenu', function (evt) {
     var menu = new MenuMorph([], this);
     menu.addItem(["create new object", function(evt) {
-      this.outlinerFor(reflect({})).grabMe(evt);
+      this.morphFor(reflect({})).grabMe(evt);
     }]);
 
     menu.addItem(["get the Global object", function(evt) {
-      this.outlinerFor(reflect(Global)).grabMe(evt);
+      this.morphFor(reflect(Global)).grabMe(evt);
     }]);
 
     menu.addLine();

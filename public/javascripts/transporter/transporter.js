@@ -24,6 +24,18 @@ thisModule.addSlots(transporter.module, function(add) {
     return lobby.transporter.module.cache[this.name()];
   }, {category: ['keeping track of changes']});
 
+  add.method('hasChangedSinceLastFileOut', function () {
+    return this._hasChangedSinceLastFileOut;
+  }, {category: ['keeping track of changes']});
+
+  add.method('markAsChanged', function () {
+    this._hasChangedSinceLastFileOut = true;
+  }, {category: ['keeping track of changes']});
+
+  add.method('markAsUnchanged', function () {
+    this._hasChangedSinceLastFileOut = false;
+  }, {category: ['keeping track of changes']});
+
   add.method('mirrorsInOrderForFilingOut', function (f) {
     var alreadySeen = bloodyHashTable.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
     this.objectsThatMightContainSlotsInMe().each(function(obj) {
@@ -116,6 +128,10 @@ thisModule.addSlots(transporter.module, function(add) {
   add.method('existingOneNamed', function (n) {
     return lobby.modules[n];
   }, {category: ['accessing modules']});
+
+  add.method('changedOnes', function () {
+    return Object.newChildOf(enumerator, this, 'eachModule').select(function(m) { return m.hasChangedSinceLastFileOut(); });
+  }, {category: ['keeping track of changes']});
 
 });
 

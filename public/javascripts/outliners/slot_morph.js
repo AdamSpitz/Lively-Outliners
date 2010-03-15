@@ -125,7 +125,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     m = this._contentsPointer = createButton(icon, function() {
       if (arrow.noLongerNeedsToBeUpdated || ! arrow.world()) {
         var w = this.world();
-        w.outlinerFor(slot.contents()).ensureIsInWorld(w, m.worldPoint(pt(150,0)), false, true, true);
+        w.morphFor(slot.contents()).ensureIsInWorld(w, m.worldPoint(pt(150,0)), false, true, true);
         arrow.needsToBeVisible();
       } else {
         arrow.noLongerNeedsToBeVisible();
@@ -256,7 +256,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   add.method('inspect', function () { return this.slot().name(); }, {category: ['printing']});
 
   add.method('outliner', function () {
-    return WorldMorph.current().existingOutlinerFor(this.slot().mirror());
+    return WorldMorph.current().existingMorphFor(this.slot().mirror());
   }, {category: ['accessing']});
 
   add.method('moduleName', function () {
@@ -313,7 +313,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   }, {category: ['drag and drop']});
 
   add.method('wasJustDroppedOnWorld', function (world) {
-    var outliner = world.outlinerFor(this.slot().mirror());
+    var outliner = world.morphFor(this.slot().mirror());
     world.addMorphAt(outliner, this.position());
     outliner.expander().expand();
     this.remove();
@@ -345,7 +345,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
 
   add.method('beCreator', function () {
     this.slot().beCreator();
-    var contentsOutliner = this.world().existingOutlinerFor(this.slot().contents());
+    var contentsOutliner = this.world().existingMorphFor(this.slot().contents());
     if (contentsOutliner) { contentsOutliner.updateAppearance(); }
     this.updateAppearance();
   }, {category: ['creator slots']});
@@ -367,7 +367,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     if (copyDown) {
       var copyDownParentMir = reflect(copyDown.parent);
       menu.addItem(["copied down from " + copyDownParentMir.name(), function(evt) {
-        this.world().outlinerFor(copyDownParentMir).grabMe(evt);
+        this.world().morphFor(copyDownParentMir).grabMe(evt);
       }.bind(this)]);
     } else {
       if (this.slot().rename) {

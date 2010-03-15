@@ -595,8 +595,12 @@ thisModule.addSlots(slots.plain, function(add) {
   }, {category: ['accessing annotation', 'module']});
 
   add.method('setModule', function (m) {
-    this.annotation().module = m;
+    var a = this.annotation();
+    var oldModule = a.module;
+    a.module = m;
     m.objectsThatMightContainSlotsInMe().push(this.holder().reflectee()); // aaa - there'll be a lot of duplicates; fix the performance later;
+    if (oldModule) { oldModule.markAsChanged(); }
+    if (m)         { m.markAsChanged(); }
   }, {category: ['accessing annotation', 'module']});
 
   add.method('initializationExpression', function () {

@@ -94,7 +94,7 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
 
   add.method('showInSitu', function (s, inSituButton) {
     var w = this.world();
-    w.outlinerFor(s.holder()).ensureIsInWorld(w, inSituButton.worldPoint(pt(150,0)), true, true, true);
+    w.morphFor(s.holder()).ensureIsInWorld(w, inSituButton.worldPoint(pt(150,0)), true, true, true);
   });
 
 });

@@ -36,30 +36,20 @@ thisModule.addSlots(bloodyHashTable, function(add) {
     return Object.newChildOf(this); // aaa - blecch, why again can't I put a "create" method directly on Object.prototype?;
   }, {category: ['creating']});
 
-  add.method('initialize', function () {
+  add.method('initialize', function (comparator) {
     this._buckets = {};
     this._size = 0;
+    if (comparator) { this._comparator = comparator; }
   }, {category: ['initializing']});
 
-  add.method('keysAreEqual', function (k1, k2) {
-    if (k1 === null || k1 === undefined) {return k2 === null || k2 === undefined;}
-    if (k2 === null || k2 === undefined) {return false;}
-    if (typeof(k1) !== typeof(k2)) {return false;}
-    if (typeof(k1.equals) === 'function') {
-      return k1.equals(k2);
-    } else {
-      return k1 == k2;
-    }
-  }, {category: ['hashing']});
+  add.creator('equalityComparator', {}, {category: ['hashing']});
 
-  add.method('hashCodeForKey', function (k) {
-    // aaa - Blecch, why does JS not support identity hashes?
-    if (k.hashCode) { return k.hashCode(); }
-    return 42;
-  }, {category: ['hashing']});
+  add.creator('identityComparator', {}, {category: ['hashing']});
+
+  add.data('_comparator', bloodyHashTable.equalityComparator, {category: ['hashing'], initializeTo: 'bloodyHashTable.equalityComparator'});
 
   add.method('bucketForKey', function (k) {
-    var bucketName = "" + this.hashCodeForKey(k);
+    var bucketName = "" + this._comparator.hashCodeForKey(k);
     var b = this._buckets[bucketName];
     if (typeof b === "undefined") {
       this._buckets[bucketName] = b = [];
@@ -75,9 +65,13 @@ thisModule.addSlots(bloodyHashTable, function(add) {
 
   add.method('pairForKey', function (k) {
     var b = this.bucketForKey(k);
+    return this.pairForKeyInBucket(k, b);
+  }, {category: ['hashing']});
+
+  add.method('pairForKeyInBucket', function (k, b) {
     for (var i = 0, n = b.length; i < n; ++i) {
       var pair = b[i];
-      if (this.keysAreEqual(k, pair.key)) {
+      if (this._comparator.keysAreEqual(k, pair.key)) {
         return pair;
       }
     }
@@ -91,16 +85,15 @@ thisModule.addSlots(bloodyHashTable, function(add) {
 
   add.method('set', function (k, v) {
     var b = this.bucketForKey(k);
-    for (var i = 0, n = b.length; i < n; ++i) {
-      var pair = b[i];
-      if (this.keysAreEqual(k, pair.key)) {
-        pair.value = v;
-        return v;
-      }
+    var pair = this.pairForKeyInBucket(k, b);
+    if (pair) {
+      pair.value = v;
+      return v;
+    } else {
+      b.push({key: k, value: v});
+      ++this._size;
+      return v;
     }
-    b.push({key: k, value: v});
-    ++this._size;
-    return v;
   }, {category: ['accessing']});
 
   add.method('put', function (k, v) {
@@ -172,6 +165,43 @@ thisModule.addSlots(bloodyHashTable, function(add) {
   }, {category: ['iterating']});
 
 });
+
+
+thisModule.addSlots(bloodyHashTable.equalityComparator, function(add) {
+
+  add.method('keysAreEqual', function (k1, k2) {
+    if (k1 === k2) {return true;}
+    if (k1 === null || k1 === undefined) {return k2 === null || k2 === undefined;}
+    if (k2 === null || k2 === undefined) {return false;}
+    if (typeof(k1) !== typeof(k2)) {return false;}
+    if (typeof(k1.equals) === 'function') {
+      return k1.equals(k2);
+    } else {
+      return k1 == k2;
+    }
+  }, {category: ['hashing']});
+
+  add.method('hashCodeForKey', function (k) {
+    if (k.hashCode) { return k.hashCode(); }
+    return bloodyHashTable.identityComparator.hashCodeForKey(k);
+  }, {category: ['hashing']});
+
+});
+
+
+thisModule.addSlots(bloodyHashTable.identityComparator, function(add) {
+
+  add.method('keysAreEqual', function (k1, k2) {
+    return k1 === k2;
+  }, {category: ['hashing']});
+
+  add.method('hashCodeForKey', function (k) {
+    // aaa - Blecch, why does JS not support identity hashes?
+    return 42;
+  }, {category: ['hashing']});
+
+});
+
 
 
 });

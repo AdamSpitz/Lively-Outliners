@@ -75,7 +75,7 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
 
   add.method('getIt', function (evt) {
     MessageNotifierMorph.showIfErrorDuring(function() {
-      var resultOutliner = evt.hand.world().outlinerFor(reflect(this.runTheCode()));
+      var resultOutliner = evt.hand.world().morphFor(reflect(this.runTheCode()));
       if (resultOutliner === this.outliner()) {
         resultOutliner.wiggle();
       } else {

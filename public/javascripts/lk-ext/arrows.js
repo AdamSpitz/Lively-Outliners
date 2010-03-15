@@ -142,7 +142,7 @@ Morph.subclass("ArrowEndpoint", {
   // aaa
   whichMorphToAttachTo: function() {
     var slotContents = this.topicRef.contents();
-    var outliner = WorldMorph.current().existingOutlinerFor(slotContents);
+    var outliner = WorldMorph.current().existingMorphFor(slotContents);
     return outliner ? (outliner.world() ? outliner : null) : null;
   },
 
