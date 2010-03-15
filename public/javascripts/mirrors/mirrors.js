@@ -203,23 +203,15 @@ thisModule.addSlots(mirror, function(add) {
     return Object.create(lobby.slots.plain).initialize(this, n);
   }, {category: ['accessing slot contents']});
 
-  add.method('contentsAt', function (n) {
-    return reflect(this.primitiveContentsAt(n));
-  }, {category: ['accessing slot contents']});
-
   add.method('primitiveContentsAt', function (n) {
     return this.reflectee()[n];
-  }, {category: ['accessing slot contents']});
-
-  add.method('setContentsAt', function (n, m) {
-    this.primitiveSetContentsAt(n, m.reflectee());
   }, {category: ['accessing slot contents']});
 
   add.method('primitiveSetContentsAt', function (n, o) {
     return this.reflectee()[n] = o;
   }, {category: ['accessing slot contents']});
 
-  add.method('removeSlotAt', function (n) {
+  add.method('primitiveRemoveSlotAt', function (n) {
     delete this.reflectee()[n];
   }, {category: ['accessing slot contents']});
 
@@ -499,9 +491,15 @@ thisModule.addSlots(slots.plain, function(add) {
 
   add.method('name', function () { return this._name; }, {category: ['accessing']});
 
-  add.method('contents', function () { return this._mirror.   contentsAt(this.name()   ); }, {category: ['accessing']});
+  add.method('contents', function () {
+    return reflect(this._mirror.primitiveContentsAt(this.name()));
+  }, {category: ['accessing']});
 
-  add.method('setContents', function (m) { return this._mirror.setContentsAt(this.name(), m); }, {category: ['accessing']});
+  add.method('setContents', function (m) {
+    var module = this.module();
+    if (module) { module.markAsChanged(); }
+    return this._mirror.primitiveSetContentsAt(this.name(), m.reflectee());
+  }, {category: ['accessing']});
 
   add.method('equals', function (s) {
     return this.name() === s.name() && this.mirror().equals(s.mirror());
@@ -513,12 +511,16 @@ thisModule.addSlots(slots.plain, function(add) {
   }, {category: ['printing']});
 
   add.method('copyTo', function (newMir) {
-    newMir.setContentsAt(this.name(), this.contents());
-    return newMir.slotAt(this.name());
+    var newSlot = newMir.slotAt(this.name());
+    newSlot.setContents(this.contents());
+    return newSlot;
   }, {category: ['copying']});
 
   add.method('remove', function () {
-    this.mirror().removeSlotAt(this.name());
+    var module = this.module();
+    if (module) { module.markAsChanged(); }
+    this.mirror().primitiveRemoveSlotAt(this.name());
+    this.removeAnnotation();
   }, {category: ['removing']});
 
   add.method('isSimpleMethod', function () {
@@ -554,20 +556,19 @@ thisModule.addSlots(slots.plain, function(add) {
     var oldName = this.name();
     if (oldName === newName) {return;}
     var contentsMir = this.contents();
-    var o = this.holder().reflectee();
+    var holder = this.holder();
+    var o = holder.reflectee();
     if (  o.hasOwnProperty(newName)) { throw o + " already has a slot named " + newName; }
     if (! o.hasOwnProperty(oldName)) { throw o + " has no slot named "        + oldName; }
 
     var isCreator = this.isCreator();
+    var holderAnno = holder.annotationForWriting();
+    var slotAnno = this.annotationIfAny();
 
-    var contents = o[oldName];
-    delete o[oldName];
-    o[newName] = contents;
-    
-    var newSlot = this.holder().slotAt(newName);
-    var holderAnno = this.holder().annotationForWriting();
-    holderAnno.slotAnnotations[annotationNameForSlotNamed(newName)] = holderAnno.slotAnnotations[annotationNameForSlotNamed(oldName)];
-    delete holderAnno.slotAnnotations[annotationNameForSlotNamed(oldName)];
+    var newSlot = holder.slotAt(newName);
+    this.remove();
+    newSlot.setContents(contentsMir);
+    newSlot.setAnnotation(slotAnno);
 
     if (isCreator) {newSlot.beCreator();}
 
@@ -583,6 +584,22 @@ thisModule.addSlots(slots.plain, function(add) {
     var sa = oa.slotAnnotations[annotationNameForSlotNamed(this.name())];
     if (sa) {return sa;}
     return oa.slotAnnotations[annotationNameForSlotNamed(this.name())] = {};
+  }, {category: ['accessing annotation']});
+
+  add.method('setAnnotation', function (a) {
+    var oa = this.holder().annotationForWriting();
+    return oa.slotAnnotations[annotationNameForSlotNamed(this.name())] = a;
+  }, {category: ['accessing annotation']});
+
+  add.method('removeAnnotation', function () {
+    var oa = this.holder().annotationForWriting();
+    delete oa.slotAnnotations[annotationNameForSlotNamed(this.name())];
+  }, {category: ['accessing annotation']});
+
+  add.method('annotationIfAny', function () {
+    if (! this.holder().hasAnnotation()) { return null; }
+    var oa = this.holder().annotationForWriting();
+    return oa.slotAnnotations[annotationNameForSlotNamed(this.name())];
   }, {category: ['accessing annotation']});
 
   add.method('beCreator', function () {

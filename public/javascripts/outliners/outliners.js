@@ -306,33 +306,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       this.morphFor(reflect(Global)).grabMe(evt);
     }]);
 
-    menu.addLine();
-
-    // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
-    if (! URL.source.hostname.include("adamspitz.com")) {
-
-    menu.addItem(["file in module...", function(evt) {
-      var filenames = new FileDirectory(lobby.transporter.module.urlForNonCoreModulesDirectory()).filenames().select(function(n) {return n.endsWith(".js");});
-      
-      var modulesMenu = new MenuMorph(filenames.map(function(n) {return [n, function(evt) {
-        var moduleName = n.substring(0, n.length - 3);
-        MessageNotifierMorph.showIfErrorDuring(function() { lobby.transporter.module.fileIn(moduleName); }, evt);
-      }];}), this);
-      
-      modulesMenu.openIn(this, evt.point());
-    }.bind(this)]);
-
-    }
-
-    menu.addItem(["file out module...", function(evt) {
-      var modulesMenu = new MenuMorph([], this);
-      lobby.transporter.module.eachModule(function(m) {
-        modulesMenu.addItem([m.name(), function(evt) {
-          MessageNotifierMorph.showIfErrorDuring(function() { m.fileOut(); }, evt);
-        }.bind(this)]);
-      }.bind(this));
-      modulesMenu.openIn(this, evt.point());
-    }.bind(this)]);
+    this.addTransporterMenuItemsTo(menu, evt);
 
     this.addPoseMenuItemsTo(menu, evt);
 
@@ -366,6 +340,7 @@ thisModule.addSlots(transporter, function(add) {
   });
 
 });
+
 
 
 });

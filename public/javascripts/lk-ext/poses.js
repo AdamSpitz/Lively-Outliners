@@ -19,8 +19,8 @@ thisModule.addSlots(poses, function(add) {
 
   add.creator('abstract', {});
   add.creator('tree', Object.create(poses.abstract));
+  add.creator('list', Object.create(poses.abstract));
   add.creator('snapshot', Object.create(poses.abstract));
-  add.creator('cleanUp', Object.create(poses.abstract));
 
 });
 
@@ -103,7 +103,7 @@ thisModule.addSlots(poses.tree, function(add) {
 
 });
 
-thisModule.addSlots(poses.cleanUp, function(add) {
+thisModule.addSlots(poses.list, function(add) {
 
   add.method('initialize', function($super, name, world, morphs) {
     $super(name);
@@ -275,7 +275,12 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
   add.method('cleanUp', function (evt) {
     var morphsToMove = this.submorphs.reject(function(m) { return m.shouldIgnorePoses(); });
-    this.assumePose(Object.newChildOf(poses.cleanUp, "clean up", this, morphsToMove));
+    this.assumePose(Object.newChildOf(poses.list, "clean up", this, morphsToMove));
+  }, {category: ['poses', 'cleaning up']});
+
+  add.method('listPoseOfMorphsFor', function (objects, name) {
+    var morphsToMove = objects.map(function(m) { return this.morphFor(m); }.bind(this));
+    return Object.newChildOf(poses.list, name, this, morphsToMove);
   }, {category: ['poses', 'cleaning up']});
 
 });

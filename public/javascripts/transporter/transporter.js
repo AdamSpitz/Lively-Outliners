@@ -117,8 +117,13 @@ thisModule.addSlots(transporter.module, function(add) {
     var code = FileDirectory.getContent(url);
     eval(code);
     var module = this.existingOneNamed(name);
-    if (module.postFileIn) { module.postFileIn(); }
-    return module;
+    if (module) {
+      if (module.postFileIn) { module.postFileIn(); }
+      return module;
+    } else {
+      // Could just be some external Javascript library - doesn't have
+      // to be one of our modules.
+    }
   }, {category: ['transporting']});
 
   add.method('eachModule', function (f) {
