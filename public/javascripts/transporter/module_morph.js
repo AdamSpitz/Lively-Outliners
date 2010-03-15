@@ -87,7 +87,6 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
     menu.addLine();
 
     menu.addItem(['all objects', this.getAllObjects.bind(this)]);
-    
 
     return menu;
   }, {category: ['menu']});

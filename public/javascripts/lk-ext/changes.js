@@ -145,3 +145,25 @@ Class.newInitializer = function(name) {
 
   return c;
 },
+
+TestCase.addMethods({        
+  assertEqual: function(firstValue, secondValue, msg) {
+    if (firstValue === secondValue) { return; }
+    if (firstValue && firstValue.equals && firstValue.equals(secondValue)) { return; } // changed this to check a general 'equals' method. -- Adam
+    if (firstValue == secondValue) return;
+    /* Better call assert() and assemble error message
+       in AssertionError */
+    throw {isAssertion: true, message: (msg ? msg	 : "") + " (" + firstValue +" != " + secondValue +") "};
+  },
+});
+
+Point.addMethods({        
+  equals: function(other) {
+    return other && other.constructor && other.constructor === Point && this.eqPt(other);
+  },
+
+  hashCode: function() {
+    return this.x.hashCode() + this.y.hashCode();
+  },
+});
+

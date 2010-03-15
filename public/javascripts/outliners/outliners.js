@@ -47,7 +47,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
 
     this.titleLabel = createLabel(function() {return m.inspect();});
     // this.titleLabel.setFontFamily('serif'); // not sure I like it
-    this.titleLabel.setEmphasis({style: 'bold'});
+    // this.titleLabel.setEmphasis({style: 'bold'}); // I like it, except that the layout gets messed up
 
     this._commentToggler    = Object.newChildOf(toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ? this.createRow(this.   commentMorph()) : null);
     this._annotationToggler = Object.newChildOf(toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ?                this.annotationMorph()  : null);
@@ -308,7 +308,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
 
       menu.addItem(["get tests", function(evt) {
         var testCaseClasses = [mirror.Tests];
-        var testCases = testCaseClasses.map(function(c) {return new c();});
+        var testCases = testCaseClasses.map(function(c) {return c.prototype;});
         world.assumePose(world.listPoseOfMorphsFor(testCases, "test cases for the outliner stuff"));
       }]);
     }

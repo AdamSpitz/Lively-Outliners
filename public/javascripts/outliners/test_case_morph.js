@@ -35,28 +35,45 @@ thisModule.addSlots(TestCase.prototype.Morph.prototype, function(add) {
 
   add.data('constructor', TestCase.prototype.Morph);
 
-  add.method('initialize', function ($super, testCase) {
+  add.method('initialize', function ($super, testCaseProto) {
     $super();
-    this._testCase = testCase;
+    this._testCaseProto = testCaseProto;
 
     this.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: 3});
     this.setFill(defaultFillWithColor(Color.purple.darker()));
     this.shape.roundEdgesBy(10);
 
-    this._nameLabel = createLabel(function() { return testCase.name(); });
+    this._nameLabel = createLabel(function() { return this._testCaseProto.name(); }.bind(this));
     this._runButton = createButton('Run', this.runAll.bind(this), 2);
 
     this.setColumns([this._nameLabel, this._runButton, this.createDismissButton()]);
   }, {category: 'creating'});
 
-  add.method('inspect', function () { return this._testCase.constructor.type; }, {category: ['printing']});
+  add.method('inspect', function () { return this._testCaseProto.constructor.type; }, {category: ['printing']});
+
+  add.method('contextMenu', function (evt) {
+    var menu = new MenuMorph([], this);
+
+    menu.addItem(['run', this.runAll.bind(this)]);
+
+    menu.addLine();
+
+    menu.addItem(['get test case object', this.getTestCaseObject.bind(this)]);
+
+    return menu;
+  }, {category: ['menu']});
 
   add.method('runAll', function (evt) {
     var w = evt.hand.world();
-    this._testCase.runAll();
-    var result = this._testCase.result;
-    result.testCase = this._testCase;
+    var testCase = new (this._testCaseProto.constructor)();
+    testCase.runAll();
+    var result = testCase.result;
+    result.testCase = testCase;
     w.morphFor(result).ensureIsInWorld(w, this.worldPoint(pt(this.getExtent().x + 50, 0)), true, true, true);
+  }, {category: ['commands']});
+
+  add.method('getTestCaseObject', function (evt) {
+    evt.hand.world().morphFor(reflect(this._testCaseProto)).grabMe(evt);
   }, {category: ['commands']});
 
 });
@@ -97,7 +114,8 @@ thisModule.addSlots(TestResult.prototype.Morph.prototype, function(add) {
     this.setFill(defaultFillWithColor(this._testResult.failed.length > 0 ? Color.red : Color.green));
     this.shape.roundEdgesBy(10);
 
-    this._nameLabel = createLabel(this._testCase.name());
+    var timeToRun = Object.newChildOf(enumerator, reflect(this._testResult.timeToRun), "eachNormalSlot").inject(0, function(sum, ea) {return sum + ea.contents().reflectee();});
+    this._nameLabel = createLabel(this._testCase.name() + "(" + timeToRun + " ms)");
 
     var rows = [this._nameLabel];
     testResult.failed.each(function(f) {rows.push(this.createFailureRow(f));}.bind(this));
@@ -105,7 +123,7 @@ thisModule.addSlots(TestResult.prototype.Morph.prototype, function(add) {
   }, {category: 'creating'});
 
   add.method('createFailureRow', function (failure) {
-    return createSpaceFillingRow([createLabel(failure.selector + " failed: " + failure.err)]);
+    return createSpaceFillingRow([createLabel(failure.selector + " failed: " + (failure.err.message !== undefined ? failure.err.message : failure.err))]);
   }, {category: ['creating']});
 
   add.method('inspect', function () { return this._testCase.constructor.type; }, {category: ['printing']});

@@ -48,7 +48,7 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('reflecteeToString', function () {
     try {
-      if (this.isReflecteePrimitive()) { return "" + this.reflectee(); }
+      if (! this.canHaveSlots()) { return "" + this.reflectee(); }
 
       // Ignore the default toString because it just says [object Object] all the time and it's annoying.
       if (this.reflectee().toString === Object.prototype.toString) { return ""; } 
@@ -70,7 +70,7 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('inspect', function () {
     if (this.reflectee() === lobby) {return this.nameOfLobby();}
-    if (this.isReflecteePrimitive()) {return Object.inspect(this.reflectee());}
+    if (! this.canHaveSlots()) {return Object.inspect(this.reflectee());}
     if (this.isReflecteeArray()) { return this.reflectee().length > 5 ? "an array" : "[" + this.reflectee().map(function(elem) {return reflect(elem).inspect();}).join(", ") + "]"; }
     var n = this.name();
     if (this.isReflecteeFunction()) { return n; } // the code will be visible through the *code* fake-slot
@@ -81,7 +81,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['naming']});
 
   add.method('name', function () {
-    if (this.isReflecteePrimitive()) {return "" + this.reflectee();}
+    if (! this.canHaveCreatorSlot()) {return Object.inspect(this.reflectee());}
 
     var chain = this.creatorSlotChain();
     if (chain) {
@@ -118,7 +118,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['testing']});
 
   add.method('creatorSlotChainExpression', function () {
-    if (this.isReflecteePrimitive()) {throw this.inspect() + " does not have a creator slot chain.";}
+    if (! this.canHaveCreatorSlot()) {throw this.inspect() + " does not have a creator slot chain.";}
 
     var chain = this.creatorSlotChain();
     if (! chain) {throw this.inspect() + " does not have a creator slot chain.";}
@@ -135,7 +135,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['annotations', 'creator slot']});
 
   add.method('creatorSlotChain', function () {
-    if (this.isReflecteePrimitive()) {return null;}
+    if (! this.canHaveCreatorSlot()) {return null;}
 
     var chain = [];
     var lobbyMir = reflect(lobby);
@@ -276,7 +276,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['functions']});
 
   add.method('expressionEvaluatingToMe', function (shouldNotUseCreatorSlotChainExpression) {
-    if (this.isReflecteePrimitive()) { return Object.inspect(this.reflectee()); }
+    if (! this.canHaveCreatorSlot()) { return Object.inspect(this.reflectee()); }
     if (!shouldNotUseCreatorSlotChainExpression && this.isWellKnown()) { return this.creatorSlotChainExpression(); }
     if (this.isReflecteeFunction()) { return this.source(); }
     if (this.isReflecteeArray()) { return "[" + this.reflectee().map(function(elem) {return reflect(elem).expressionEvaluatingToMe();}).join(", ") + "]"; }
@@ -309,11 +309,16 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['accessing slot contents']});
 
   add.method('canHaveSlots', function () {
-    return ! this.isReflecteePrimitive();
+    var o = this.reflectee();
+    var t = typeof o;
+    return t === 'function' || (t === 'object' && o !== null);
   }, {category: ['accessing slot contents']});
 
   add.method('canHaveChildren', function () {
-    return ! this.isReflecteePrimitive(); // aaa - is this correct?;
+    // aaa - Is this correct? I think maybe inheriting from arrays doesn't work so well in some browsers.
+    var o = this.reflectee();
+    var t = typeof o;
+    return t === 'function' || (t === 'object' && o !== null);
   }, {category: ['children']});
 
   add.method('isReflecteeNull', function () { return this.reflectee() === null;      }, {category: ['testing']});
@@ -327,22 +332,15 @@ thisModule.addSlots(mirror, function(add) {
   add.method('isReflecteeBoolean', function () { return typeof this.reflectee() === 'boolean'; }, {category: ['testing']});
 
   add.method('isReflecteeArray', function () { return typeof this.reflectee() === 'object' && this.reflectee() instanceof Array; }, {category: ['testing']});
-
-  add.method('isReflecteePrimitive', function () { return ! (this.isReflecteeObject() || this.isReflecteeFunction()); }, {category: ['testing']});
-
-  add.method('isReflecteeObject', function () {
-    var o = this.reflectee();
-    var t = typeof o;
-    return t === 'object' && o !== null;
-  }, {category: ['testing']});
-
+                                                                       
   add.method('isReflecteeFunction', function () {
     return typeof(this.reflectee()) === 'function';
   }, {category: ['testing']});
 
   add.method('canHaveCreatorSlot', function () {
-    // aaa - is this right?
-    return this.isReflecteeObject() || this.isReflecteeFunction();
+    var o = this.reflectee();
+    var t = typeof o;
+    return t === 'function' || (t === 'object' && o !== null);
   }, {category: ['annotations', 'creator slot']});
 
   add.method('creatorSlot', function () {
@@ -390,7 +388,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['annotations', 'copy-down parents']});
 
   add.method('canHaveAnnotation', function () {
-    return this.isReflecteeObject() || this.isReflecteeFunction();
+    return this.canHaveSlots();
   }, {category: ['annotations']});
 
   add.method('hasAnnotation', function () {
@@ -688,7 +686,7 @@ thisModule.addSlots(slots.plain, function(add) {
     if (initializer) {
       contentsExpr = initializer;
     } else {
-      if (contents.isReflecteePrimitive()) {
+      if (! contents.canHaveCreatorSlot()) {
         contentsExpr = "" + contents.reflectee();
       } else {
         var cs = contents.creatorSlot();
@@ -785,8 +783,25 @@ thisModule.addSlots(mirror.Tests.prototype, function(add) {
 
   add.data('constructor', mirror.Tests);
 
-  add.method('testNumbers', function ($super, module) {
-    this.assert(true);
+  add.method('testEquality', function () {
+    this.assertEqual(reflect(3), reflect(3), "number mirror");
+    this.assertEqual(reflect(null), reflect(null), "null mirror");
+    this.assertEqual(reflect("noodle"), reflect("noodle"), "string mirror");
+
+    this.assert(! reflect(3).equals(reflect(4)), "number mirror inequality");
+    this.assert(! reflect({}).equals(reflect({})), "object mirror inequality");
+    this.assert(! reflect(3).equals(reflect({})), "object/number mirror inequality");
+    this.assert(! reflect("noodle").equals(reflect("needle")), "string mirror inequality");
+    this.assert(! reflect(null).equals(reflect(undefined)), "null/undefined mirror inequality");
+  });
+
+  add.method('testNaming', function () {
+    this.assertEqual("3", reflect(3).name());
+    this.assertEqual("null", reflect(null).name());
+    this.assertEqual("undefined", reflect(undefined).name());
+    this.assertEqual("'lalala'", reflect("lalala").name());
+    this.assertEqual("a Function", reflect(function() {}).name());
+    this.assertEqual("an Object", reflect({}).name());
   });
 
 });
