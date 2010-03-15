@@ -155,6 +155,14 @@ TestCase.addMethods({
        in AssertionError */
     throw {isAssertion: true, message: (msg ? msg	 : "") + " (" + firstValue +" != " + secondValue +") "};
   },
+
+  assertThrowsException: function(func, msg) {
+    try {
+      func();
+      this.assert(false, msg);
+    } catch (ex) {
+    }
+  },
 });
 
 Point.addMethods({        

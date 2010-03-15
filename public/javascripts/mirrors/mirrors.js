@@ -802,6 +802,36 @@ thisModule.addSlots(mirror.Tests.prototype, function(add) {
     this.assertEqual("'lalala'", reflect("lalala").name());
     this.assertEqual("a Function", reflect(function() {}).name());
     this.assertEqual("an Object", reflect({}).name());
+    this.assertEqual("an Array", reflect([1, 'two', 3]).name());
+    this.assertEqual("transporter", reflect(transporter).name());
+    this.assertEqual("transporter.module", reflect(transporter.module).name());
+    this.assertEqual("", reflect(Global).name()); // aaa - maybe just fix this to say Global?
+  });
+
+  add.method('testInspect', function () {
+    this.assertEqual("3", reflect(3).inspect());
+    this.assertEqual("null", reflect(null).inspect());
+    this.assertEqual("undefined", reflect(undefined).inspect());
+    this.assertEqual("'lalala'", reflect("lalala").inspect());
+    this.assertEqual("a Function", reflect(function() {}).inspect());
+    this.assertEqual("an Object", reflect({}).inspect());
+    this.assertEqual("[1, 'two', 3]", reflect([1, 'two', 3]).inspect());
+    this.assertEqual("transporter", reflect(transporter).inspect());
+    this.assertEqual("transporter.module", reflect(transporter.module).inspect());
+    this.assertEqual("Global", reflect(Global).inspect());
+  });
+
+  add.method('testCreatorSlotChainExpression', function () {
+    this.assertThrowsException(function() { reflect(3).creatorSlotChainExpression(); });
+    this.assertThrowsException(function() { reflect(null).creatorSlotChainExpression(); });
+    this.assertThrowsException(function() { reflect(undefined).creatorSlotChainExpression(); });
+    this.assertThrowsException(function() { reflect("lalala").creatorSlotChainExpression(); });
+    this.assertThrowsException(function() { reflect(function() {}).creatorSlotChainExpression(); });
+    this.assertThrowsException(function() { reflect({}).creatorSlotChainExpression(); });
+    this.assertThrowsException(function() { reflect([1, 'two', 3]).creatorSlotChainExpression(); });
+    this.assertEqual("transporter", reflect(transporter).creatorSlotChainExpression());
+    this.assertEqual("transporter.module", reflect(transporter.module).creatorSlotChainExpression());
+    this.assertEqual("lobby", reflect(Global).creatorSlotChainExpression());
   });
 
 });
