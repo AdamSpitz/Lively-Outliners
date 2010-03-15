@@ -51,16 +51,12 @@ thisModule.addSlots(TestCase.prototype.Morph.prototype, function(add) {
 
   add.method('inspect', function () { return this._testCaseProto.constructor.type; }, {category: ['printing']});
 
-  add.method('contextMenu', function (evt) {
-    var menu = new MenuMorph([], this);
+  add.method('addCommandsTo', function (cmdList) {
+    cmdList.addItem({label: 'run', go: this.runAll.bind(this)});
 
-    menu.addItem(['run', this.runAll.bind(this)]);
+    cmdList.addLine();
 
-    menu.addLine();
-
-    menu.addItem(['get test case object', this.getTestCaseObject.bind(this)]);
-
-    return menu;
+    cmdList.addItem({label: 'get test case object', go: this.getTestCaseObject.bind(this)});
   }, {category: ['menu']});
 
   add.method('runAll', function (evt) {

@@ -359,73 +359,69 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     return newSlotMorph;
   }, {category: ['drag and drop']});
 
-  add.method('contextMenu', function (evt) {
-    var menu = new MenuMorph([], this);
-
+  add.method('addCommandsTo', function (cmdList) {
     var copyDown = this.slot().copyDownParentThatIAmFrom();
 
     if (copyDown) {
       var copyDownParentMir = reflect(copyDown.parent);
-      menu.addItem(["copied down from " + copyDownParentMir.name(), function(evt) {
+      cmdList.addItem({label: "copied down from " + copyDownParentMir.name(), go: function(evt) {
         this.world().morphFor(copyDownParentMir).grabMe(evt);
-      }.bind(this)]);
+      }.bind(this)});
     } else {
       if (this.slot().rename) {
-        this.labelMorph.addEditingMenuItemsTo(menu, evt);
+        this.labelMorph.addEditingMenuItemsTo(cmdList);
       }
 
-      menu.addItem([this._sourceToggler.isOn() ? "hide contents" : "edit contents", function(evt) {
+      cmdList.addItem({label: this._sourceToggler.isOn() ? "hide contents" : "edit contents", go: function(evt) {
         this._sourceToggler.toggle(evt);
-      }.bind(this)]);
+      }.bind(this)});
 
       if (this.slot().copyTo) {
-        menu.addItem(["copy", function(evt) { this.grabCopy(evt); }.bind(this)]);
+        cmdList.addItem({label: "copy", go: function(evt) { this.grabCopy(evt); }.bind(this)});
       }
       
       if (this.slot().remove) {
-        menu.addItem(["move", function(evt) {
+        cmdList.addItem({label: "move", go: function(evt) {
           this.grabCopy(evt);
           this.slot().remove();
           var outliner = this.outliner();
           if (outliner) { outliner.updateAppearance(); }
-        }.bind(this)]);
+        }.bind(this)});
       }
 
       if (this.slot().comment) {
-        menu.addItem([this._commentToggler.isOn() ? "hide comment" : "edit comment", function(evt) {
+        cmdList.addItem({label: this._commentToggler.isOn() ? "hide comment" : "edit comment", go: function(evt) {
           this._commentToggler.toggle(evt);
-        }.bind(this)]);
+        }.bind(this)});
       }
 
       if (this.slot().beCreator && this.slot().contents().canHaveCreatorSlot()) {
         var cs = this.slot().contents().creatorSlot();
         if (!cs || ! cs.equals(this.slot())) {
-          menu.addItem(["be creator", function(evt) { this.beCreator(); }.bind(this)]);
+          cmdList.addItem({label: "be creator", go: function(evt) { this.beCreator(); }.bind(this)});
         }
       }
 
       if (this.slot().setModule) {
-        menu.addItem(["set module...", function(evt) {
+        cmdList.addItem({label: "set module...", go: function(evt) {
           transporter.chooseOrCreateAModule(evt, this, "To which module?", function(m, evt) {this.setModule(m, evt);}.bind(this));;
-        }.bind(this)]);
+        }.bind(this)});
       }
 
       if (this.slot().annotation) {
-        menu.addItem([this._annotationToggler.isOn() ? "hide annotation" : "show annotation", function(evt) {
+        cmdList.addItem({label: this._annotationToggler.isOn() ? "hide annotation" : "show annotation", go: function(evt) {
           this._annotationToggler.toggle(evt);
-        }.bind(this)]);
+        }.bind(this)});
       }
     }
 
     if (this.slot().wellKnownImplementors) {
-      menu.addSection([["implementors", function(evt) {
+      cmdList.addSection([{label: "implementors", go: function(evt) {
         var slice = new SliceMorph(new ImplementorsFinder(this.slot().name()));
         slice.grabMe(evt);
         slice.redo();
-      }.bind(this)]]);
+      }.bind(this)}]);
     }
-
-    return menu;
   }, {category: ['menu']});
 
 });

@@ -160,27 +160,23 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     e.wasJustShown(evt);
   }, {category: ['evaluators']});
 
-  add.method('contextMenu', function (evt) {
-    var menu = new MenuMorph([], this);
+  add.method('addCommandsTo', function (cmdList) {
+    this.addCategoryCommandsTo(cmdList);
 
-    if (this.mirror().canHaveSlots()) {
-      menu.addSection([["add slot",     function(evt) { this.addSlot    (evt); }.bind(this)]]);
-      menu.addSection([["add category", function(evt) { this.addCategory(evt); }.bind(this)]]);
-    }
     if (this.mirror().canHaveChildren()) {
-      menu.addSection([["create child", function(evt) { this.createChild(evt); }.bind(this)]]);
+      cmdList.addSection([{label: "create child", go: function(evt) { this.createChild(evt); }.bind(this)}]);
     }
     
     if (this.mirror().canHaveAnnotation()) {
-      menu.addLine();
+      cmdList.addLine();
 
       if (this.mirror().comment) {
-        menu.addItem([this._commentToggler.isOn() ? "hide comment" : "show comment", function(evt) { this._commentToggler.toggle(evt); }.bind(this)]);
+        cmdList.addItem({label: this._commentToggler.isOn() ? "hide comment" : "show comment", go: function(evt) { this._commentToggler.toggle(evt); }.bind(this)});
       }
 
-      menu.addItem([this._annotationToggler.isOn() ? "hide annotation" : "show annotation", function(evt) { this._annotationToggler.toggle(evt); }.bind(this)]);
+      cmdList.addItem({label: this._annotationToggler.isOn() ? "hide annotation" : "show annotation", go: function(evt) { this._annotationToggler.toggle(evt); }.bind(this)});
 
-      menu.addItem(["set module...", function(evt) {
+      cmdList.addItem({label: "set module...", go: function(evt) {
         var all = {};
         var chooseTargetModule = function(sourceModuleName, evt) {
           transporter.chooseOrCreateAModule(evt, this, "To which module?", function(targetModule, evt) {
@@ -201,29 +197,27 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
           whichSlotsMenu.addItem([moduleName, function(evt) {chooseTargetModule(moduleName, evt);}.bind(this)]);
         }.bind(this));
         whichSlotsMenu.openIn(this.world(), evt.point(), false, "Of which slots?");
-      }.bind(this)]);
+          }.bind(this)});
     }
 
-    menu.addLine();
+    cmdList.addLine();
 
-    menu.addItem(["well-known references", function(evt) {
+    cmdList.addItem({label: "well-known references", go: function(evt) {
       evt.hand.world().morphFor(reflect(this.mirror().wellKnownReferences())).grabMe(evt);
-    }.bind(this)]);
+    }.bind(this)});
     
-    menu.addItem(["well-known children", function(evt) {
+    cmdList.addItem({label: "well-known children", go: function(evt) {
       evt.hand.world().morphFor(reflect(this.mirror().wellKnownChildren())).grabMe(evt);
-    }.bind(this)]);
+    }.bind(this)});
 
-    menu.addLine();
+    cmdList.addLine();
     
-    menu.addItem(["show inheritance hierarchy", function(evt) {
+    cmdList.addItem({label: "show inheritance hierarchy", go: function(evt) {
       var w = evt.hand.world();
       var parentFunction = function(o) { return o.mirror().hasParent() ? w.morphFor(o.mirror().parent()) : null; };
       var childrenFunction = function(o) { return o.mirror().wellKnownChildren().map(function(child) { return w.morphFor(reflect(child)); }); };
       w.assumePose(Object.newChildOf(poses.tree, this.mirror().inspect() + " inheritance tree", this, parentFunction, childrenFunction));
-    }.bind(this)]);
-
-    return menu;
+    }.bind(this)});
   }, {category: ['menu']});
 
   add.method('createChild', function (evt) {

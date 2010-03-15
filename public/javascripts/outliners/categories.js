@@ -234,6 +234,13 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
     this.highlighter().setChecked(false);
   }, {category: ['highlighting']});
 
+  add.method('addCategoryCommandsTo', function (cmdList) {
+    if (this.mirror().canHaveSlots()) {
+      cmdList.addSection([{ label: "add slot",     go: function(evt) { this.addSlot    (evt); }.bind(this) }]);
+      cmdList.addSection([{ label: "add category", go: function(evt) { this.addCategory(evt); }.bind(this) }]);
+    }
+  }, {category: ['menu']});
+
 });
 
 
@@ -305,17 +312,6 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     this.mirror().eachSlotInCategory(this.category(), f);
   }, {category: ['iterating']});
 
-  add.method('contextMenu', function (evt) {
-    var menu = new MenuMorph([], this);
-
-    if (this.mirror().canHaveSlots()) {
-      menu.addSection([["add slot",     function(evt) { this.addSlot    (evt); }.bind(this)]]);
-      menu.addSection([["add category", function(evt) { this.addCategory(evt); }.bind(this)]]);
-    }
-
-    return menu;
-  }, {category: ['menu']});
-
   add.method('rename', function (newName, evt) {
     this.category().setLastPart(newName);
     // aaa - if this thing has any slots already in it, gotta recategorize them
@@ -338,7 +334,13 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
   add.method('assumeUIState', function (uiState, evt) {
     this.expander().setExpanded(uiState.isExpanded);
   }, {category: ['UI state']});
+
+  add.method('addCommandsTo', function (cmdList) {
+    this.addCategoryCommandsTo(cmdList);
+  }, {category: ['menu']});
+
 });
+
 
 
 });

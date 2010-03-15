@@ -73,22 +73,18 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
     w.assumePose(w.listPoseOfMorphsFor(this._module.objectsThatMightContainSlotsInMe().map(function(o) { return reflect(o); }), "objects in module " + this._module.name()));
   }, {category: ['commands']});
 
-  add.method('contextMenu', function (evt) {
-    var menu = new MenuMorph([], this);
+  add.method('addCommandsTo', function (cmdList) {
+    cmdList.addItem({label: 'file out', go: this.fileOut.bind(this)});
 
-    menu.addItem(['file out', this.fileOut.bind(this)]);
+    cmdList.addItem({label: 'forget I was changed', go: this.forgetIWasChanged.bind(this)});
 
-    menu.addItem(['forget I was changed', this.forgetIWasChanged.bind(this)]);
+    cmdList.addLine();
 
-    menu.addLine();
+    cmdList.addItem({label: 'get module object', go: this.getModuleObject.bind(this)});
 
-    menu.addItem(['get module object', this.getModuleObject.bind(this)]);
+    cmdList.addLine();
 
-    menu.addLine();
-
-    menu.addItem(['all objects', this.getAllObjects.bind(this)]);
-
-    return menu;
+    cmdList.addItem({label: 'all objects', go: this.getAllObjects.bind(this)});
   }, {category: ['menu']});
 
 });

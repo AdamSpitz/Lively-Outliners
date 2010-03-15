@@ -1,6 +1,5 @@
 Morph.addMethods({
   showContextMenu: function(evt) {
-    if (! this.contextMenu) { return; }
     var menu = this.contextMenu(evt);
     if (!menu) { return; }
     var baseColor = Color.black; // should be a clear difference between a morph menu and a context menu
@@ -10,6 +9,21 @@ Morph.addMethods({
     menu.listStyle.fill        = baseColor.lighter(5);
     menu.textStyle.textColor   = baseColor;
     menu.openIn(this.world(), evt.point(), false, Object.inspect(this).truncate());
+  },
+
+  contextMenu: function (evt) {
+    var cs = this.commands();
+    if (!cs) { return null; }
+    var menu = new MenuMorph([], this);
+    cs.addItemsToMenu(menu, this);
+    return menu;
+  },
+
+  commands: function () {
+    if (! this.addCommandsTo) { return null; }
+    var cmdList = command.list.create();
+    this.addCommandsTo(cmdList);
+    return cmdList;
   },
 });
 
