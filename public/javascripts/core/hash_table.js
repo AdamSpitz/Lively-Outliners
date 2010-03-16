@@ -234,7 +234,18 @@ thisModule.addSlots(bloodyHashTable.Tests.prototype, function(add) {
   add.data('constructor', bloodyHashTable.Tests);
 
   add.method('testGettingAndSetting', function () {
-    this.assert(false, "Gotta write some tests here.");
+    var h = bloodyHashTable.copyRemoveAll();
+    var k1 = {};
+    var k2 = {};
+    var k3 = pt(5, 6);
+    h.put(k1, "One");
+    h.put(k2, 2);
+    h.put(k3, "the point (5, 6)");
+    this.assertEqual("One", h.get(k1));
+    this.assertEqual(2, h.get(k2));
+    this.assertEqual("the point (5, 6)", h.get(k3));
+    this.assertEqual("the point (5, 6)", h.get(pt(5, 6)), "uses equals() rather than ===");
+    this.assertEqual(3, h.size());
   });
 
 });
