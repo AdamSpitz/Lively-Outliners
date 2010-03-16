@@ -691,7 +691,7 @@ thisModule.addSlots(slots.plain, function(add) {
       contentsExpr = initializer;
     } else {
       if (! contents.canHaveCreatorSlot()) {
-        contentsExpr = "" + contents.reflectee();
+        contentsExpr = contents.expressionEvaluatingToMe();
       } else {
         var cs = contents.creatorSlot();
         if (! cs) {
