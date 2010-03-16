@@ -88,9 +88,9 @@ thisModule.addSlots(poses.abstract, function(add) {
     $A(w.submorphs).each(function(m) {
       if (m.isPartOfCurrentPose) {
         delete m.isPartOfCurrentPose;
-      } else if (! m.shouldIgnorePoses()) {
+      } /* This turned out to be very annoying, though I still think we need to do *something* to help avoid clutter:  else if (! m.shouldIgnorePoses()) {
         m.startZoomingOuttaHere();
-      }
+      } */
     });
   });
 });
