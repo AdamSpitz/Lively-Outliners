@@ -563,7 +563,9 @@ thisModule.addSlots(slots.plain, function(add) {
   }, {category: ['testing']});
 
   add.method('isCreator', function () {
-    var cs = this.contents().creatorSlot();
+    var contents = this.contents();
+    if (! contents.canHaveCreatorSlot()) { return false; }
+    var cs = contents.creatorSlot();
     return cs && cs.equals(this);
   }, {category: ['creator slots']});
 

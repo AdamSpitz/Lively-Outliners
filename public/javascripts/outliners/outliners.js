@@ -37,8 +37,8 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this.setPadding({top: 2, bottom: 2, left: 4, right: 4, between: 2});
     this.shape.roundEdgesBy(10);
 
-    this._slotMorphs     = hashMap.copyRemoveAll();
-    this._categoryMorphs = hashMap.copyRemoveAll();
+    this._slotMorphs     = dictionary.copyRemoveAll();
+    this._categoryMorphs = dictionary.copyRemoveAll();
 
     this.initializeCategoryUI();
     
@@ -301,7 +301,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       menu.addLine();
 
       menu.addItem(["get tests", function(evt) {
-        var testCaseClasses = [hashMap.Tests, mirror.Tests];
+        var testCaseClasses = [dictionary.Tests, set.Tests, mirror.Tests];
         var testCases = testCaseClasses.map(function(c) {return c.prototype;});
         world.assumePose(world.listPoseOfMorphsFor(testCases, "test cases for the outliner stuff"));
       }]);

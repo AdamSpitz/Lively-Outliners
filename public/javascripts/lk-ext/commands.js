@@ -75,7 +75,7 @@ thisModule.addSlots(SelectionMorph.prototype, function(add) {
   add.method('inspect', function() {
     if (!this.selectedMorphs || this.selectedMorphs.length === 0) { return "nothing here"; }
     
-    var morphsByClass = hashMap.copyRemoveAll();
+    var morphsByClass = dictionary.copyRemoveAll();
     this.selectedMorphs.each(function(m) {
       morphsByClass.getOrIfAbsentPut(m.constructor, function() {return [];}).push(m);
     });
@@ -92,7 +92,7 @@ thisModule.addSlots(SelectionMorph.prototype, function(add) {
   add.method('addCommandsTo', function(cmdList) {
     if (! this.selectedMorphs) { return; }
 
-    var morphsByCommandType = hashMap.copyRemoveAll();
+    var morphsByCommandType = dictionary.copyRemoveAll();
     this.selectedMorphs.each(function(m) {
       var cmdList = m.commands();
       if (cmdList) {

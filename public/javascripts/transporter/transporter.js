@@ -36,15 +36,63 @@ thisModule.addSlots(transporter.module, function(add) {
     this._hasChangedSinceLastFileOut = false;
   }, {category: ['keeping track of changes']});
 
-  add.method('mirrorsInOrderForFilingOut', function (f) {
-    var alreadySeen = hashMap.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
+  add.method('slotDependencies', function () {
+    var deps = dependencies.copyRemoveAll();
+    
+    var alreadySeen = set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
     this.objectsThatMightContainSlotsInMe().each(function(obj) {
       var mir = reflect(obj);
-      if (! alreadySeen.containsKey(mir)) {
-        alreadySeen.put(mir, mir);
+      if (! alreadySeen.includes(mir)) {
+        alreadySeen.add(mir);
+
+        mir.eachNormalSlot(function(s) {
+          if (s.module() === this) {
+            if (s.isCreator()) {
+              var contents = s.contents();
+
+              var parent = contents.parent();
+              var parentCreatorSlot = parent.creatorSlot();
+              if (parentCreatorSlot && parentCreatorSlot.module() === this) {
+                deps.dependeesOf(s).push(parentCreatorSlot);
+              }
+
+              var cdps = contents.copyDownParents();
+              cdps.each(function(cdp) {
+                var copyDownParentCreatorSlot = reflect(cdp.parent).creatorSlot();
+                if (copyDownParentCreatorSlot && copyDownParentCreatorSlot.module() === this) {
+                  deps.dependeesOf(s).push(copyDownParentCreatorSlot);
+                }
+              }.bind(this));
+              
+              contents.eachNormalSlot(function(slotInContents) {
+                if (slotInContents.module() === this) {
+                  deps.dependeesOf(slotInContents).push(s);
+                }
+              }.bind(this));
+            } else if (! s.initializationExpression()) {
+              var contents = s.contents();
+              var contentsCreatorSlot = contents.canHaveCreatorSlot() && contents.creatorSlot();
+              if (contentsCreatorSlot && contentsCreatorSlot.module() === this) {
+                deps.dependeesOf(s).push(contentsCreatorSlot);
+              }
+            }
+          }
+        }.bind(this));
       }
     }.bind(this));
-    return alreadySeen.values().sort(function(a, b) { var an = a.name(); var bn = b.name(); return an === bn ? 0 : an < bn ? -1 : 1; });
+    
+    return deps;
+  }, {category: ['transporting'], comment: 'If Javascript could do "become", this would be unnecessary, since we could just put in a placeholder and then swap it for the real object later.'});
+
+  add.method('mirrorsInOrderForFilingOut', function (f) {
+    var alreadySeen = set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
+    this.objectsThatMightContainSlotsInMe().each(function(obj) {
+      var mir = reflect(obj);
+      if (! alreadySeen.includes(mir)) {
+        alreadySeen.add(mir);
+      }
+    }.bind(this));
+    return alreadySeen.toArray().sort(function(a, b) { var an = a.name(); var bn = b.name(); return an === bn ? 0 : an < bn ? -1 : 1; });
   }, {category: ['transporting']});
 
   add.method('fileOut', function () {
