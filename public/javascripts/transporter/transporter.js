@@ -248,28 +248,39 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
     return exitValueOf(function(exit) {
       this._remainingSlotsByMirror.eachKeyAndValue(function(mir, slots) {
         if (slots.size() === 0) { throw "oops, we were supposed to remove the mirror from the dictionary if it had no slots left"; }
-        var dependees = this._objDeps.dependeesOf(mir);
-        if (dependees.size() === 0) {
-          exit(mir);
-        }
+        if (this._objDeps.dependeesOf(mir).size() === 0) { exit(mir); }
       }.bind(this));
       return null;
     }.bind(this));
+  }, {category: ['dependencies']});
+
+  add.method('chooseASlotWithNoDependees', function (slots) {
+    return slots.find(function(s) { return this._slotDeps.dependeesOf(s).size() === 0; }.bind(this));
   }, {category: ['dependencies']});
 
   add.method('determineOrder', function () {
     while (! this._remainingSlotsByMirror.isEmpty()) {
       var nextMirrorToFileOut = this.chooseAMirrorWithNoDependees();
       if (nextMirrorToFileOut) {
-        // make a copy of the set of slots, since we'll be removing from the set as we go
-        var slots = this._remainingSlotsByMirror.get(nextMirrorToFileOut).toArray();
-        slots.each(function(s) { this.nextSlotIs(s, false); }.bind(this));
-        this._objDeps.removeDependee(nextMirrorToFileOut);
+        this.nextObjectIs(nextMirrorToFileOut);
       } else {
-        throw "there is a cycle in the object dependency graph; breaking the cycle is not implemented yet"
+        throw "there is a cycle in the object dependency graph; breaking the cycle is not implemented yet";
       }
     }
     return this._slotsInOrder;
+  }, {category: ['transporting']});
+
+  add.method('nextObjectIs', function (nextMirrorToFileOut) {
+    var slots = this._remainingSlotsByMirror.get(nextMirrorToFileOut);
+    while (! slots.isEmpty()) {
+      var nextSlotToFileOut = this.chooseASlotWithNoDependees(slots);
+      if (nextSlotToFileOut) {
+        this.nextSlotIs(nextSlotToFileOut, false);
+      } else {
+        throw "there is a cycle in the slot dependency graph; breaking the cycle is not implemented yet";
+      }
+    }
+    this._objDeps.removeDependee(nextMirrorToFileOut);
   }, {category: ['transporting']});
 
   add.method('nextSlotIs', function (s, shouldUpdateObjDeps) {
