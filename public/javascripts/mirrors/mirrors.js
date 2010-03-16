@@ -60,7 +60,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['naming']});
 
   add.method('toString', function () {
-    return "on " + this.name();
+    return "on " + this.inspect();
   }, {category: ['naming']});
 
   add.method('nameOfLobby', function () {

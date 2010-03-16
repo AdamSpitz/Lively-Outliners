@@ -56,6 +56,14 @@ thisModule.addSlots(hashTable, function(add) {
 
   add.data('_comparator', hashTable.equalityComparator, {category: ['hashing'], initializeTo: 'hashTable.equalityComparator'});
 
+  add.method('size', function () {
+    return this._size;
+  }, {category: ['accessing']});
+
+  add.method('isEmpty', function () {
+    return this.size() === 0;
+  }, {category: ['testing']});
+
   add.method('bucketForKey', function (k) {
     var bucketName = "" + this._comparator.hashCodeForKey(k);
     var b = this._buckets[bucketName];
@@ -77,10 +85,15 @@ thisModule.addSlots(hashTable, function(add) {
   }, {category: ['hashing']});
 
   add.method('entryForKeyInBucket', function (k, b) {
+    var i = this.indexOfEntryForKeyInBucket(k, b);
+    return i === null ? null : b[i];
+  }, {category: ['hashing']});
+
+  add.method('indexOfEntryForKeyInBucket', function (k, b) {
     for (var i = 0, n = b.length; i < n; ++i) {
       var entry = b[i];
       if (this._comparator.keysAreEqual(k, this.keyOfEntry(entry))) {
-        return entry;
+        return i;
       }
     }
     return null;
@@ -96,6 +109,18 @@ thisModule.addSlots(hashTable, function(add) {
       b.push(this.newEntry(k, v));
       ++this._size;
       return v;
+    }
+  }, {category: ['accessing']});
+
+  add.method('removeKey', function (k) {
+    var b = this.bucketForKey(k);
+    var i = this.indexOfEntryForKeyInBucket(k, b);
+    if (i !== null) {
+      var entry = b.splice(i, 1)[0];
+      --this._size;
+      return this.valueOfEntry(entry);
+    } else {
+      return null;
     }
   }, {category: ['accessing']});
 
@@ -193,6 +218,8 @@ thisModule.addSlots(dictionary, function(add) {
     return this.keyOfEntry(entry) + ": " + this.valueOfEntry(entry);
   }, {category: ['entries']});
 
+  add.method('typeName', function () { return "dictionary"; }, {category: ['printing']});
+
   add.method('get', function (k) {
     var entry = this.entryForKey(k);
     return entry !== null ? this.valueOfEntry(entry) : null;
@@ -224,9 +251,18 @@ thisModule.addSlots(dictionary, function(add) {
     return vs;
   }, {category: ['accessing']});
 
-  add.method('getOrIfAbsentPut', function (key, functionReturningTheValueToPutIfAbsent) {
+  add.method('getOrIfAbsent', function (key, functionWhoseValueToReturnIfAbsent) {
     var v = this.get(key);
-    if (v == null) {
+    if (v === null) {
+      return functionWhoseValueToReturnIfAbsent();
+    }
+    return v;
+  }, {category: ['accessing']});
+
+  add.method('getOrIfAbsentPut', function (key, functionReturningTheValueToPutIfAbsent) {
+    // aaa - optimize this to only do one hash lookup?
+    var v = this.get(key);
+    if (v === null) {
       v = functionReturningTheValueToPutIfAbsent();
       this.set(key, v);
     }
@@ -303,8 +339,18 @@ thisModule.addSlots(set, function(add) {
     return entry.toString();
   }, {category: ['entries']});
 
+  add.method('typeName', function () { return "set"; }, {category: ['printing']});
+
   add.method('add', function (v) {
     return this.put(v, v);
+  }, {category: ['accessing']});
+
+  add.method('addAll', function (vs) {
+    vs.each(function(v) { this.add(v); }.bind(this));
+  }, {category: ['accessing']});
+
+  add.method('remove', function (v) {
+    return this.removeKey(v);
   }, {category: ['accessing']});
 
   add.method('contains', function (k) {
@@ -328,6 +374,12 @@ thisModule.addSlots(set, function(add) {
     });
     return vs;
   }, {category: ['converting']});
+
+  add.method('copyContaining', function (vs) {
+    var s = this.copyRemoveAll();
+    s.addAll(vs);
+    return s;
+  }, {category: ['creating']});
     
 });
 

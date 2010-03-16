@@ -56,13 +56,17 @@ function creatorChainLength(o) {
   return creatorChainLength(creatorSlotHolder) + 1;
 }
 
-function copyDownSlots(dst, src, slotsToOmit) {
-  slotsToOmit = slotsToOmit || [];
+function adjustSlotsToOmit(rawSlotsToOmit) {
+  var slotsToOmit = rawSlotsToOmit || [];
   if (typeof slotsToOmit === 'string') {
     slotsToOmit = slotsToOmit.split(" ");
   }
   slotsToOmit.push('__annotation__');
+  return slotsToOmit;
+}
 
+function copyDownSlots(dst, src, rawSlotsToOmit) {
+  var slotsToOmit = adjustSlotsToOmit(rawSlotsToOmit);
   var dstAnno = annotationOf(dst);
   for (var name in src) {
     if (src.hasOwnProperty(name)) {

@@ -36,6 +36,14 @@ thisModule.addSlots(transporter.module, function(add) {
     this._hasChangedSinceLastFileOut = false;
   }, {category: ['keeping track of changes']});
 
+  add.method('eachSlotInMirror', function (mir, f) {
+    mir.eachNormalSlot(function(s) {
+      if (s.module() === this) {
+        f(s);
+      }
+    }.bind(this));
+  }, {category: ['iterating']});
+
   add.method('slotDependencies', function () {
     var deps = dependencies.copyRemoveAll();
     
@@ -45,36 +53,42 @@ thisModule.addSlots(transporter.module, function(add) {
       if (! alreadySeen.includes(mir)) {
         alreadySeen.add(mir);
 
-        mir.eachNormalSlot(function(s) {
-          if (s.module() === this) {
-            if (s.isCreator()) {
-              var contents = s.contents();
-
-              var parent = contents.parent();
-              var parentCreatorSlot = parent.creatorSlot();
-              if (parentCreatorSlot && parentCreatorSlot.module() === this) {
-                deps.dependeesOf(s).push(parentCreatorSlot);
+        this.eachSlotInMirror(mir, function(s) {
+          if (s.isCreator()) {
+            var contents = s.contents();
+            
+            var parent = contents.parent();
+            var parentCreatorSlot = parent.creatorSlot();
+            if (parentCreatorSlot && parentCreatorSlot.module() === this) {
+              deps.addDependency(s, parentCreatorSlot);
+            }
+            
+            var cdps = contents.copyDownParents();
+            cdps.each(function(cdp) {
+              var copyDownParent = reflect(cdp.parent);
+              var slotsToOmit = adjustSlotsToOmit(cdp.slotsToOmit);
+              var copyDownParentCreatorSlot = copyDownParent.creatorSlot();
+              if (copyDownParentCreatorSlot && copyDownParentCreatorSlot.module() === this) {
+                deps.addDependency(s, copyDownParentCreatorSlot);
               }
 
-              var cdps = contents.copyDownParents();
-              cdps.each(function(cdp) {
-                var copyDownParentCreatorSlot = reflect(cdp.parent).creatorSlot();
-                if (copyDownParentCreatorSlot && copyDownParentCreatorSlot.module() === this) {
-                  deps.dependeesOf(s).push(copyDownParentCreatorSlot);
-                }
+              // aaa - For now, make every slot in the copy-down parent exist before the child,
+              // because we don't yet have a mechanism to update the copy-down children on
+              // the fly as the copy-down parent changes.
+              this.eachSlotInMirror(copyDownParent, function(slotInCopyDownParent) {
+                deps.addDependency(s, slotInCopyDownParent);
               }.bind(this));
+
+            }.bind(this));
               
-              contents.eachNormalSlot(function(slotInContents) {
-                if (slotInContents.module() === this) {
-                  deps.dependeesOf(slotInContents).push(s);
-                }
-              }.bind(this));
-            } else if (! s.initializationExpression()) {
-              var contents = s.contents();
-              var contentsCreatorSlot = contents.canHaveCreatorSlot() && contents.creatorSlot();
-              if (contentsCreatorSlot && contentsCreatorSlot.module() === this) {
-                deps.dependeesOf(s).push(contentsCreatorSlot);
-              }
+            this.eachSlotInMirror(contents, function(slotInContents) {
+              deps.addDependency(slotInContents, s);
+            }.bind(this));
+          } else if (! s.initializationExpression()) {
+            var contents = s.contents();
+            var contentsCreatorSlot = contents.canHaveCreatorSlot() && contents.creatorSlot();
+            if (contentsCreatorSlot && contentsCreatorSlot.module() === this) {
+              deps.addDependency(s, contentsCreatorSlot);
             }
           }
         }.bind(this));
@@ -84,15 +98,10 @@ thisModule.addSlots(transporter.module, function(add) {
     return deps;
   }, {category: ['transporting'], comment: 'If Javascript could do "become", this would be unnecessary, since we could just put in a placeholder and then swap it for the real object later.'});
 
-  add.method('mirrorsInOrderForFilingOut', function (f) {
-    var alreadySeen = set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
-    this.objectsThatMightContainSlotsInMe().each(function(obj) {
-      var mir = reflect(obj);
-      if (! alreadySeen.includes(mir)) {
-        alreadySeen.add(mir);
-      }
-    }.bind(this));
-    return alreadySeen.toArray().sort(function(a, b) { var an = a.name(); var bn = b.name(); return an === bn ? 0 : an < bn ? -1 : 1; });
+  add.method('mirrorsInOrderForFilingOut', function () {
+    var allMirrors = set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
+    this.objectsThatMightContainSlotsInMe().each(function(obj) { allMirrors.add(reflect(obj)); }.bind(this));
+    return allMirrors.toArray().sort(function(a, b) { var an = a.name(); var bn = b.name(); return an === bn ? 0 : an < bn ? -1 : 1; });
   }, {category: ['transporting']});
 
   add.method('fileOut', function () {
@@ -128,17 +137,34 @@ thisModule.addSlots(transporter.module, function(add) {
     }
   }, {category: ['transporting']});
 
-  add.method('fileOutSlots', function (buffer) {
-    var mirs = this.mirrorsInOrderForFilingOut();
-    mirs.each(function(mir) {
-      buffer.append("thisModule.addSlots(").append(mir.creatorSlotChainExpression()).append(", function(add) {\n\n");
-      mir.eachSlot(function(s) {
-        if (s.module && s.module() === this) {
-          s.fileOutTo(buffer);
-        }
-      }.bind(this));
-      buffer.append("});\n\n\n");
+  add.creator('slotOrderizer', {}, {category: ['transporting']});
+
+  add.method('eachSlotInOrderForFilingOut', function (f) {
+    Object.newChildOf(this.slotOrderizer, this).determineOrder().each(f);
+  }, {category: ['transporting']});
+
+  add.method('aaa_old_eachSlotInOrderForFilingOut', function (f) {
+    this.mirrorsInOrderForFilingOut().each(function(mir) {
+      this.eachSlotInMirror(mir, function(s) {
+        f(s);
+      });
     }.bind(this));
+  }, {category: ['transporting']});
+
+  add.method('fileOutSlots', function (buffer) {
+    var previousHolder = null;
+    
+    this.eachSlotInOrderForFilingOut(function(s) {
+      var holder = s.holder();
+      if (!previousHolder || ! holder.equals(previousHolder)) {
+        if (previousHolder) { buffer.append("});\n\n\n"); }
+        buffer.append("thisModule.addSlots(").append(holder.creatorSlotChainExpression()).append(", function(add) {\n\n");
+        previousHolder = holder;
+      }
+      s.fileOutTo(buffer);
+    }.bind(this));
+
+    buffer.append("});\n\n\n");
   }, {category: ['transporting']});
 
   add.method('urlForModuleDirectory', function (directory) {
@@ -188,5 +214,75 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['keeping track of changes']});
 
 });
+
+
+thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
+
+  add.method('initialize', function (m) {
+    this._module = m;
+    this._slotsInOrder = [];
+
+    this._slotDeps = this._module.slotDependencies();
+
+    this._remainingSlotsByMirror = dictionary.copyRemoveAll();
+    this._module.objectsThatMightContainSlotsInMe().each(function(obj) {
+      var mir = reflect(obj);
+      var slots = set.copyRemoveAll();
+      this._module.eachSlotInMirror(mir, function(s) { slots.add(s); }.bind(this));
+      if (! slots.isEmpty()) {
+        this._remainingSlotsByMirror.put(mir, slots);
+      }
+    }.bind(this));
+
+    this.recalculateObjectDependencies();
+  }, {category: ['creating']});
+
+  add.method('recalculateObjectDependencies', function () {
+    this._objDeps = dependencies.copyRemoveAll();
+    this._slotDeps.eachDependency(function(depender, dependee) {
+      this._objDeps.addDependency(depender.holder(), dependee.holder());
+    }.bind(this));
+  }, {category: ['dependencies']});
+
+  add.method('chooseAMirrorWithNoDependees', function () {
+    return exitValueOf(function(exit) {
+      this._remainingSlotsByMirror.eachKeyAndValue(function(mir, slots) {
+        if (slots.size() === 0) { throw "oops, we were supposed to remove the mirror from the dictionary if it had no slots left"; }
+        var dependees = this._objDeps.dependeesOf(mir);
+        if (dependees.size() === 0) {
+          exit(mir);
+        }
+      }.bind(this));
+      return null;
+    }.bind(this));
+  }, {category: ['dependencies']});
+
+  add.method('determineOrder', function () {
+    while (! this._remainingSlotsByMirror.isEmpty()) {
+      var nextMirrorToFileOut = this.chooseAMirrorWithNoDependees();
+      if (nextMirrorToFileOut) {
+        // make a copy of the set of slots, since we'll be removing from the set as we go
+        var slots = this._remainingSlotsByMirror.get(nextMirrorToFileOut).toArray();
+        slots.each(function(s) { this.nextSlotIs(s, false); }.bind(this));
+        this._objDeps.removeDependee(nextMirrorToFileOut);
+      } else {
+        throw "there is a cycle in the object dependency graph; breaking the cycle is not implemented yet"
+      }
+    }
+    return this._slotsInOrder;
+  }, {category: ['transporting']});
+
+  add.method('nextSlotIs', function (s, shouldUpdateObjDeps) {
+    this._slotsInOrder.push(s);
+    var holder = s.holder();
+    var slots = this._remainingSlotsByMirror.get(holder);
+    slots.remove(s);
+    if (slots.isEmpty()) { this._remainingSlotsByMirror.removeKey(holder); }
+    this._slotDeps.removeDependee(s);
+    if (shouldUpdateObjDeps) { this.recalculateObjectDependencies(); }
+  }, {category: ['transporting']});
+});
+
+
 
 });

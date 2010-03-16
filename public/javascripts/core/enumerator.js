@@ -3,7 +3,7 @@ lobby.transporter.module.create('enumerator', function(thisModule) {
 
 thisModule.addSlots(modules.enumerator, function(add) {
     
-    add.data('_directory', 'core');
+  add.data('_directory', 'core');
 
 });
 
@@ -15,7 +15,7 @@ thisModule.addSlots(lobby, function(add) {
 });
 
 
-thisModule.addSlots(lobby.enumerator, function(add) {
+thisModule.addSlots(enumerator, function(add) {
 
   add.method('initialize', function (obj, methodName) {
     this._object = obj;
