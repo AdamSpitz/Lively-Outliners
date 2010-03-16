@@ -13,7 +13,7 @@ Morph.addMethods({
 
   contextMenu: function (evt) {
     var cs = this.commands();
-    if (!cs) { return null; }
+    if (!cs) { return this.shouldUseMorphMenuIfNoContextMenu ? this.morphMenu(evt) : null; }
     var menu = new MenuMorph([], this);
     cs.addItemsToMenu(menu, this);
     return menu;
@@ -39,4 +39,8 @@ MenuMorph.addMethods({
       newItems.each(function(item) {this.addItem(item);}.bind(this));
     }
   },
+});
+
+WorldMorph.addMethods({
+  shouldUseMorphMenuIfNoContextMenu: true
 });

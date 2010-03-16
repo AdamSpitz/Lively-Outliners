@@ -93,15 +93,15 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
 thisModule.addSlots(transporter, function(add) {
 
   add.method('addMenuItemsTo', function(menu, evt) {
-    var world = evt.hand.world();
-
     menu.addLine();
 
     menu.addItem(["all modules", function(evt) {
+      var world = evt.hand.world();
       world.assumePose(world.listPoseOfMorphsFor(Object.newChildOf(enumerator, transporter.module, 'eachModule'), "all modules"));
     }]);
 
     menu.addItem(["changed modules", function(evt) {
+      var world = evt.hand.world();
       world.assumePose(world.listPoseOfMorphsFor(transporter.module.changedOnes(), "all modules"));
     }]);
 
@@ -109,6 +109,8 @@ thisModule.addSlots(transporter, function(add) {
     if (! URL.source.hostname.include("adamspitz.com")) {
 
     menu.addItem(["file in...", function(evt) {
+      var world = evt.hand.world();
+
       var filenames = new FileDirectory(lobby.transporter.module.urlForNonCoreModulesDirectory()).filenames().select(function(n) {return n.endsWith(".js");});
       
       var modulesMenu = new MenuMorph(filenames.map(function(n) {return [n, function(evt) {

@@ -46,12 +46,13 @@ thisModule.addSlots(command.list, function(add) {
   });
 
   add.method('addLine', function(c) {
+    if (this._commands.length === 0 || this._commands[this._commands.length - 1] === null) { return; }
     this._commands.push(null);
   });
 
   add.method('addSection', function(cs) {
     if (cs.size() > 0) {
-      if (this._commands.size() > 0) {this.addLine();}
+      this.addLine();
       cs.each(this.addItem.bind(this));
     }
   });

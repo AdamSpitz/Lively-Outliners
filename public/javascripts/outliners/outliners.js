@@ -12,6 +12,7 @@ thisModule.addSlots(lobby, function(add) {
 
   add.method('OutlinerMorph', function OutlinerMorph() { Class.initializer.apply(this, arguments); }, {category: ['outliners']});
 
+  add.data('livelyOutliners', {}, {category: ['outliners']});
 });
 
 
@@ -278,37 +279,36 @@ thisModule.addSlots(mirror, function(add) {
 });
 
 
-thisModule.addSlots(WorldMorph.prototype, function(add) {
+thisModule.addSlots(livelyOutliners, function(add) {
 
-  add.method('livelyOutlinersWorldMenu', function (evt) {
-    var world = this;
+  add.method('worldName', function () { return "Lively"; }, {category: ['printing']});
 
-    var menu = new MenuMorph([], this);
-
-    menu.addItem(["create new object", function(evt) {
-      this.morphFor(reflect({})).grabMe(evt);
+  add.method('addCommandsTo', function (cmdList) {
+    cmdList.addItem(["create new object", function(evt) {
+      var world = evt.hand.world();
+      world.morphFor(reflect({})).grabMe(evt);
     }]);
 
-    menu.addItem(["get the Global object", function(evt) {
-      this.morphFor(reflect(Global)).grabMe(evt);
+    cmdList.addItem(["get the Global object", function(evt) {
+      var world = evt.hand.world();
+      world.morphFor(reflect(Global)).grabMe(evt);
     }]);
 
-    transporter.addMenuItemsTo(menu, evt);
+    transporter.addMenuItemsTo(cmdList);
 
-    poses.addMenuItemsTo(menu, evt);
+    poses.addMenuItemsTo(cmdList);
 
     if (debugMode) {
-      menu.addLine();
+      cmdList.addLine();
 
-      menu.addItem(["get tests", function(evt) {
+      cmdList.addItem(["get tests", function(evt) {
         var testCaseClasses = [dictionary.Tests, set.Tests, mirror.Tests];
         var testCases = testCaseClasses.map(function(c) {return c.prototype;});
+        var world = evt.hand.world();
         world.assumePose(world.listPoseOfMorphsFor(testCases, "test cases for the outliner stuff"));
       }]);
     }
-
-    return menu;
-  });
+  }, {category: ['menu']});
 
 });
 

@@ -156,6 +156,16 @@ Morph.subclass("RowOrColumnMorph", {
     this.potentialContent = function() { return ms; };
   },
 
+  // aaa - This should probably just be in Morph.
+  /* aaa - Doesn't work yet; I need to rethink this. What if you try to reshape something to be smaller than its minimum needs?
+  reshape: function($super, partName, newPoint, lastCall) {
+    var r = $super(partName, newPoint, lastCall);
+    this.horizontalLayoutMode = this.verticalLayoutMode = LayoutModes.Rigid;
+    this.minimumExtentChanged();
+    return r;
+  },
+  */
+
   beInvisible: function() {
     this.setPadding(0);
     this.setFill(null);
@@ -227,6 +237,10 @@ Morph.addMethods({
 });
 
 HandMorph.addMethods({
+  shouldNotBePartOfRowOrColumn: true
+});
+
+HandleMorph.addMethods({
   shouldNotBePartOfRowOrColumn: true
 });
 
