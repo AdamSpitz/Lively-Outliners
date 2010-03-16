@@ -301,7 +301,7 @@ thisModule.addSlots(WorldMorph.prototype, function(add) {
       menu.addLine();
 
       menu.addItem(["get tests", function(evt) {
-        var testCaseClasses = [mirror.Tests];
+        var testCaseClasses = [bloodyHashTable.Tests, mirror.Tests];
         var testCases = testCaseClasses.map(function(c) {return c.prototype;});
         world.assumePose(world.listPoseOfMorphsFor(testCases, "test cases for the outliner stuff"));
       }]);

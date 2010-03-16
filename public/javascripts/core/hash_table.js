@@ -123,6 +123,14 @@ thisModule.addSlots(bloodyHashTable, function(add) {
     }
   }, {category: ['iterating']});
 
+  add.method('keys', function () {
+    var ks = [];
+    this._each(function(pair) {
+      ks.push(pair.key);
+    });
+    return ks;
+  }, {category: ['accessing']});
+
   add.method('values', function () {
     var vs = [];
     this._each(function(pair) {
@@ -168,6 +176,8 @@ thisModule.addSlots(bloodyHashTable, function(add) {
     return this.each(function(pair) {return f(pair.key);});
   }, {category: ['iterating']});
 
+  add.method('Tests', function Tests() { Class.initializer.apply(this, arguments); }, {category: ['tests']});
+
 });
 
 
@@ -204,6 +214,28 @@ thisModule.addSlots(bloodyHashTable.identityComparator, function(add) {
     if (k.identityHashCode) { return k.identityHashCode(); }
     return 42;
   }, {category: ['hashing']});
+
+});
+
+
+thisModule.addSlots(bloodyHashTable.Tests, function(add) {
+
+  add.data('superclass', TestCase);
+
+  add.creator('prototype', Object.create(TestCase.prototype));
+
+  add.data('type', 'bloodyHashTable.Tests');
+
+});
+
+
+thisModule.addSlots(bloodyHashTable.Tests.prototype, function(add) {
+
+  add.data('constructor', bloodyHashTable.Tests);
+
+  add.method('testGettingAndSetting', function () {
+    this.assert(false, "Gotta write some tests here.");
+  });
 
 });
 

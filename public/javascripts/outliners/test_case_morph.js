@@ -51,14 +51,6 @@ thisModule.addSlots(TestCase.prototype.Morph.prototype, function(add) {
 
   add.method('inspect', function () { return this._testCaseProto.constructor.type; }, {category: ['printing']});
 
-  add.method('addCommandsTo', function (cmdList) {
-    cmdList.addItem({label: 'run', go: this.runAll.bind(this)});
-
-    cmdList.addLine();
-
-    cmdList.addItem({label: 'get test case object', go: this.getTestCaseObject.bind(this)});
-  }, {category: ['menu']});
-
   add.method('runAll', function (evt) {
     var w = evt.hand.world();
     var testCase = new (this._testCaseProto.constructor)();
@@ -70,6 +62,14 @@ thisModule.addSlots(TestCase.prototype.Morph.prototype, function(add) {
 
   add.method('getTestCaseObject', function (evt) {
     evt.hand.world().morphFor(reflect(this._testCaseProto)).grabMe(evt);
+  }, {category: ['commands']});
+
+  add.method('addCommandsTo', function (cmdList) {
+    cmdList.addItem({label: 'run', pluralLabel: 'run all tests', go: this.runAll.bind(this)});
+
+    cmdList.addLine();
+
+    cmdList.addItem({label: 'get test case object', go: this.getTestCaseObject.bind(this)});
   }, {category: ['commands']});
 
 });

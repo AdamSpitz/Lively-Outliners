@@ -89,14 +89,16 @@ thisModule.addSlots(mirror, function(add) {
       var isThePrototype = chain[0].contents().equals(this);
       var s = stringBuffer.create(isThePrototype ? "" : chain[chain.length - 1].name().startsWithVowel() ? "an " : "a ");
 
-      // HACK - Recognize class-like patterns and show names like "a WobulatorMorph" rather than "a WobulatorMorph.prototype",
-      // because, well, that's really annoying. Not sure this is the right way to fix this. But the reality is that in JS code
-      // it'll probably be common to have both class-like and prototype-like inheritance and naming patterns.
-      var stopHere =  !isThePrototype && chain.length >= 2 && chain[0].name() === 'prototype' && chain[0].holder().isReflecteeProbablyAClass() ? 1 : 0;
-
-      for (var i = chain.length - 1; i >= stopHere; i -= 1) {
-        s.append(chain[i].name());
-        if (i > stopHere) {s.append(".");}
+      var sep = "";
+      for (var i = chain.length - 1; i >= 0; i -= 1) {
+        var n = chain[i].name();
+        // HACK - Recognize class-like patterns and show names like "a WobulatorMorph" rather than "a WobulatorMorph.prototype",
+        // because, well, that's really annoying. Not sure this is the right way to fix this. But the reality is that in JS code
+        // it'll probably be common to have both class-like and prototype-like inheritance and naming patterns.
+        if (n !== 'prototype' || (i === 0 && (isThePrototype || chain.length === 1))) {
+          s.append(sep).append(n);
+        }
+        sep = ".";
       }
       return s.toString();
     } else {
@@ -805,6 +807,7 @@ thisModule.addSlots(mirror.Tests.prototype, function(add) {
     this.assertEqual("an Array", reflect([1, 'two', 3]).name());
     this.assertEqual("transporter", reflect(transporter).name());
     this.assertEqual("transporter.module", reflect(transporter.module).name());
+    this.assertEqual("a TestCase.Morph", reflect(new TestCase.prototype.Morph(new mirror.Tests())).name());
     this.assertEqual("", reflect(Global).name()); // aaa - maybe just fix this to say Global?
   });
 
@@ -831,6 +834,7 @@ thisModule.addSlots(mirror.Tests.prototype, function(add) {
     this.assertThrowsException(function() { reflect([1, 'two', 3]).creatorSlotChainExpression(); });
     this.assertEqual("transporter", reflect(transporter).creatorSlotChainExpression());
     this.assertEqual("transporter.module", reflect(transporter.module).creatorSlotChainExpression());
+    this.assertEqual("TestCase.prototype.Morph.prototype", reflect(new TestCase.prototype.Morph(new mirror.Tests())).creatorSlotChainExpression());
     this.assertEqual("lobby", reflect(Global).creatorSlotChainExpression());
   });
 
