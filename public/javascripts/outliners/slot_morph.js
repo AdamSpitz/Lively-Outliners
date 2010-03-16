@@ -12,46 +12,6 @@ thisModule.addSlots(lobby, function(add) {
 
   add.method('SlotMorph', function SlotMorph() { Class.initializer.apply(this, arguments); }, {category: ['outliners']});
 
-  add.method('SlotContentsPointerArrow', function SlotContentsPointerArrow() { Class.initializer.apply(this, arguments); }, {category: ['outliners']});
-
-});
-
-
-thisModule.addSlots(SlotContentsPointerArrow, function(add) {
-
-  add.data('superclass', ArrowMorph);
-
-  add.creator('prototype', Object.create(ArrowMorph.prototype));
-
-  add.data('type', 'SlotContentsPointerArrow');
-
-});
-
-
-thisModule.addSlots(SlotContentsPointerArrow.prototype, function(add) {
-
-  add.data('constructor', SlotContentsPointerArrow);
-
-  add.method('initialize', function ($super, slotMorph, fep) {
-    this._slotMorph = slotMorph;
-    this._fixedEndpoint = fep;
-    $super();
-  });
-
-  add.method('slot', function () {return this._slotMorph.slot();});
-
-  add.method('createEndpoints', function () {
-    this.endpoint1 = this._fixedEndpoint;
-    this.endpoint2 = new ArrowEndpoint(this.slot(), this);
-
-    // aaa - blecch, ugly
-    var slotMorph = this._slotMorph;
-    this.endpoint2.wasJustDroppedOnOutliner = function(outliner) {
-      this.wasJustDroppedOn(outliner);
-      slotMorph.setContents(outliner.mirror());
-    };
-  });
-
 });
 
 
@@ -115,6 +75,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     var m = this._contentsPointer;
     if (m) { return m; }
 
+    var slotMorph = this;
     var slot = this.slot();
     var icon = this.createIconForButton("images/icon-data-slot.gif");
 
@@ -129,9 +90,15 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
         arrow.noLongerNeedsToBeVisible();
       }
     }.bind(this), 1);
-    arrow = m.arrow = new SlotContentsPointerArrow(this, m);
-    arrow.noLongerNeedsToBeUpdated = true;
     beArrowEndpoint(m);
+    arrow = m.arrow = new ArrowMorph(slot, m, null);
+    arrow.noLongerNeedsToBeUpdated = true;
+
+    arrow.endpoint2.wasJustDroppedOnOutliner = function(outliner) {
+      this.wasJustDroppedOn(outliner);
+      slotMorph.setContents(outliner.mirror());
+    };
+
     return m;
   }, {category: ['contents']});
 

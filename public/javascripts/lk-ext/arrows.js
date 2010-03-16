@@ -1,10 +1,11 @@
 Morph.subclass("ArrowMorph", {
-  initialize: function($super) {
+  initialize: function($super, assoc, ep1, ep2) {
     $super(new lively.scene.Polyline([pt(0,0), pt(0,0)]));
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
     this.setFill(null);
-    this.createEndpoints();
+    this.endpoint1 = ep1 || new ArrowEndpoint(assoc, this);
+    this.endpoint2 = ep2 || new ArrowEndpoint(assoc, this);
     this.endpoint1.otherEndpoint = this.endpoint2;
     this.endpoint2.otherEndpoint = this.endpoint1;
     this.endpoint2.relativeLineEndpoint = pt(0,0);
