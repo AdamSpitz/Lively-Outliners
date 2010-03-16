@@ -65,7 +65,7 @@ thisModule.addSlots(TestCase.prototype.Morph.prototype, function(add) {
   }, {category: ['commands']});
 
   add.method('addCommandsTo', function (cmdList) {
-    cmdList.addItem({label: 'run', pluralLabel: 'run all tests', go: this.runAll.bind(this)});
+    cmdList.addItem({label: 'run', pluralLabel: 'run tests', go: this.runAll.bind(this)});
 
     cmdList.addLine();
 

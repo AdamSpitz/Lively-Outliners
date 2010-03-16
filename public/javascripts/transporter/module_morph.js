@@ -2,7 +2,7 @@ lobby.transporter.module.create('module_morph', function(thisModule) {
 
 
 
-thisModule.addSlots(modules.transporter, function(add) {
+thisModule.addSlots(modules.module_morph, function(add) {
     
     add.data('_directory', 'transporter');
 
@@ -74,7 +74,7 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
   }, {category: ['commands']});
 
   add.method('addCommandsTo', function (cmdList) {
-    cmdList.addItem({label: 'file out', go: this.fileOut.bind(this)});
+    cmdList.addItem({label: 'file out', pluralLabel: 'file out modules', go: this.fileOut.bind(this)});
 
     cmdList.addItem({label: 'forget I was changed', go: this.forgetIWasChanged.bind(this)});
 
