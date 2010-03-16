@@ -1,26 +1,3 @@
-var tickNumber = 0;
-
-function startUpdatingAllArrows() {
-  new PeriodicalExecuter(function(pe) {
-    updateAllArrows();
-  }, 0.1);
-}
-
-var allArrows = [];
-
-function eachArrowThatShouldBeUpdated(f) {
-  allArrows.each(function(a) {if (!a.noLongerNeedsToBeUpdated) {f(a);}});
-}
-
-function updateAllArrows() {
-  eachArrowThatShouldBeUpdated(function(a) {
-    if (a.shouldUpdateOnThisTick(tickNumber)) {
-      a.putVerticesInTheRightPlace();
-    }
-  });
-  tickNumber = (tickNumber + 1) % 5;
-}
-
 Morph.subclass("ArrowMorph", {
   initialize: function($super) {
     $super(new lively.scene.Polyline([pt(0,0), pt(0,0)]));
@@ -31,30 +8,40 @@ Morph.subclass("ArrowMorph", {
     this.endpoint1.otherEndpoint = this.endpoint2;
     this.endpoint2.otherEndpoint = this.endpoint1;
     this.endpoint2.relativeLineEndpoint = pt(0,0);
-    this.tickSlowly();
-    this.initializeUI();
-  },
-
-  initializeUI: function() {
     this.closeDnD();
     this.ignoreEvents();
     this.beUngrabbable();
-    return this;
+    this.needsToBeVisible();
   },
 
-  // Optimization suggested by Dan Ingalls: slow down ticking when things are pretty quiet.
-  tickQuickly: function() { this.shouldUpdateOnEveryTick = true;  },
-  tickSlowly:  function() { this.shouldUpdateOnEveryTick = false; },
-  shouldUpdateOnThisTick: function(n) {return this.shouldUpdateOnEveryTick || n === 0;},
+  stopUpdating: function() {
+    if (this._updateProcess) {
+      this._updateProcess.stop();
+      delete this._updateProcess;
+    }
+  },
+
+  changeUpdateFrequency: function(newFrequency) {
+    // Optimization suggested by Dan Ingalls: slow down ticking when things are pretty quiet.
+    this.stopUpdating();
+    this._updateProcess = new PeriodicalExecuter(function(pe) {
+      this.putVerticesInTheRightPlace();
+    }.bind(this), newFrequency);
+  },
+
+  tickQuickly: function() { this.changeUpdateFrequency(0.1); },
+  tickSlowly:  function() { this.changeUpdateFrequency(0.5); },
 
   noLongerNeedsToBeVisible: function() {
     this.noLongerNeedsToBeUpdated = true;
+    this.stopUpdating();
     this.remove();
     this.endpoint2.remove();
   },
 
   needsToBeVisible: function() {
     this.noLongerNeedsToBeUpdated = false;
+    this.tickSlowly();
   },
 
   putVerticesInTheRightPlace: function() {
@@ -77,6 +64,7 @@ Morph.subclass("ArrowMorph", {
   },
 
   shouldBeShown: function() {
+    if (this.noLongerNeedsToBeUpdated) { return false; }
     var m1 = this.endpoint1.determineWhichMorphToAttachTo();
     var m2 = this.endpoint2.determineWhichMorphToAttachTo();
     var w  = WorldMorph.current();
@@ -262,11 +250,11 @@ Morph.addMethods({
   },
 });
 
-CanHaveArrowsAttachedToIt = {
-  eachArrowEndpoint: function(f) {
-    // aaa - I think this could (and probably should) be optimized.
-    this.submorphs.each(function(m) {
-      if (m.isArrowEndpoint) {f(m);}
-    });
-  },
-};
+
+function beArrowEndpoint(m) {
+  m.determineWhichMorphToAttachTo = function() {return !!this.world();};
+  m.attachToTheRightPlace = function() {};
+  m.noLongerNeedsToBeVisibleAsArrowEndpoint = function() {};
+  m.relativeLineEndpoint = m.getExtent().scaleBy(0.5);
+  m.setShapeToLookLikeACircle = function() {};
+}

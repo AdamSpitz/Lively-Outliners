@@ -20,7 +20,7 @@ thisModule.addSlots(OutlinerMorph, function(add) {
 
   add.data('superclass', ColumnMorph);
 
-  add.creator('prototype', Object.create(ColumnMorph.prototype), {}, {copyDownParents: [{parent: CanHaveArrowsAttachedToIt}, {parent: CategoryMorphMixin}]});
+  add.creator('prototype', Object.create(ColumnMorph.prototype), {}, {copyDownParents: [{parent: CategoryMorphMixin}]});
 
   add.data('type', 'OutlinerMorph');
 

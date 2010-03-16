@@ -36,7 +36,6 @@ thisModule.addSlots(SlotContentsPointerArrow.prototype, function(add) {
     this._slotMorph = slotMorph;
     this._fixedEndpoint = fep;
     $super();
-    allArrows.push(this);
   });
 
   add.method('slot', function () {return this._slotMorph.slot();});
@@ -115,15 +114,14 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   add.method('contentsPointer', function () {
     var m = this._contentsPointer;
     if (m) { return m; }
+
     var slot = this.slot();
-    var arrow;
-    var icon = new ImageMorph(pt(10,10).extentAsRectangle(), "images/icon-data-slot.gif");
-    icon.setFill(null);
-    icon.beUngrabbable();
-    icon.ignoreEvents();
+    var icon = this.createIconForButton("images/icon-data-slot.gif");
+
     // aaa - This is a mess. Make it make sense.
+    var arrow;
     m = this._contentsPointer = createButton(icon, function() {
-      if (arrow.noLongerNeedsToBeUpdated || ! arrow.world()) {
+      if (arrow.noLongerNeedsToBeUpdated) {
         var w = this.world();
         w.morphFor(slot.contents()).ensureIsInWorld(w, m.worldPoint(pt(150,0)), false, true, true);
         arrow.needsToBeVisible();
@@ -131,28 +129,27 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
         arrow.noLongerNeedsToBeVisible();
       }
     }.bind(this), 1);
-    arrow = this._contentsPointer.arrow = new SlotContentsPointerArrow(this, m);
+    arrow = m.arrow = new SlotContentsPointerArrow(this, m);
     arrow.noLongerNeedsToBeUpdated = true;
-
-    m.determineWhichMorphToAttachTo = function() {return !!this.world();};
-    m.attachToTheRightPlace = function() {};
-    m.noLongerNeedsToBeVisibleAsArrowEndpoint = function() {};
-    m.relativeLineEndpoint = pt(5, 5);
-    m.setShapeToLookLikeACircle = function() {};
-
+    beArrowEndpoint(m);
     return m;
   }, {category: ['contents']});
 
   add.method('sourceButton', function () {
     var m = this._sourceButton;
     if (m) { return m; }
-    var icon = new ImageMorph(pt(10,10).extentAsRectangle(), "images/icon-method-slot.gif");
-    icon.setFill(null);
-    icon.beUngrabbable();
-    icon.ignoreEvents();
+    var icon = this.createIconForButton("images/icon-method-slot.gif");
     m = this._sourceButton = createButton(icon, function(evt) {this._sourceToggler.toggle(evt);}.bind(this), 1);
     return m;
   }, {category: ['source']});
+
+  add.method('createIconForButton', function (path) {
+    var icon = new ImageMorph(pt(10,10).extentAsRectangle(), path);
+    icon.setFill(null);
+    icon.beUngrabbable();
+    icon.ignoreEvents();
+    return icon;
+  }, {category: ['creating']});
 
   add.method('createButton', function (func) {
     var m = new ButtonMorph(pt(0,0).extent(pt(10,10)));
