@@ -10,7 +10,7 @@ thisModule.addSlots(modules.hash_table, function(add) {
 
 thisModule.addSlots(lobby, function(add) {
 
-  add.creator('bloodyHashTable', {}, {category: ['collections']}, {comment: 'I don\'t mean to keep this class around forever - hopefully sooner or later Javascript will\rhave a working hash table that can handle arbitrary objects (rather than just strings) as\rkeys. Maybe it exists already, but I couldn\'t find it. So for now I\'ll just use this bloody\rthing. -- Adam', copyDownParents: [{parent: Enumerable}]});
+  add.creator('hashMap', {}, {category: ['collections']}, {comment: 'I don\'t mean to keep this class around forever - hopefully sooner or later Javascript will\rhave a working hash table that can handle arbitrary objects (rather than just strings) as\rkeys. Maybe it exists already, but I couldn\'t find it. So for now I\'ll just use this bloody\rthing. -- Adam', copyDownParents: [{parent: Enumerable}]});
 
 });
 
@@ -33,7 +33,7 @@ thisModule.addSlots(String.prototype, function(add) {
 });
 
 
-thisModule.addSlots(bloodyHashTable, function(add) {
+thisModule.addSlots(hashMap, function(add) {
 
   add.method('copyRemoveAll', function () {
     // Should this be called copyRemoveAll or cloneRemoveAll or create or what?
@@ -50,7 +50,7 @@ thisModule.addSlots(bloodyHashTable, function(add) {
 
   add.creator('identityComparator', {}, {category: ['hashing']});
 
-  add.data('_comparator', bloodyHashTable.equalityComparator, {category: ['hashing'], initializeTo: 'bloodyHashTable.equalityComparator'});
+  add.data('_comparator', hashMap.equalityComparator, {category: ['hashing'], initializeTo: 'hashMap.equalityComparator'});
 
   add.method('bucketForKey', function (k) {
     var bucketName = "" + this._comparator.hashCodeForKey(k);
@@ -181,7 +181,7 @@ thisModule.addSlots(bloodyHashTable, function(add) {
 });
 
 
-thisModule.addSlots(bloodyHashTable.equalityComparator, function(add) {
+thisModule.addSlots(hashMap.equalityComparator, function(add) {
 
   add.method('keysAreEqual', function (k1, k2) {
     if (k1 === k2) {return true;}
@@ -197,13 +197,13 @@ thisModule.addSlots(bloodyHashTable.equalityComparator, function(add) {
 
   add.method('hashCodeForKey', function (k) {
     if (k.hashCode) { return k.hashCode(); }
-    return bloodyHashTable.identityComparator.hashCodeForKey(k);
+    return hashMap.identityComparator.hashCodeForKey(k);
   }, {category: ['hashing']});
 
 });
 
 
-thisModule.addSlots(bloodyHashTable.identityComparator, function(add) {
+thisModule.addSlots(hashMap.identityComparator, function(add) {
 
   add.method('keysAreEqual', function (k1, k2) {
     return k1 === k2;
@@ -218,23 +218,23 @@ thisModule.addSlots(bloodyHashTable.identityComparator, function(add) {
 });
 
 
-thisModule.addSlots(bloodyHashTable.Tests, function(add) {
+thisModule.addSlots(hashMap.Tests, function(add) {
 
   add.data('superclass', TestCase);
 
   add.creator('prototype', Object.create(TestCase.prototype));
 
-  add.data('type', 'bloodyHashTable.Tests');
+  add.data('type', 'hashMap.Tests');
 
 });
 
 
-thisModule.addSlots(bloodyHashTable.Tests.prototype, function(add) {
+thisModule.addSlots(hashMap.Tests.prototype, function(add) {
 
-  add.data('constructor', bloodyHashTable.Tests);
+  add.data('constructor', hashMap.Tests);
 
   add.method('testGettingAndSetting', function () {
-    var h = bloodyHashTable.copyRemoveAll();
+    var h = hashMap.copyRemoveAll();
     var k1 = {};
     var k2 = {};
     var k3 = pt(5, 6);

@@ -37,7 +37,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['keeping track of changes']});
 
   add.method('mirrorsInOrderForFilingOut', function (f) {
-    var alreadySeen = bloodyHashTable.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
+    var alreadySeen = hashMap.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
     this.objectsThatMightContainSlotsInMe().each(function(obj) {
       var mir = reflect(obj);
       if (! alreadySeen.containsKey(mir)) {
