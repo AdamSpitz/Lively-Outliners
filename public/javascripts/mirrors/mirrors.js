@@ -223,7 +223,8 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['accessing slot contents']});
 
   add.method('primitiveSetContentsAt', function (n, o) {
-    return this.reflectee()[n] = o;
+    this.reflectee()[n] = o;
+    return o;
   }, {category: ['accessing slot contents']});
 
   add.method('primitiveRemoveSlotAt', function (n) {
@@ -250,10 +251,12 @@ thisModule.addSlots(mirror, function(add) {
   add.method('parent', function () {
     if (! this.canAccessParent()) { throw "Sorry, you can't access an object's parent in this browser. Try Firefox or Safari."; }
     if (! this.hasParent()) { throw this.name() + " does not have a parent."; }
-    return reflect(this.reflectee().__proto__);
+    return reflect(this.reflectee()['__proto__']); // using [] to fool JSLint
   }, {category: ['accessing parent']});
 
-  add.method('canAccessParent', function () { return String.prototype.__proto__ !== undefined; }, {category: ['accessing parent']});
+  add.method('canAccessParent', function () {
+    return String.prototype['__proto__'] !== undefined; // using [] to fool JSLint
+  }, {category: ['accessing parent']});
 
   add.method('hasParent', function () { return ! (this.isReflecteeNull() || this.isReflecteeUndefined()); }, {category: ['accessing parent']});
 
@@ -261,7 +264,7 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('setParent', function (pMir) {
     if (! this.canAccessParent()) { throw "Sorry, you can't change an object's parent in this browser. Try Firefox or Safari."; }
-    this.reflectee().__proto__ = pMir.reflectee();
+    this.reflectee()['__proto__'] = pMir.reflectee(); // using [] to fool JSLint
   }, {category: ['accessing parent']});
 
   add.method('createChild', function () {
@@ -405,7 +408,9 @@ thisModule.addSlots(mirror, function(add) {
   add.method('annotationForWriting', function () {
     if (! this.hasAnnotation()) {
       if (! this.canHaveAnnotation()) { throw this.name() + " cannot have an annotation"; }
-      return this.reflectee().__annotation__ = {slotAnnotations: {}};
+      var a = {slotAnnotations: {}};
+      this.reflectee().__annotation__ = a;
+      return a;
     }
     return this.reflectee().__annotation__;
   }, {category: ['annotations']});
@@ -600,12 +605,15 @@ thisModule.addSlots(slots.plain, function(add) {
     var oa = this.holder().annotationForWriting();
     var sa = oa.slotAnnotations[annotationNameForSlotNamed(this.name())];
     if (sa) {return sa;}
-    return oa.slotAnnotations[annotationNameForSlotNamed(this.name())] = {};
+    sa = {};
+    oa.slotAnnotations[annotationNameForSlotNamed(this.name())] = sa;
+    return sa;
   }, {category: ['accessing annotation']});
 
   add.method('setAnnotation', function (a) {
     var oa = this.holder().annotationForWriting();
-    return oa.slotAnnotations[annotationNameForSlotNamed(this.name())] = a;
+    oa.slotAnnotations[annotationNameForSlotNamed(this.name())] = a;
+    return a;
   }, {category: ['accessing annotation']});
 
   add.method('removeAnnotation', function () {
@@ -700,7 +708,7 @@ thisModule.addSlots(slots.plain, function(add) {
           // This is just a reference to some well-known object that's created elsewhere.
           contentsExpr = contents.creatorSlotChainExpression();
         } else {
-          var isCreator = true;
+          isCreator = true;
           if (contents.isReflecteeFunction()) {
             creationMethod = "method";
             contentsExpr = contents.reflectee().toString();

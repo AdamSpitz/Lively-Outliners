@@ -127,8 +127,8 @@ Morph.subclass("RowOrColumnMorph", {
 
     if (this.areArraysEqual(old, ms)) { return; }
 
-    for (var i = 0, n = old.length; i < n; ++i) { var m = old[i]; if (! m.shouldNotBePartOfRowOrColumn) {this.removeMorph(m, true);}}
-    for (var i = 0, n =  ms.length; i < n; ++i) { this.addMorph(ms[i], true); }
+    for (var i = 0, n = old.length; i <  n; ++i) { var m = old[i]; if (! m.shouldNotBePartOfRowOrColumn) {this.removeMorph(m, true);}}
+    for (var j = 0, nn = ms.length; j < nn; ++j) { this.addMorph(ms[j], true); }
     this.forceLayoutRejiggering();
   },
 

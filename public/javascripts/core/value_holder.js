@@ -19,13 +19,13 @@ thisModule.addSlots(lobby, function(add) {
 
 thisModule.addSlots(lobby.booleanHolder, function(add) {
 
-  add.method('isChecked', function () { return this.getValue();     }, {}, {});
+  add.method('isChecked', function () { return this.getValue();     });
 
-  add.method('setChecked', function (b, evt) { return this.setValue(b, evt);    }, {}, {});
+  add.method('setChecked', function (b, evt) { return this.setValue(b, evt);    });
 
-  add.method('toggle', function (evt) { return this.setValue(! this.getValue(), evt); }, {}, {});
+  add.method('toggle', function (evt) { return this.setValue(! this.getValue(), evt); });
 
-  add.method('areValuesDifferent', function (v1, v2) { return (!v1) !== (!v2); }, {}, {});
+  add.method('areValuesDifferent', function (v1, v2) { return (!!v1) !== (!!v2); });
 
 });
 
@@ -37,9 +37,9 @@ thisModule.addSlots(lobby.valueHolder, function(add) {
     c.notifier = Object.newChildOf(notifier, this);
     c.setValue(v);
     return c;
-  }, {}, {});
+  });
 
-  add.method('getValue', function () { return this.value; }, {}, {});
+  add.method('getValue', function () { return this.value; });
 
   add.method('setValue', function (v, evt) {
     var oldValue = this.value;
@@ -47,16 +47,16 @@ thisModule.addSlots(lobby.valueHolder, function(add) {
     this.value = v;
     if (changed) {this.notifier.notify_all_observers(evt);}
     return v;
-  }, {}, {});
+  });
 
   add.method('areValuesDifferent', function (v1, v2) {
     return v1 !== v2;
-  }, {}, {});
+  });
 
   add.method('add_observer', function (o) {
       this.notifier.add_observer(o);
       return this;
-  }, {}, {});
+  });
 
 });
 

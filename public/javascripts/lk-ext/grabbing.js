@@ -84,7 +84,7 @@ Morph.addMethods({
     var desiredPos = evt.hand.position().subPt(this.getExtent().scaleBy(0.5));
     evt.hand.world().addMorphAt(this, desiredPos);
     evt.hand.grabMorph(this, evt);
-  },
+  }
 
 });
 
@@ -99,7 +99,7 @@ WorldMorph.addMethods({
     if (this.acceptsDropping(m)) { 
       m.wasJustDroppedOnWorld(this);
     }
-  },
+  }
 
 });
 

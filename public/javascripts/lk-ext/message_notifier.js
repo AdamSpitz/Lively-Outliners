@@ -9,7 +9,7 @@ ColumnMorph.subclass("MessageNotifierMorph", {
 
   wasJustDroppedOnWorld: function(world) {
     this.zoomOuttaHereTimer = setInterval(function() {this.startZoomingOuttaHere();}.bind(this), 5000);
-  },
+  }
 });
 
 Object.extend(MessageNotifierMorph, {
@@ -19,5 +19,5 @@ Object.extend(MessageNotifierMorph, {
     } catch (ex) {
       new this(ex, Color.red).grabMe(evt);
     }
-  },
+  }
 });

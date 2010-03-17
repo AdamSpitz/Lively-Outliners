@@ -25,7 +25,7 @@ thisModule.addSlots(command, function(add) {
 thisModule.addSlots(command.list, function(add) {
 
   add.method('create', function(cs) {
-    return Object.newChildOf(this, cs)
+    return Object.newChildOf(this, cs);
   });
 
   add.method('initialize', function(cs) {

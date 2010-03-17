@@ -137,11 +137,11 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
 
     var sms = [];
     this.eachSlot(function(s) { sms.push(outliner.slotMorphFor(s)); });
-    sms.sort(function(sm1, sm2) {var n1 = sm1.slot().name(), n2 = sm2.slot().name(); return n1 < n2 ? -1 : n1 === n2 ? 0 : 1});
+    sms.sort(function(sm1, sm2) {var n1 = sm1.slot().name(), n2 = sm2.slot().name(); return n1 < n2 ? -1 : n1 === n2 ? 0 : 1;});
 
     var scms = this.immediateSubcategoryMorphs();
     scms = scms.concat(this._slotsPanel.submorphs.select(function(m) {return m.isNewCategory && ! this.outliner().existingCategoryMorphFor(m.category());}.bind(this)));
-    scms.sort(function(scm1, scm2) {return scm1.category().lastPart() < scm2.category().lastPart() ? -1 : 1});
+    scms.sort(function(scm1, scm2) {return scm1.category().lastPart() < scm2.category().lastPart() ? -1 : 1;});
     
     var allSubmorphs = [this._modulesLabelRow];
     sms .each(function(sm ) {allSubmorphs.push(sm );});
@@ -163,7 +163,7 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
   add.method('populateSlotsPanelInMeAndExistingSubcategoryMorphs', function () {
     if (! this.expander().isExpanded()) { return; }
     this.populateSlotsPanel();
-    this._slotsPanel.submorphs.each(function(m) { if (m.constructor === CategoryMorph) { m.populateSlotsPanelInMeAndExistingSubcategoryMorphs(); } });;
+    this._slotsPanel.submorphs.each(function(m) { if (m.constructor === CategoryMorph) { m.populateSlotsPanelInMeAndExistingSubcategoryMorphs(); } });
   }, {category: ['updating']});
 
   add.method('addSlot', function (evt) {

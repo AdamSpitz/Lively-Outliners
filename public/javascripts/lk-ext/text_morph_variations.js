@@ -19,7 +19,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
 
   setSavedText: function(t)  {
     this.savedTextString = t;
-    if (this.notifier != null) {this.notifier.notify_all_observers();}
+    if (this.notifier) {this.notifier.notify_all_observers();}
   },
 
   setTextString: function($super, replacement, delayComposition, justMoreTyping) {
@@ -134,7 +134,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
 
   addOtherMenuItemsTo: function(menu, evt) {
     // override in children
-  },
+  }
 });
 
 TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
@@ -203,5 +203,5 @@ TextMorphRequiringExplicitAcceptance.subclass("TwoModeTextMorph", {
       menu.addSection([[this.nameOfEditCommand, function() {this.beWritableAndSelectAll(evt);}.bind(this)]]);
     }
     $super(menu, evt);
-  },
+  }
 });

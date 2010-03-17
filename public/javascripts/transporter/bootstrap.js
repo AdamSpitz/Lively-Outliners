@@ -24,7 +24,10 @@ if (typeof Object.newChildOf !== 'function') {
 
 function annotationOf(o) {
   if (o.hasOwnProperty('__annotation__')) { return o.__annotation__; }
-  return o.__annotation__ = {slotAnnotations: {}};
+  // Why doesn't JSLint like it when I put this all on one line?
+  var a = {slotAnnotations: {}};
+  o.__annotation__ = a;
+  return a;
 }
 
 function annotationNameForSlotNamed(slotName) {
@@ -90,7 +93,7 @@ function copyDownSlots(dst, src, rawSlotsToOmit) {
 function hackToMakeSuperWork(holder, property, contents) {
   var value = contents;
   var superclass = holder.constructor && holder.constructor.superclass;
-  var ancestor = superclass ? superclass.prototype : holder.__proto__;
+  var ancestor = superclass ? superclass.prototype : holder['__proto__']; // using [] to fool JSLint
   if (ancestor && Object.isFunction(value) && value.argumentNames && value.argumentNames().first() === "$super") {
     (function() { // wrapped in a method to save the value of 'method' for advice
       var method = value;
@@ -102,8 +105,8 @@ function hackToMakeSuperWork(holder, property, contents) {
       advice.methodName = "$super:" + (superclass ? superclass.type + "." : "") + property;
       
       value = Object.extend(advice.wrap(method), {
-        valueOf:  function() { return method },
-        toString: function() { return method.toString() },
+        valueOf:  function() { return method; },
+        toString: function() { return method.toString(); },
         originalFunction: method
       });
     })();

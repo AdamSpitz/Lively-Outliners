@@ -12,7 +12,9 @@ LayoutModes = {
 Morph.addMethods({
   minimumExtent: function() {
     // aaa - meh, don't bother caching yet, I'm scared that I haven't done this right
-    return this._cachedMinimumExtent = this.getExtent();
+    var e = this.getExtent();
+    this._cachedMinimumExtent = e;
+    return e;
   },
 
   rejiggerTheLayout: function(availableSpace) {
@@ -52,7 +54,7 @@ Morph.addMethods({
     } else {
       o.forceLayoutRejiggering();
     }
-  },
+  }
 
 });
 
@@ -62,5 +64,5 @@ TextMorph.addMethods({
     this.adjustForNewBounds();   // make the focus halo look right
     this.minimumExtentChanged(); // play nicely with my new layout system
     return r;
-  },
+  }
 });

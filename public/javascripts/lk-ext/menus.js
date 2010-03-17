@@ -24,12 +24,12 @@ Morph.addMethods({
     var cmdList = command.list.create();
     this.addCommandsTo(cmdList);
     return cmdList;
-  },
+  }
 });
 
 Event.addMethods({
   isForContextMenu:    function() { return this.isCtrlDown()   || this.isRightMouseButtonDown();  },
-  isForMorphMenu:      function() { return this.isCommandKey() || this.isMiddleMouseButtonDown(); },
+  isForMorphMenu:      function() { return this.isCommandKey() || this.isMiddleMouseButtonDown(); }
 });
 
 MenuMorph.addMethods({
@@ -38,7 +38,7 @@ MenuMorph.addMethods({
       if (this.items.size() > 0) {this.addLine();}
       newItems.each(function(item) {this.addItem(item);}.bind(this));
     }
-  },
+  }
 });
 
 WorldMorph.addMethods({

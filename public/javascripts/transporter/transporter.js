@@ -54,8 +54,8 @@ thisModule.addSlots(transporter.module, function(add) {
         alreadySeen.add(mir);
 
         this.eachSlotInMirror(mir, function(s) {
+          var contents = s.contents();
           if (s.isCreator()) {
-            var contents = s.contents();
             
             var parent = contents.parent();
             var parentCreatorSlot = parent.creatorSlot();
@@ -76,7 +76,9 @@ thisModule.addSlots(transporter.module, function(add) {
               // because we don't yet have a mechanism to update the copy-down children on
               // the fly as the copy-down parent changes.
               this.eachSlotInMirror(copyDownParent, function(slotInCopyDownParent) {
-                deps.addDependency(s, slotInCopyDownParent);
+                if (! slotsToOmit.include(slotInCopyDownParent.name())) {
+                  deps.addDependency(s, slotInCopyDownParent);
+                }
               }.bind(this));
 
             }.bind(this));
@@ -85,7 +87,6 @@ thisModule.addSlots(transporter.module, function(add) {
               deps.addDependency(slotInContents, s);
             }.bind(this));
           } else if (! s.initializationExpression()) {
-            var contents = s.contents();
             var contentsCreatorSlot = contents.canHaveCreatorSlot() && contents.creatorSlot();
             if (contentsCreatorSlot && contentsCreatorSlot.module() === this) {
               deps.addDependency(s, contentsCreatorSlot);
@@ -114,14 +115,14 @@ thisModule.addSlots(transporter.module, function(add) {
     // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
     if (URL.source.hostname.include("adamspitz.com")) {
       var uploadScriptURL = "http://adamspitz.com/cgi-bin/savefile.cgi";
-      new Ajax.Request(uploadScriptURL, {
+      var req = new Ajax.Request(uploadScriptURL, {
         method: 'post',
         contentType: 'text/plain',
         parameters: {fileName: this.name() + ".js", fileContents: doc},
         asynchronous: true,
         onSuccess:   function(transport) { var urlToDownload = transport.responseText; window.open(urlToDownload, 'Download'); this.markAsUnchanged();  }.bind(this),
         onFailure:   function(         ) {alert("Failure. :(");}.bind(this),
-        onException: function(r,      e) {alert("Exception. :(");}.bind(this),
+        onException: function(r,      e) {alert("Exception. :(");}.bind(this)
       });
     } else {
       

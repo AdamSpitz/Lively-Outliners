@@ -11,7 +11,7 @@ Object.extend(Number.prototype, {
     if (this === 0) { return  0; }
     if (this  <  0) { return -1; }
     return 1;
-  },
+  }
 });
 
 Object.extend(Point.prototype, {
@@ -21,7 +21,7 @@ Object.extend(Point.prototype, {
 
   unitVector: function() {
     var r = this.r();
-    if (r == 0) {return null;}
+    if (r === 0) {return null;}
     return this.scaleBy(1.0 / r);
   },
 
@@ -57,9 +57,9 @@ Object.extend(Point.prototype, {
 
   pointOnCircle: function(radius, angle) {
     return this.addPt(pt(Math.cos(angle), Math.sin(angle)).scaleToLength(radius));
-  },
+  }
 });
 
 Object.extend(Rectangle.prototype, {
-  area: function() {return this.width * this.height;},
+  area: function() {return this.width * this.height;}
 });

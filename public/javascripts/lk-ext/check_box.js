@@ -1,6 +1,6 @@
 ButtonMorph.subclass("CheckBoxMorph", {
   initialize: function($super, extent, m) {
-    if (extent == null) {extent = pt(15,15);}
+    if (!extent) {extent = pt(15,15);}
     this.checkedMorph = m || this.createXShapedMorph(extent);
     this.checkedMorph.handlesMouseDown = function() { return true; };
     this.checkedMorph.relayMouseEvents(this, {onMouseDown: "onMouseDown", onMouseMove: "onMouseMove", onMouseUp: "onMouseUp"});

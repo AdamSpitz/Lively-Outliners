@@ -11,11 +11,11 @@ Morph.addMethods({
 
   updateFill: function() {
     // children can override
-  },
+  }
 });
 
 TextMorph.addMethods({
   refreshContent: function() {
     if (this.refreshText) { this.refreshText(); }
-  },
+  }
 });

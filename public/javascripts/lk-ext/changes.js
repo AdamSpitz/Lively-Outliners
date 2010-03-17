@@ -11,7 +11,7 @@ WorldMorph.addMethods({
 Object.extend(Morph, {
   suppressAllHandlesForever: function() {
     Object.extend(Morph.prototype, {checkForControlPointNear: function(evt) {return false;}});
-  },
+  }
 });
 
 PasteUpMorph.addMethods({
@@ -133,7 +133,7 @@ TextMorph.addMethods({
     txt.emphasize(emph, 0, this.textString.length);
     this.textStyle = txt.style;
     this.composeAfterEdits();
-  },
+  }
 });
     
 Class.newInitializer = function(name) {
@@ -144,7 +144,7 @@ Class.newInitializer = function(name) {
   if (setSlotAnnotation && name.startsWith('anonymous_')) { setSlotAnnotation(Global, name, {category: ['anonymous classes']}); }
 
   return c;
-},
+};
 
 TestCase.addMethods({        
   assertEqual: function(firstValue, secondValue, msg) {
@@ -162,7 +162,7 @@ TestCase.addMethods({
       this.assert(false, msg);
     } catch (ex) {
     }
-  },
+  }
 });
 
 Point.addMethods({        
@@ -172,7 +172,7 @@ Point.addMethods({
 
   hashCode: function() {
     return this.x.hashCode() + this.y.hashCode();
-  },
+  }
 });
 
 Morph.addMethods({
@@ -199,5 +199,5 @@ Morph.addMethods({
         menu.addLine();
         menu.addItems(this.subMenuItems(evt));
         return menu;
-    },
+    }
 });

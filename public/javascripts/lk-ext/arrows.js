@@ -103,7 +103,7 @@ Morph.subclass("ArrowMorph", {
   grabEndpoint1: function(evt) {this.grabEndpoint(evt, this.endpoint1);},
   grabEndpoint2: function(evt) {this.grabEndpoint(evt, this.endpoint2);},
 
-  shouldIgnorePoses: function(uiState) { return true; },
+  shouldIgnorePoses: function(uiState) { return true; }
 });
 
 Morph.subclass("ArrowEndpoint", {
@@ -124,8 +124,9 @@ Morph.subclass("ArrowEndpoint", {
   okToDuplicate: Functions.False,
 
   determineWhichMorphToAttachTo: function() {
-    if (this.owner instanceof HandMorph) {return this.morphToAttachTo = this.owner;}
-    return this.morphToAttachTo = this.whichMorphToAttachTo();
+    var m = this.owner instanceof HandMorph ? this.owner : this.whichMorphToAttachTo();
+    this.morphToAttachTo = m;
+    return m;
   },
 
   // aaa
@@ -149,13 +150,13 @@ Morph.subclass("ArrowEndpoint", {
       // aaa - shouldn't really be necessary, but might be faster.
       if (this.owner == this.morphToAttachTo) {
         //this.setPosition(localNewLoc);
-        this.translateBy(localNewLoc.subPt(this.origin || pt(0,0))) // aaa really silly, but let's try it - I don't know why the above line wasn't working quite right
+        this.translateBy(localNewLoc.subPt(this.origin || pt(0,0))); // aaa really silly, but let's try it - I don't know why the above line wasn't working quite right
       } else {
         this.morphToAttachTo.addMorphAt(this, localNewLoc);
       }
       this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = true;
     } else {
-      if (this.vectorFromOtherEndpoint == null) {this.vectorFromOtherEndpoint = this.calculateDefaultVectorFromOtherEndpoint();}
+      if (! this.vectorFromOtherEndpoint) {this.vectorFromOtherEndpoint = this.calculateDefaultVectorFromOtherEndpoint();}
       var newLoc = this.otherEndpoint.world() ? this.otherEndpoint.worldPoint(pt(0,0)).addPt(this.vectorFromOtherEndpoint) : pt(0,0);
       this.morphToAttachTo.addMorphAt(this, newLoc);
     }
@@ -163,9 +164,9 @@ Morph.subclass("ArrowEndpoint", {
 
   localPositionClosestTo: function(localPositionToBeClosestTo, localCenter) {
     var vectorFromCenterToPositionToBeClosestTo = localPositionToBeClosestTo.subPt(localCenter);
-    var s1 = vectorFromCenterToPositionToBeClosestTo.x != 0 ? Math.abs(localCenter.x / vectorFromCenterToPositionToBeClosestTo.x) : null;
-    var s2 = vectorFromCenterToPositionToBeClosestTo.y != 0 ? Math.abs(localCenter.y / vectorFromCenterToPositionToBeClosestTo.y) : null;
-    var positonToBeClosestToIsAlongAVerticalEdge = s2 == null || s1 < s2;
+    var s1 = vectorFromCenterToPositionToBeClosestTo.x !== 0 ? Math.abs(localCenter.x / vectorFromCenterToPositionToBeClosestTo.x) : null;
+    var s2 = vectorFromCenterToPositionToBeClosestTo.y !== 0 ? Math.abs(localCenter.y / vectorFromCenterToPositionToBeClosestTo.y) : null;
+    var positonToBeClosestToIsAlongAVerticalEdge = s2 === null || s1 < s2;
     var s = positonToBeClosestToIsAlongAVerticalEdge ? s1 : s2;
     return localCenter.addPt(vectorFromCenterToPositionToBeClosestTo.scaleBy(s));
   },
@@ -214,39 +215,39 @@ Morph.subclass("ArrowEndpoint", {
       this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = false;
     }
     this.vectorFromOtherEndpoint = null;
-  },
+  }
 });
 
 Object.extend(ArrowEndpoint, {
   createForSetting: function(evt, tr, fep) {
     var arrow = tr.setterArrow;
-    if (arrow == null) {
+    if (! arrow) {
       arrow = tr.setterArrow = new ArrowMorph(tr, fep || tr.morph());
       evt.hand.world().addMorph(arrow);
     } else {
       arrow.endpoint2.setPosition(evt.hand.position());
     }
     evt.hand.grabMorph(arrow.endpoint2, evt);
-  },
+  }
 });
 
 Morph.addMethods({
   ownerCenterpoint: function() {
     var o = this.owner;
-    if (o == null || !o.world()) {return pt(0, 0);}
+    if (!o || !o.world()) {return pt(0, 0);}
     return o.worldPoint(o.shape.bounds().center());
   },
 
   ownerRelativeCenterpoint: function() {
     var o = this.owner;
-    if (o == null || !o.world()) {return pt(0, 0);}
+    if (!o || !o.world()) {return pt(0, 0);}
     return o.shape.bounds().extent().scaleBy(0.5);
   },
 
   lineEndpoint: function() {
     if (! this.world()) {return pt(0,0);}
     return this.worldPoint(this.relativeLineEndpoint);
-  },
+  }
 });
 
 

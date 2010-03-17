@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# I just use this to produce something I can run through JSLint.
+
+root=public/javascripts;
+cat ${root}/transporter/*.js ${root}/core/*.js ${root}/mirrors/*.js ${root}/lk-ext/*.js ${root}/outliners/*.js ${root}/*.js > everything.js

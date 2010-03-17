@@ -151,8 +151,10 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     var m = this._commentMorph;
     if (m) { return m; }
     var thisOutliner = this;
-    return this._commentMorph = createInputBox(function( ) { return thisOutliner.mirror().comment(); },
-                                               function(c) { thisOutliner.mirror().setComment(c); });
+    m = createInputBox(function( ) { return thisOutliner.mirror().comment(); },
+                       function(c) { thisOutliner.mirror().setComment(c); });
+    this._commentMorph = m;
+    return m;
   }, {category: ['comment']});
 
   add.method('openEvaluator', function (evt) {
@@ -187,7 +189,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
                   slot.setModule(targetModule);
                 }
               }
-            }.bind(this));
+            }.bind(this)); 
           }.bind(this));
         }.bind(this);
             
@@ -198,7 +200,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
           whichSlotsMenu.addItem([moduleName, function(evt) {chooseTargetModule(moduleName, evt);}.bind(this)]);
         }.bind(this));
         whichSlotsMenu.openIn(this.world(), evt.point(), false, "Of which slots?");
-          }.bind(this)});
+      }.bind(this)});
     }
 
     cmdList.addLine();

@@ -266,7 +266,7 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
           if (this.canHaveSlots(contents)) {
             if (contents.constructor !== Array) { // aaa - this isn't right. But I don't wanna walk all the indexables.
               if (! this.shouldIgnoreObject(contents)) {
-                try { contentsAnno = annotationOf(contents); } catch (ex) { encounteredStupidFirefoxBug = true; }
+                try { contentsAnno = annotationOf(contents); } catch (ex2) { encounteredStupidFirefoxBug = true; }
                 if (! encounteredStupidFirefoxBug) {
                   if (this.markContents(currentObj, name, contents, contentsAnno)) {
                     this.walk(contents, nesting + 1);

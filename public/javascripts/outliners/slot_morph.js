@@ -55,7 +55,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
 
     this.commentButton = createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
 
-    this.buttonChooserMorph = createEitherOrMorph(this.sourceButton(), this.contentsPointer(), function() { return this.isMethodThatShouldBeShownAsPartOfTheBox() }.bind(this));
+    this.buttonChooserMorph = createEitherOrMorph(this.sourceButton(), this.contentsPointer(), function() { return this.isMethodThatShouldBeShownAsPartOfTheBox(); }.bind(this));
 
     this.optionalCommentButtonMorph = createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.slot().comment && this.slot().comment()); }.bind(this));
 
@@ -162,7 +162,8 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     m = createInputBox(getter, setter);
     m.setFontFamily('monospace');
     m.horizontalLayoutMode = LayoutModes.SpaceFill;
-    return this._sourceMorph = m;
+    this._sourceMorph = m;
+    return m;
   }, {category: ['source']});
 
   add.method('annotationMorph', function () {
@@ -181,8 +182,10 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     var m = this._commentMorph;
     if (m) { return m; }
     var thisSlotMorph = this;
-    return this._commentMorph = createInputBox(function( ) { return thisSlotMorph.slot().comment(); },
-                                               function(c) { thisSlotMorph.slot().setComment(c); });
+    m = createInputBox(function( ) { return thisSlotMorph.slot().comment(); },
+                       function(c) { thisSlotMorph.slot().setComment(c); });
+    this._commentMorph = m;
+    return m;
   }, {category: ['comment']});
 
   add.method('showSource', function (evt) {
@@ -378,7 +381,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
 
       if (this.slot().setModule) {
         cmdList.addItem({label: "set module...", go: function(evt) {
-          transporter.chooseOrCreateAModule(evt, this, "To which module?", function(m, evt) {this.setModule(m, evt);}.bind(this));;
+          transporter.chooseOrCreateAModule(evt, this, "To which module?", function(m, evt) {this.setModule(m, evt);}.bind(this));
         }.bind(this)});
       }
 

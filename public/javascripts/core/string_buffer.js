@@ -23,7 +23,7 @@ thisModule.addSlots(stringBuffer, function(add) {
 
   add.method('initialize', function (initialString) {
     this.buffer = [];
-    if (initialString != null) {this.append(initialString);}
+    if (initialString !== undefined && initialString !== null) {this.append(initialString);}
   }, {category: ['creating']});
 
   add.method('append', function (string) {

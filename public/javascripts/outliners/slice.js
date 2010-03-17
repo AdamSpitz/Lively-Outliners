@@ -80,7 +80,7 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
   });
 
   add.method('redo', function () {
-    var ss = this.searcher().go().sort(function(sp1, sp2) {var n1 = sp1.holder().name(); var n2 = sp2.holder().name(); n1 === n2 ? 0 : n1 < n2 ? -1 : 1});
+    var ss = this.searcher().go().sort(function(sp1, sp2) {var n1 = sp1.holder().name(); var n2 = sp2.holder().name(); return n1 === n2 ? 0 : n1 < n2 ? -1 : 1;});
     var sms = ss.map(function(s) { return this.createRowForSlot(s); }.bind(this));
     this._slotsPanel.setRows(sms);
     this.expander().expand();

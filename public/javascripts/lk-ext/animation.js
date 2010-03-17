@@ -82,7 +82,7 @@ thisModule.addSlots(animation, function(add) {
       var arcStartPt = currentPt;
 
       if (shouldAnticipateAtStart) {
-        var a = this.anticipator(timePerStep, currentPt, vector, anticipationDuration, waitingDuration)
+        var a = this.anticipator(timePerStep, currentPt, vector, anticipationDuration, waitingDuration);
         wholeThing.timeSegments().push(a);
         arcStartPt = a.path.destination();
       }
