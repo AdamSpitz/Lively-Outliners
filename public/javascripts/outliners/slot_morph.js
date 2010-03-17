@@ -40,10 +40,9 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.setBorderColor(Color.black);
     this.beUngrabbable();
 
-    // aaa - I don't like that we're not being lazy about the three morphs anymore. (They can actually be expensive - figuring out the source string, etc.)
-    this._sourceToggler     = Object.newChildOf(toggler, this.updateAppearance.bind(this),                   this.createRow(this.    sourceMorph())       );
-    this._commentToggler    = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.comment    ? this.createRow(this.   commentMorph()) : null);
-    this._annotationToggler = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.annotation ? this.createRow(this.annotationMorph()) : null);
+    this._sourceToggler     = Object.newChildOf(toggler, this.updateAppearance.bind(this),                   this.createRow(function() {return this.    sourceMorph();}.bind(this))       );
+    this._commentToggler    = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.comment    ? this.createRow(function() {return this.   commentMorph();}.bind(this)) : null);
+    this._annotationToggler = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.annotation ? this.createRow(function() {return this.annotationMorph();}.bind(this)) : null);
 
     var slotMorph = this;
     this.labelMorph = new TwoModeTextMorph(pt(5, 10).extent(pt(140, 20)), slotMorph.slot().name());
@@ -135,9 +134,10 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     return m;
   }, {category: ['creating']});
 
-  add.method('createRow', function (m) {
-    var r = createSpaceFillingRow([m], {left: 15, right: 2, top: 2, bottom: 2, between: 0});
-    r.wasJustShown = function(evt) { m.requestKeyboardFocus(evt.hand); };
+  add.method('createRow', function (getOrCreateContent) {
+    var spacer = createSpacer();
+    var r = createSpaceFillingRow(function() {return [getOrCreateContent(), spacer];}, {left: 15, right: 2, top: 2, bottom: 2, between: 0});
+    r.wasJustShown = function(evt) { getOrCreateContent().requestKeyboardFocus(evt.hand); };
     return r;
   }, {category: ['creating']});
 
