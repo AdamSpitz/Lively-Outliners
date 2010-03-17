@@ -58,14 +58,17 @@ thisModule.addSlots(command.list, function(add) {
   });
 
   add.method('addItemsToMenu', function(menu, morph) {
-    this._commands.each(function(c) {
+    for (var i = 0, n = this._commands.length; i < n; ++i) {
+      var c = this._commands[i];
       if (c) {
         var label = typeof(c.label) === 'function' ? c.label(morph) : c.label;
-        menu.addItem([label, function(evt) { c.go(evt); }]);
+        menu.addItem([label, c.go.bind(c)]);
       } else {
-        menu.addLine();
+        if (i !== n - 1) { // no point if it's the last one
+          menu.addLine();
+        }
       }
-    });
+    }
   });
   
 });

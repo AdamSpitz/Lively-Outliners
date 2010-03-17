@@ -169,8 +169,17 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
   add.method('addCommandsTo', function (cmdList) {
     this.addCategoryCommandsTo(cmdList);
 
+    cmdList.addLine();
     if (this.mirror().canHaveChildren()) {
-      cmdList.addSection([{label: "create child", go: function(evt) { this.createChild(evt); }.bind(this)}]);
+      cmdList.addItem({label: "create child", go: function(evt) { this.createChild(evt); }.bind(this)});
+    }
+
+    if (this.mirror().isReflecteeProbablyAClass()) {
+      cmdList.addItem({label: "create subclass", go: function(evt) { this.createSubclass(evt); }.bind(this)});
+    }
+
+    if (this.mirror().hasAccessibleParent()) {
+      cmdList.addItem({label: "get my parent", go: function(evt) { evt.hand.world().morphFor(this.mirror().parent()).grabMe(evt); }.bind(this)});
     }
     
     if (this.mirror().canHaveAnnotation()) {
@@ -235,6 +244,19 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     childOutliner.expander().expand();
     var parentSlotMorph = childOutliner.slotMorphFor(child.parentSlot());
     parentSlotMorph.contentsPointer().getModel().setValue(false);
+  }, {category: ['creating children']});
+
+  add.method('createSubclass', function (evt) {
+    var subclass = reflect(this.mirror().reflectee().subclass());
+    var prototypeSlot = subclass.slotAt('prototype');
+    prototypeSlot.beCreator();
+    var subclassOutliner = this.world().morphFor(subclass);
+    subclassOutliner.grabMe(evt);
+
+    // might as well show the arrow from the subclass to the superclass
+    subclassOutliner.expander().expand();
+    var superclassSlotMorph = subclassOutliner.slotMorphFor(subclass.slotAt('superclass'));
+    superclassSlotMorph.contentsPointer().getModel().setValue(false);
   }, {category: ['creating children']});
 
   add.method('acceptsDropping', function (m) { // aaa - could this be generalized?
@@ -322,6 +344,8 @@ thisModule.addSlots(livelyOutliners, function(add) {
     }
   }, {category: ['menu']});
 
+  add.method('prepareDemoWorld', function (world) {
+  }, {category: ['demo']});
 });
 
 
