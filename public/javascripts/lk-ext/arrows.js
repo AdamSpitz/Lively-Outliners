@@ -8,7 +8,6 @@ Morph.subclass("ArrowMorph", {
     this.endpoint2 = ep2 || new ArrowEndpoint(assoc, this);
     this.endpoint1.otherEndpoint = this.endpoint2;
     this.endpoint2.otherEndpoint = this.endpoint1;
-    this.endpoint2.relativeLineEndpoint = pt(0,0);
     this.closeDnD();
     this.ignoreEvents();
     this.beUngrabbable();
@@ -23,6 +22,7 @@ Morph.subclass("ArrowMorph", {
   },
 
   changeUpdateFrequency: function(newFrequency) {
+    if (this._updateProcess && this._updateProcess.frequency === newFrequency) { return; }
     // Optimization suggested by Dan Ingalls: slow down ticking when things are pretty quiet.
     this.stopUpdating();
     this._updateProcess = new PeriodicalExecuter(function(pe) {
@@ -30,24 +30,24 @@ Morph.subclass("ArrowMorph", {
     }.bind(this), newFrequency);
   },
 
-  tickQuickly: function() { this.changeUpdateFrequency(0.1); },
+  tickQuickly: function() { this.changeUpdateFrequency(0.05); },
   tickSlowly:  function() { this.changeUpdateFrequency(0.5); },
 
   noLongerNeedsToBeVisible: function() {
     this.noLongerNeedsToBeUpdated = true;
     this.stopUpdating();
     this.remove();
-    this.endpoint2.remove();
+    this.endpoint1.noLongerNeedsToBeVisibleAsArrowEndpoint();
+    this.endpoint2.noLongerNeedsToBeVisibleAsArrowEndpoint();
   },
 
   needsToBeVisible: function() {
     this.noLongerNeedsToBeUpdated = false;
-    this.tickSlowly();
+    this.tickQuickly();
   },
 
   putVerticesInTheRightPlace: function() {
     if (this.shouldBeShown()) {
-      this.calculateCenterPoints();
       this.endpoint1.attachToTheRightPlace();
       this.endpoint2.attachToTheRightPlace();
       if (! this.owner) {
@@ -70,11 +70,6 @@ Morph.subclass("ArrowMorph", {
     var m2 = this.endpoint2.determineWhichMorphToAttachTo();
     var w  = WorldMorph.current();
     return m1 && m2 && (m1 !== w || m2 !== w);
-  },
-
-  calculateCenterPoints: function() {
-    this.endpoint1.cachedCenterPoint = this.endpoint1.globalBoundsNotIncludingStickouts().center();
-    this.endpoint2.cachedCenterPoint = this.endpoint2.globalBoundsNotIncludingStickouts().center();
   },
 
   changeVerticesIfNecessary: function() {
@@ -107,7 +102,7 @@ Morph.subclass("ArrowMorph", {
 });
 
 Morph.subclass("ArrowEndpoint", {
-  initialize: function($super, tr, a, isTransient) {
+  initialize: function($super, tr, a) {
     $super(new lively.scene.Rectangle(pt(0, 0).extent(pt(10, 10))));
     this.relativeLineEndpoint = pt(5, 5);
     this.isArrowEndpoint = true;
@@ -115,13 +110,11 @@ Morph.subclass("ArrowEndpoint", {
     this.topicRef = tr;
     this.arrow = a;
     this.setFill(Color.black);
-    this.shouldDisappearAfterAttaching = isTransient;
-
-    this.layoutRepulsiveCharge = 0.25;
   },
 
   suppressHandles: true,
   okToDuplicate: Functions.False,
+  relativeLineEndpoint: pt(0,0),
 
   determineWhichMorphToAttachTo: function() {
     var m = this.owner instanceof HandMorph ? this.owner : this.whichMorphToAttachTo();
@@ -137,28 +130,42 @@ Morph.subclass("ArrowEndpoint", {
   },
 
   attachToTheRightPlace: function() {
-    if (this.morphToAttachTo instanceof HandMorph) {return;}
-    if (this.morphToAttachTo == this.owner && this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner) {return;}
-    if (this.morphToAttachTo != WorldMorph.current()) {
+    if (this.isZoomingSomewhere) {return;}
+    var morphToAttachTo = this.morphToAttachTo;
+    if (morphToAttachTo instanceof HandMorph) {return;}
+    if (morphToAttachTo === this.owner && this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner) {return;}
 
-      // aaa - Do outliners need this stuff?
+    if (morphToAttachTo !== WorldMorph.current()) {
       var localCenter = this.ownerRelativeCenterpoint();
       var vectorFromHereToMidpoint = this.otherEndpoint.ownerCenterpoint().subPt(this.ownerCenterpoint()).scaleBy(0.5);
       var localPositionToBeClosestTo = localCenter.addPt(vectorFromHereToMidpoint);
       var localNewLoc = this.localPositionClosestTo(localPositionToBeClosestTo, localCenter).roundTo(1);
+      var globalNewLoc = morphToAttachTo.worldPoint(localNewLoc);
 
-      // aaa - shouldn't really be necessary, but might be faster.
-      if (this.owner == this.morphToAttachTo) {
-        //this.setPosition(localNewLoc);
-        this.translateBy(localNewLoc.subPt(this.origin || pt(0,0))); // aaa really silly, but let's try it - I don't know why the above line wasn't working quite right
+      var shouldMakeArrowsGrowSmoothly = false; // aaa - doesn't quite work properly yet
+      if (shouldMakeArrowsGrowSmoothly) {
+        this.isZoomingSomewhere = true;
+        var world = this.world();
+        if (world) {
+          world.addMorphAt(this, this.owner.worldPoint(this.getPosition()));
+        } else {
+          this.otherEndpoint.world().addMorphAt(this, this.otherEndpoint.worldPoint(this.otherEndpoint.relativeLineEndpoint));
+        }
+        this.startZoomingInAStraightLineTo(globalNewLoc, false, false, false, function() {
+          var wasAlreadyAttachedToThisMorph = morphToAttachTo === this.owner;
+          morphToAttachTo.addMorphAt(this, localNewLoc);
+          if (!wasAlreadyAttachedToThisMorph) { morphToAttachTo.wiggle(100); }
+          this.isZoomingSomewhere = false;
+        }.bind(this));
       } else {
-        this.morphToAttachTo.addMorphAt(this, localNewLoc);
+        morphToAttachTo.addMorphAt(this, localNewLoc);
       }
+      
       this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = true;
     } else {
       if (! this.vectorFromOtherEndpoint) {this.vectorFromOtherEndpoint = this.calculateDefaultVectorFromOtherEndpoint();}
       var newLoc = this.otherEndpoint.world() ? this.otherEndpoint.worldPoint(pt(0,0)).addPt(this.vectorFromOtherEndpoint) : pt(0,0);
-      this.morphToAttachTo.addMorphAt(this, newLoc);
+      morphToAttachTo.addMorphAt(this, newLoc);
     }
   },
 
@@ -207,13 +214,7 @@ Morph.subclass("ArrowEndpoint", {
   okToBeGrabbedBy: function(evt) { return this.arrow.isReadOnly ? null : this; },
 
   wasJustDroppedOn: function(m) {
-    if (this.shouldDisappearAfterAttaching) {
-      this.topicRef.setterArrow = null;
-      this.noLongerNeedsToBeVisibleAsArrowEndpoint();
-      this.arrow.noLongerNeedsToBeVisible();
-    } else {
-      this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = false;
-    }
+    this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = false;
     this.vectorFromOtherEndpoint = null;
   }
 });

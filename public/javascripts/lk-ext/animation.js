@@ -43,51 +43,42 @@ thisModule.addSlots(animation, function(add) {
 
   add.creator('arcPath', {});
 
-  add.method('newWiggler', function (morph, centerPt) {
+  add.method('newWiggler', function (morph, centerPt, duration) {
     var timePerStep = animation.timePerStep;
-    var wigglingDuration = 200;
     centerPt = centerPt || morph.getPosition();
 
     var wigglerizer = Object.newChildOf(this.sequential, "wiggler", timePerStep);
-    wigglerizer.timeSegments().push(Object.newChildOf(this.timeSegment, "wiggling",   timePerStep, wigglingDuration / timePerStep, Object.newChildOf(this.wiggler, centerPt)));
+    wigglerizer.timeSegments().push(Object.newChildOf(this.timeSegment, "wiggling",   timePerStep, (duration || 200) / timePerStep, Object.newChildOf(this.wiggler, centerPt)));
     wigglerizer.timeSegments().push(Object.newChildOf(this.resetter,    "reset loc",  function(morph) {morph.setPosition(centerPt);}));
 
     return Object.newChildOf(this.simultaneous, "wiggler", timePerStep, [wigglerizer]);
   });
 
-  add.method('newMovement', function (morph, destinationPt, shouldAnticipateAtStart, shouldWiggleAtEnd) {
-    var shouldDecelerateAtEnd   = ! shouldWiggleAtEnd;
-
-    // Don't bother anticipating if the morph is off-screen - it just feels like nothing's happening.
-    if (shouldAnticipateAtStart) {
-      var w = morph.world();
-      var isStartingOnScreen = w && w.bounds().containsPoint(morph.getPosition());
-      shouldAnticipateAtStart = isStartingOnScreen;
-    }
-
+  add.method('newMovement', function (morph, kindOfPath, destinationPt, speed, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd) {
     var currentPt = morph.getPosition();
     var vector = destinationPt.subPt(currentPt);
     var distance = vector.r();
-    if (distance >= 0.1) {
 
-      var timePerStep = animation.timePerStep;
-      
-      var  anticipationDuration = 120;
-      var       waitingDuration = 120;
-      var    mainMovingDuration = (distance / 3) * (shouldDecelerateAtEnd ? 4/3 : 1);
-      var  accelOrDecelDuration = shouldDecelerateAtEnd ? mainMovingDuration * 5/12 : mainMovingDuration * 5/9;
-    
-      var wholeThing = Object.newChildOf(this.sequential, "whole movement", timePerStep);
+    if (distance >= 0.1) {
+      var wholeThing = Object.newChildOf(this.sequential, "whole movement", animation.timePerStep);
 
       var arcStartPt = currentPt;
 
-      if (shouldAnticipateAtStart) {
-        var a = this.anticipator(timePerStep, currentPt, vector, anticipationDuration, waitingDuration);
+      if (shouldAnticipateAtStart && morph.isOnScreen()) { // if it's off-screen, there's no point and it's annoying
+        var a = this.anticipator(animation.timePerStep, currentPt, vector, 120, 120);
         wholeThing.timeSegments().push(a);
         arcStartPt = a.path.destination();
       }
 
-      wholeThing.timeSegments().push(this.moverizer(timePerStep, arcStartPt, destinationPt, accelOrDecelDuration, mainMovingDuration, shouldDecelerateAtEnd));
+      var topSpeed = speed * (shouldDecelerateAtEnd ? 3/4 : 1); // OK, it's not exactly a speed, but it's sorta similar; fix this, maybe.
+      var mainMovingDuration = distance / topSpeed;
+      var accelOrDecelDuration = mainMovingDuration * (shouldDecelerateAtEnd ? 5/12 : 8/9);
+      var speederizer = this.speederizer(animation.timePerStep, accelOrDecelDuration, mainMovingDuration, shouldDecelerateAtEnd);
+
+      var path = Object.newChildOf(kindOfPath, arcStartPt, destinationPt);
+      var moverizer = this.moverizer(animation.timePerStep, path, speederizer);
+
+      wholeThing.timeSegments().push(moverizer);
 
       if (shouldWiggleAtEnd) {
         wholeThing.timeSegments().push(this.newWiggler(morph, destinationPt));
@@ -132,14 +123,13 @@ thisModule.addSlots(animation, function(add) {
     return s;
   });
 
-  add.method('moverizer', function (timePerStep, startPt, endPt, accelOrDecelDuration, mainMovingDuration, shouldDecelerateAtEnd) {
-    var s = this.speederizer(timePerStep, accelOrDecelDuration, mainMovingDuration, shouldDecelerateAtEnd);
+  add.method('moverizer', function (timePerStep, path, speederizer) {
     var m = Object.newChildOf(this.sequential, "mover steps", timePerStep);
-    m.path = Object.newChildOf(this.arcPath, startPt, endPt);
-    var pathMover = Object.newChildOf(this.pathMover, m.path, s.speedHolder());
-    m.timeSegments().push(Object.newChildOf(this.timeSegment, "main arc",      timePerStep, mainMovingDuration / timePerStep, pathMover));
-    m.timeSegments().push(Object.newChildOf(this.resetter,    "set final loc", function(morph) {morph.setPositionAndDoMotionBlurIfNecessary(endPt, animation.timePerStep);}));
-    return Object.newChildOf(this.simultaneous, "moverizer", timePerStep, [s, m]);
+    m.path = path;
+    var pathMover = Object.newChildOf(this.pathMover, m.path, speederizer.speedHolder());
+    m.timeSegments().push(Object.newChildOf(this.timeSegment, "main arc",      timePerStep, speederizer.totalDuration() / timePerStep, pathMover));
+    m.timeSegments().push(Object.newChildOf(this.resetter,    "set final loc", function(morph) {morph.setPositionAndDoMotionBlurIfNecessary(path.destination(), animation.timePerStep);}));
+    return Object.newChildOf(this.simultaneous, "moverizer", timePerStep, [speederizer, m]);
   });
 
   add.method('newResizer', function (morph, endingSize) {
@@ -206,6 +196,10 @@ thisModule.addSlots(animation.simultaneous, function(add) {
 
   add.method('simultaneousProcesses', function () { return this._simultaneousProcesses; });
 
+  add.method('totalDuration', function () {
+    return this._simultaneousProcesses.max(function(each) { return each.totalDuration(); });
+  });
+
   add.method('doOneStep', function (morph) {
     var anyAreNotDoneYet = false;
     for (var i = 0, n = this._simultaneousProcesses.length; i < n; ++i) {
@@ -236,6 +230,10 @@ thisModule.addSlots(animation.sequential, function(add) {
     return this._timeSegments[this._currentSegmentIndex];
   });
 
+  add.method('totalDuration', function () {
+    return this._timeSegments.inject(0, function(sum, each) { return sum + each.totalDuration(); });
+  });
+
   add.method('doOneStep', function (morph) {
     while (true) {
       var s = this.currentSegment();
@@ -256,6 +254,11 @@ thisModule.addSlots(animation.timeSegment, function(add) {
     this._movement = movement;
   });
 
+  add.method('totalDuration', function () {
+    // aaa - might be better to just store the total duration? I want to make the frame rate auto-adjust anyway.
+    return this._stepsLeft * this._timePerStep;
+  });
+
   add.method('doOneStep', function (morph) {
     if (this._stepsLeft <= 0) { this.done(); return false; }
     this._movement.doOneStep(morph);
@@ -271,6 +274,10 @@ thisModule.addSlots(animation.resetter, function(add) {
   add.method('initialize', function ($super, name, functionToRun) {
     $super(name);
     this._functionToRun = functionToRun;
+  });
+
+  add.method('totalDuration', function () {
+    return 0;
   });
 
   add.method('doOneStep', function (morph) {
@@ -404,6 +411,8 @@ thisModule.addSlots(animation.arcPath, function(add) {
     this._totalAngle = this._destinationAngle - fromVector.theta();
   });
 
+  add.method('destination', function () { return this._destination; });
+
   add.method('move', function (speed, curPos) {
     var vector = this._destination.subPt(curPos);
     if (vector.r() < 0.1) {return curPos;}
@@ -419,6 +428,16 @@ thisModule.addSlots(animation.arcPath, function(add) {
     //console.log("speed: " + speed + ", angleToMove: " + angleToMove + ", curAngle: " + curAngle + ", newAngle: " + newAngle + ", newPos: " + newPos + ", curPos: " + curPos);
     return newPos;
   });
+
+});
+
+
+thisModule.addSlots(Morph.prototype, function(add) {
+
+  add.method('isOnScreen', function () {
+    var w = this.world();
+    return w && w.bounds().containsPoint(this.getPosition());
+  }, {category: 'testing'});
 
 });
 

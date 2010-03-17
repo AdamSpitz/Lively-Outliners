@@ -9,36 +9,47 @@ Morph.addMethods({
   },
 
   startZoomingTo: function(loc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
-    this.startAnimating(animation.newMovement(this, loc, shouldAnticipateAtStart, shouldWiggleAtEnd), functionToCallWhenDone);
+    this.startAnimating(animation.newMovement(this, animation.arcPath, loc, 3, shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), functionToCallWhenDone);
+  },
+
+  startZoomingInAStraightLineTo: function(loc, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd, functionToCallWhenDone) {
+    this.startAnimating(animation.newMovement(this, animation.straightPath, loc, 3, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), functionToCallWhenDone);
   },
 
   startAnimating: function(animator, functionToCallWhenDone) {
     animator.stopAnimating();
     animator.whenDoneCall(functionToCallWhenDone);
-    this._animationProcess = animator.startAnimating(this);
+    animator.startAnimating(this);
   },
 
 
   // wiggling
 
-  wiggle: function() {
-    this.startAnimating(animation.newWiggler(this));
+  wiggle: function(duration) {
+    this.startAnimating(animation.newWiggler(this, null, duration));
   },
 
 
   // motion blur
 
   setPositionAndDoMotionBlurIfNecessary: function(newPos, blurTime) {
-    var extent = this.getExtent();
-    var oldPos = this.getPosition();
-    var difference = newPos.subPt(oldPos);
-    if (Math.abs(difference.x) > extent.x || Math.abs(difference.y) > extent.y) {
-      var bounds = this.bounds();
-      var allVertices = bounds.vertices().concat(bounds.translatedBy(difference).vertices());
-      var convexVertices = getConvexHull(allVertices).map(function(a) {return a[0];});
-      var motionBlurMorph = Morph.makePolygon(convexVertices, 0, Color.black, this.getFill());
-      this.world().addMorphBack(motionBlurMorph);
-      setTimeout(function() {motionBlurMorph.remove();}, blurTime);
+    var world = this.world();
+    if (world) {
+      var extent = this.getExtent();
+      var oldPos = this.getPosition();
+      var difference = newPos.subPt(oldPos);
+      var ratio = Math.max(Math.abs(difference.x) / extent.x, Math.abs(difference.y) / extent.y);
+      if (ratio > 0.5) {
+        var bounds = this.bounds();
+        var allVertices = bounds.vertices().concat(bounds.translatedBy(difference).vertices());
+        var convexVertices = getConvexHull(allVertices).map(function(a) {return a[0];});
+        var motionBlurMorph = Morph.makePolygon(convexVertices, 0, Color.black, this.getFill());
+        // could try adjusting the opacity based on the distance, but I tried that and
+        // couldn't figure out how to make it look non-weird
+        motionBlurMorph.setFillOpacity(0.3); 
+        world.addMorphBack(motionBlurMorph);
+        setTimeout(function() {motionBlurMorph.remove();}, blurTime);
+      }
     }
     this.setPosition(newPos);
   },

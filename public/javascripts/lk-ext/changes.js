@@ -42,10 +42,6 @@ PasteUpMorph.addMethods({
 });
 
 Morph.addMethods({
-    globalBoundsNotIncludingStickouts: function() {
-      return this.getGlobalTransform().transformRectToRect(this.shape.bounds());
-    },
-
     checkForDoubleClick: function(evt) {
       var currentTime = new Date().getTime(); // Use evt.timeStamp? I just tried that and it didn't seem to work.
       if (this.timeOfMostRecentDoubleClickCheck != null && currentTime - this.timeOfMostRecentDoubleClickCheck < 400) { // aaa magic number
