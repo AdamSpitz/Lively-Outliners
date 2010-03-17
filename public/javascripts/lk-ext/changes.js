@@ -121,7 +121,7 @@ HandMorph.addMethods({
 
 TextMorph.addMethods({
   getText: function()  {return this.textString;},
-  setText: function(t) {if (this.textString !== t) {this.textString = t; this.layoutChanged(); this.changed();}},
+  setText: function(t) {if (this.textString !== t) {this.updateTextString(t); this.layoutChanged(); this.changed();}},
 
   // Just wondering whether I can set a TextMorph to be bold/italic and have it stay that way no matter what text I give it.
   setEmphasis: function(emph) {
