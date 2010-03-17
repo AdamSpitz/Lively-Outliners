@@ -88,3 +88,10 @@ WindowMorph.addMethods({
         return true;
     }
 });
+
+SelectionMorph.addMethods({
+    startZoomingOuttaHere: function($super) {
+        this.selectedMorphs.invoke('startZoomingOuttaHere');
+        $super();
+    },
+});

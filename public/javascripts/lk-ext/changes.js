@@ -178,7 +178,7 @@ Point.addMethods({
 Morph.addMethods({
     morphMenu: function(evt) {
         var items = [
-            ["remove", this.remove],
+            ["remove", this.startZoomingOuttaHere], // so much cooler this way -- Adam
             ["drill", this.showOwnerChain.curry(evt)],
             ["grab", this.pickMeUp.curry(evt)],
             ["drag", this.dragMe.curry(evt)],
