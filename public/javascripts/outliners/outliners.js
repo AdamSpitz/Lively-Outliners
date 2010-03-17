@@ -309,6 +309,13 @@ thisModule.addSlots(livelyOutliners, function(add) {
         var world = evt.hand.world();
         world.assumePose(world.listPoseOfMorphsFor(testCases, "test cases for the outliner stuff"));
       }]);
+
+      /*
+      cmdList.addLine();
+      
+      cmdList.addItem(["aaaaa", function(evt) {
+      }]);
+      */
     }
   }, {category: ['menu']});
 

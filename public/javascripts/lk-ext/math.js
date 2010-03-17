@@ -33,6 +33,10 @@ Object.extend(Point.prototype, {
     return new Point(-this.y, this.x);
   },
 
+  abs: function() {
+    return new Point(Math.abs(this.x), Math.abs(this.y));
+  },
+
   minMaxPt: function(pMin, pMax) {
     return new Point(Math.max(Math.min(this.x,pMin.x), pMax.x), Math.max(Math.min(this.y,pMin.y), pMax.y));
   },
@@ -61,5 +65,7 @@ Object.extend(Point.prototype, {
 });
 
 Object.extend(Rectangle.prototype, {
-  area: function() {return this.width * this.height;}
+  area: function() {return this.width * this.height;},
+
+  vertices: function() {return [this.topLeft(), this.topRight(), this.bottomLeft(), this.bottomRight()];}
 });

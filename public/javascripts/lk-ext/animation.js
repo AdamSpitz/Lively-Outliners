@@ -17,7 +17,7 @@ thisModule.addSlots(lobby, function(add) {
 
 thisModule.addSlots(animation, function(add) {
 
-  add.data('timePerStep', 20);
+  add.data('timePerStep', 40);
 
   add.creator('abstract', {});
 
@@ -96,7 +96,7 @@ thisModule.addSlots(animation, function(add) {
       return wholeThing;
 
     } else {
-      return Object.newChildOf(this.resetter, "set final loc", function(morph) {morph.setPosition(destinationPt);});
+      return Object.newChildOf(this.resetter, "set final loc", function(morph) {morph.setPositionAndDoMotionBlurIfNecessary(destinationPt, animation.timePerStep);});
     }
 
   });
@@ -138,7 +138,7 @@ thisModule.addSlots(animation, function(add) {
     m.path = Object.newChildOf(this.arcPath, startPt, endPt);
     var pathMover = Object.newChildOf(this.pathMover, m.path, s.speedHolder());
     m.timeSegments().push(Object.newChildOf(this.timeSegment, "main arc",      timePerStep, mainMovingDuration / timePerStep, pathMover));
-    m.timeSegments().push(Object.newChildOf(this.resetter,    "set final loc", function(morph) {morph.setPosition(endPt);}));
+    m.timeSegments().push(Object.newChildOf(this.resetter,    "set final loc", function(morph) {morph.setPositionAndDoMotionBlurIfNecessary(endPt, animation.timePerStep);}));
     return Object.newChildOf(this.simultaneous, "moverizer", timePerStep, [s, m]);
   });
 
@@ -312,7 +312,7 @@ thisModule.addSlots(animation.pathMover, function(add) {
   });
 
   add.method('doOneStep', function (morph) {
-    morph.setPosition(this._path.move(this._speedHolder.speed, morph.getPosition()));
+    morph.setPositionAndDoMotionBlurIfNecessary(this._path.move(this._speedHolder.speed, morph.getPosition()), animation.timePerStep);
   });
 
 });

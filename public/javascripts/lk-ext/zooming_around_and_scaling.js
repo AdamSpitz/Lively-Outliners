@@ -26,6 +26,24 @@ Morph.addMethods({
   },
 
 
+  // motion blur
+
+  setPositionAndDoMotionBlurIfNecessary: function(newPos, blurTime) {
+    var extent = this.getExtent();
+    var oldPos = this.getPosition();
+    var difference = newPos.subPt(oldPos);
+    if (Math.abs(difference.x) > extent.x || Math.abs(difference.y) > extent.y) {
+      var bounds = this.bounds();
+      var allVertices = bounds.vertices().concat(bounds.translatedBy(difference).vertices());
+      var convexVertices = getConvexHull(allVertices).map(function(a) {return a[0];});
+      var motionBlurMorph = Morph.makePolygon(convexVertices, 0, Color.black, this.getFill());
+      this.world().addMorphBack(motionBlurMorph);
+      setTimeout(function() {motionBlurMorph.remove();}, blurTime);
+    }
+    this.setPosition(newPos);
+  },
+
+
   // adding and removing to/from the world
 
   ensureIsInWorld: function(w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {

@@ -6,4 +6,4 @@ reflect(window).categorizeUncategorizedSlotsAlphabetically(); // it's annoying t
 (function() {
   var world = WorldMorph.current();
   world._application = livelyOutliners;
-}).delay(Config.mainDelay * 2);
+}).delay(Config.mainDelay * 3);
