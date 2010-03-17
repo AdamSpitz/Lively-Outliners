@@ -218,18 +218,16 @@ Morph.subclass("ArrowEndpoint", {
 });
 
 Object.extend(ArrowEndpoint, {
-  createForSetting: function(evt, tr, fep, arrowClass) {
+  createForSetting: function(evt, tr, fep) {
     var arrow = tr.setterArrow;
     if (arrow == null) {
-      arrow = tr.setterArrow = new arrowClass(tr, fep || tr.morph());
-      WorldMorph.current().addMorph(arrow);
+      arrow = tr.setterArrow = new ArrowMorph(tr, fep || tr.morph());
+      evt.hand.world().addMorph(arrow);
     } else {
       arrow.endpoint2.setPosition(evt.hand.position());
     }
     evt.hand.grabMorph(arrow.endpoint2, evt);
   },
-
-  cached_friction: pt(5,5),
 });
 
 Morph.addMethods({

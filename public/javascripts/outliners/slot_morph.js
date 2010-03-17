@@ -91,6 +91,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
       }
     }.bind(this), 1);
     beArrowEndpoint(m);
+
     arrow = m.arrow = new ArrowMorph(slot, m, null);
     arrow.noLongerNeedsToBeUpdated = true;
 
@@ -98,6 +99,12 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
       this.wasJustDroppedOn(outliner);
       slotMorph.setContents(outliner.mirror());
     };
+
+    m.addCommandsTo = function(cmdList) {
+      cmdList.addItem({label: "grab pointer", go: function(evt) { arrow.needsToBeVisible(); arrow.endpoint2.grabMe(evt); } });
+    };
+
+    m.inspect = function() { return slot.name() + " contents"; };
 
     return m;
   }, {category: ['contents']});
