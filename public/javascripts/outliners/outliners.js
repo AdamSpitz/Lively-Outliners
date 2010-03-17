@@ -41,7 +41,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this._slotMorphs     = dictionary.copyRemoveAll();
     this._categoryMorphs = dictionary.copyRemoveAll();
 
-    this.initializeCategoryUI();
+    this.initializeCategoryUI(); // aaa - can be a bit slow
     
     this._evaluatorsPanel = new ColumnMorph().beInvisible();
     this._evaluatorsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
@@ -63,7 +63,10 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
                                             {top: 0, bottom: 0, left: 0, right: 0, between: 3});
     this._headerRow.refreshContent();
 
-    this.optionalSlotsPanel = createOptionalMorph(this.slotsPanel(), function() {return this.expander().isExpanded();}.bind(this));
+    this.optionalSlotsPanel = createOptionalMorph(function() {return this.slotsPanel();}.bind(this),
+                                                  function() {return this.expander().isExpanded();}.bind(this),
+                                                  {horizontalLayoutMode: LayoutModes.SpaceFill, verticalLayoutMode: LayoutModes.ShrinkWrap});
+
     this.setPotentialContent([this._headerRow, this._annotationToggler, this._commentToggler, this.optionalSlotsPanel, this._evaluatorsPanel]);
 
     this.refreshContent();

@@ -208,8 +208,13 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
     var n = modules.length;
     if (n === 0) { return "No filed-out slots"; }
     if (n >=  5) { return n + " modules"; }
-    var prefix = n === 1 ? "Module:  " : "Modules:  ";
-    return prefix + modules.map(function(m) { return m ? m.name() : '-'; }).sort().join(", ");
+    var s = stringBuffer.create(n === 1 ? "Module:  " : "Modules:  ");
+    var sep = "";
+    modules.map(function(m) { return m ? m.name() : '-'; }).sort().each(function(name) {
+      s.append(sep).append(name);
+      sep = ", ";
+    });
+    return s.toString();
   }, {category: ['modules']});
 
   add.method('calculateAppropriateFill', function () {

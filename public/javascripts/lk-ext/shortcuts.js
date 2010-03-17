@@ -113,10 +113,10 @@ function createEitherOrMorph(m1, m2, condition) {
   return r;
 }
 
-function createOptionalMorph(m, condition) {
+function createOptionalMorph(m, condition, layoutModes) {
   var om = createEitherOrMorph(m, new RowMorph().beInvisible(), condition);
-  om.horizontalLayoutMode = m.horizontalLayoutMode;
-  om.verticalLayoutMode = m.verticalLayoutMode;
+  om.horizontalLayoutMode = (layoutModes || m).horizontalLayoutMode;
+  om.verticalLayoutMode   = (layoutModes || m).verticalLayoutMode;
   return om;
 }
 

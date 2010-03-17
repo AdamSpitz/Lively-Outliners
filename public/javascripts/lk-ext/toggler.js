@@ -36,12 +36,15 @@ thisModule.addSlots(toggler, function(add) {
 
   add.method('valueChanged', function(valueHolder, evt) {
     this._updateFunction();
-    if (this.isOn()) { this._morphToShowOrHide.wasJustShown(evt); }
+    if (this.isOn()) { this.actualMorphToShow().wasJustShown(evt); }
   });
 
   add.method('shouldNotBeShown', function() { return ! this.isOn(); });
 
-  add.method('actualMorphToShow', function() { return this._morphToShowOrHide; });
+  add.method('actualMorphToShow', function() {
+    var m = this._morphToShowOrHide;
+    return typeof(m) === 'function' ? m() : m;
+  });
 
 });
 
