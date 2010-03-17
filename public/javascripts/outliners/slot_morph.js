@@ -100,6 +100,9 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
       slotMorph.setContents(outliner.mirror());
     };
 
+    // aaa - To do "grab pointer" properly I think I need to do a more general drag-and-drop thing. Right
+    // now nothing will get called if I drop the endpoint on something invalid (like the world or some
+    // other morph), so the visibility will need to be toggled an extra time to get it back to normal.
     m.addCommandsTo = function(cmdList) {
       cmdList.addItem({label: "grab pointer", go: function(evt) { arrow.needsToBeVisible(); arrow.endpoint2.grabMe(evt); } });
     };

@@ -175,3 +175,29 @@ Point.addMethods({
   },
 });
 
+Morph.addMethods({
+    morphMenu: function(evt) {
+        var items = [
+            ["remove", this.remove],
+            ["drill", this.showOwnerChain.curry(evt)],
+            ["grab", this.pickMeUp.curry(evt)],
+            ["drag", this.dragMe.curry(evt)],
+            ["edit style", function() { new StylePanel(this).open()}],
+            ["inspect", function(evt) { this.world().morphFor(reflect(this)).grabMe(evt); }], // OK, I just couldn't resist. -- Adam
+            ["show class in browser", function(evt) { var browser = new SimpleBrowser(this);
+                                              browser.openIn(this.world(), evt.point());
+                                              browser.getModel().setClassName(this.getType());
+                                            }]
+        ];
+        if (this.okToDuplicate())
+            items.unshift(["duplicate", this.copyToHand.curry(evt.hand)]);
+
+        if (this.getModel() instanceof SyntheticModel)
+            items.push( ["show Model dump", this.addModelInspector.curry(this)]);
+
+        var menu = new MenuMorph(items, this);
+        menu.addLine();
+        menu.addItems(this.subMenuItems(evt));
+        return menu;
+    },
+});
