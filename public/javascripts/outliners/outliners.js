@@ -54,14 +54,16 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this._annotationToggler = Object.newChildOf(toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ?                this.annotationMorph()  : null);
 
     this.commentButton   = createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
-    this.evaluatorButton = createButton("E", function(evt) { this.openEvaluator(evt); }.bind(this), 1);
+    this.parentButton    = createButton("^",     function(evt) { this.getParent(evt); }.bind(this), 1);
+    this.evaluatorButton = createButton("E",     function(evt) { this.openEvaluator(evt); }.bind(this), 1);
     this.dismissButton   = this.createDismissButton();
 
-    this.optionalCommentButtonMorph = createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
-
-    this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel, this.optionalCommentButtonMorph, createSpacer(), this.evaluatorButton, this.dismissButton],
+    var optionalParentButtonMorph  = createOptionalMorph(this.parentButton,  function() { return this.mirror().hasAccessibleParent(); }.bind(this));
+    var optionalCommentButtonMorph = createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
+    
+    this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel, optionalCommentButtonMorph, createSpacer(), optionalParentButtonMorph, this.evaluatorButton, this.dismissButton],
                                             {top: 0, bottom: 0, left: 0, right: 0, between: 3});
-    this._headerRow.refreshContent();
+    this._headerRow.refreshContentOfMeAndSubmorphs();
 
     this.optionalSlotsPanel = createOptionalMorph(function() {return this.slotsPanel();}.bind(this),
                                                   function() {return this.expander().isExpanded();}.bind(this),
@@ -166,6 +168,10 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     e.wasJustShown(evt);
   }, {category: ['evaluators']});
 
+  add.method('getParent', function (evt) {
+    evt.hand.world().morphFor(this.mirror().parent()).grabMe(evt);
+  }, {category: ['menu']});
+
   add.method('addCommandsTo', function (cmdList) {
     this.addCategoryCommandsTo(cmdList);
 
@@ -179,7 +185,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     }
 
     if (this.mirror().hasAccessibleParent()) {
-      cmdList.addItem({label: "get my parent", go: function(evt) { evt.hand.world().morphFor(this.mirror().parent()).grabMe(evt); }.bind(this)});
+      cmdList.addItem({label: "get my parent", go: function(evt) { this.getParent(evt); }.bind(this)});
     }
     
     if (this.mirror().canHaveAnnotation()) {
