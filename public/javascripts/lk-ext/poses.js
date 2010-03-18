@@ -92,9 +92,12 @@ thisModule.addSlots(poses.abstract, function(add) {
     $A(w.submorphs).each(function(m) {
       if (m.isPartOfCurrentPose) {
         delete m.isPartOfCurrentPose;
-      } /* This turned out to be very annoying, though I still think we need to do *something* to help avoid clutter:  else if (! m.shouldIgnorePoses()) {
+      } else if (! m.shouldIgnorePoses()) {
+        // I am undecided on whether this is a good idea or not. It's annoying if
+        // stuff I want zooms away, but it's also annoying if stuff zooms onto
+        // other stuff and the screen gets all cluttered.
         m.startZoomingOuttaHere();
-      } */
+      }
     });
   });
 });

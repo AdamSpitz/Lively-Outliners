@@ -50,6 +50,8 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
     this._changeIndicator.setTextColor(Color.green.darker());
 
     this.setColumns([this._nameLabel, this._changeIndicator, this._fileOutButton, this.createDismissButton()]);
+
+    this.startPeriodicallyUpdating();
   }, {category: ['creating']});
 
   add.method('inspect', function () { return this._module.name(); }, {category: ['printing']});

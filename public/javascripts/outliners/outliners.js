@@ -112,13 +112,9 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
   }, {category: ['annotation']});
 
   add.method('updateAppearance', function () {
-    if (! this.world()) {return;}
+    if (! this.world()) { return; }
     this.populateSlotsPanelInMeAndExistingSubcategoryMorphs();
     this.refreshContentOfMeAndSubmorphs();
-  }, {category: ['updating']});
-
-  add.method('startPeriodicallyUpdating', function () {
-    this._updater = new PeriodicalExecuter(function(pe) { this.updateAppearance(); }.bind(this), 8);
   }, {category: ['updating']});
 
   add.method('inspect', function () {return this.mirror().inspect();}, {category: ['printing']});
@@ -345,6 +341,8 @@ thisModule.addSlots(livelyOutliners, function(add) {
       cmdList.addLine();
       
       cmdList.addItem(["aaaaa", function(evt) {
+        var s = sound.fromFile('sounds/zoomaway.wav');
+        s.play();
       }]);
       */
     }

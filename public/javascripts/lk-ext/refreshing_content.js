@@ -11,6 +11,15 @@ Morph.addMethods({
 
   updateFill: function() {
     // children can override
+  },
+
+  updateAppearance: function () {
+    if (! this.world()) { return; }
+    this.refreshContentOfMeAndSubmorphs();
+  },
+
+  startPeriodicallyUpdating: function (frequency) {
+    this._updater = new PeriodicalExecuter(function(pe) { this.updateAppearance(); }.bind(this), frequency || 8);
   }
 });
 
