@@ -65,7 +65,7 @@ thisModule.addSlots(hashTable, function(add) {
   }, {category: ['testing']});
 
   add.method('bucketForKey', function (k) {
-    var bucketName = "" + this._comparator.hashCodeForKey(k);
+    var bucketName = "bucket_" + this._comparator.hashCodeForKey(k);
     var b = this._buckets[bucketName];
     if (typeof b === "undefined") {
       this._buckets[bucketName] = b = [];

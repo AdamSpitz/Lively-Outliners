@@ -488,7 +488,7 @@ thisModule.addSlots(slots.functionBody, function(add) {
 
 thisModule.addSlots(slots.parent, function(add) {
 
-  add.method('name', function () { return "*parent*"; }, {category: ['accessing']});
+  add.method('name', function () { return "__proto__"; }, {category: ['accessing']});
 
   add.method('contents', function () { return this._mirror.parent(); }, {category: ['accessing']});
 
