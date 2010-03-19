@@ -185,13 +185,6 @@ thisModule.addSlots(transporter.module, function(add) {
     buffer.append("});\n\n\n");
   }, {category: ['transporting']});
 
-  add.method('urlForModuleDirectory', function (directory) {
-    if (! directory) { directory = ""; }
-    if (directory && directory[directory.length] !== '/') { directory += '/'; }
-    var baseDirURL = URL.source.getDirectory().withRelativePath("javascripts/");
-    return baseDirURL.withRelativePath(directory);
-  }, {category: ['saving to WebDAV']});
-
   add.method('urlForCoreModulesDirectory', function () {
     return URL.source.getDirectory().withRelativePath("javascripts/");
   }, {category: ['saving to WebDAV']});
@@ -200,46 +193,9 @@ thisModule.addSlots(transporter.module, function(add) {
     return URL.source.getDirectory().withRelativePath("javascripts/non-core/");
   }, {category: ['saving to WebDAV']});
 
-  add.method('urlForModuleName', function (name, directory) {
-    var moduleDirURL = this.urlForModuleDirectory(directory);
-    return moduleDirURL.withFilename(name + ".js");
-  }, {category: ['saving to WebDAV']});
-
-  add.method('loadJSFile', function (url, scriptLoadedCallback) {
-    // I really hope "with" is the right thing to do here. We seem to need
-    // it in order to make globally-defined things work.
-    with (Global) { eval(FileDirectory.getContent(url)); }
-    // Doing this the callback way because we may in the future want to switch to loading
-    // the file asynchronously.
-    scriptLoadedCallback();
-  }, {category: ['transporting']});
-
-  add.method('fileIn', function (directory, name, scriptLoadedCallback) {
-    var url = this.urlForModuleName(name, directory);
-    this.loadJSFile(url, function() {
-      var module = this.existingOneNamed(name);
-      if (module) {
-        if (module.postFileIn) { module.postFileIn(); }
-      } else {
-        // Could just be some external Javascript library - doesn't have
-        // to be one of our modules.
-      }
-      if (scriptLoadedCallback) { scriptLoadedCallback(module); }
-    }.bind(this));
-  }, {category: ['transporting']});
-
-  add.method('require', function (directory, name, scriptLoadedCallback) {
-    if (this.existingOneNamed(name)) { return; }
-    this.fileIn(directory, name, scriptLoadedCallback);
-  }, {category: ['transporting']});
-
   add.method('eachModule', function (f) {
     reflect(lobby.modules).eachNormalSlot(function(s) { f(s.contents().reflectee()); });
   }, {category: ['iterating']});
-
-  add.method('existingOneNamed', function (n) {
-    return lobby.modules[n];
-  }, {category: ['accessing modules']});
 
   add.method('changedOnes', function () {
     return Object.newChildOf(enumerator, this, 'eachModule').select(function(m) { return m.hasChangedSinceLastFileOut(); });

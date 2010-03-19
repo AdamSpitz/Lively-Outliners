@@ -1,7 +1,10 @@
-transporter.module.require('core', 'core');
-transporter.module.require('mirrors', 'mirrors');
-transporter.module.require('lk-ext', 'lk_ext');
-transporter.module.require('outliners', 'self_like_environment');
+transporter.module.fileIn('transporter', 'transporter');
+transporter.module.fileIn('transporter', 'object_graph_walker'); // aaa - where does this belong?
+transporter.module.fileIn('core', 'core');
+transporter.module.fileIn('mirrors', 'mirrors');
+transporter.module.fileIn('lk-ext', 'lk_ext');
+transporter.module.fileIn('outliners', 'self_like_environment');
+transporter.module.fileIn('transporter', 'module_morph'); // aaa - where does this belong?
 
 var debugMode = true;
 Morph.suppressAllHandlesForever(); // those things are annoying

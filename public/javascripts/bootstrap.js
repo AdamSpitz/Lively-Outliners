@@ -183,11 +183,58 @@ lobby.transporter.module.addSlots = function(holder, block) {
   block(slotAdder);
 };
 
-lobby.transporter.module.requires = function(moduleDir, moduleName) {
-  if (! this._requirements) {
-    this.addSlots(this, function(add) {add.data('_requirements', []);});
-  }
-  this._requirements.push([moduleDir, moduleName]);
-  
-  transporter.module.require(moduleDir, moduleName);
-};
+
+lobby.transporter.module.create('bootstrap', function(thisModule) {
+
+thisModule.addSlots(transporter.module, function(add) {
+
+  add.method('existingOneNamed', function (n) {
+    return lobby.modules[n];
+  }, {category: ['accessing']});
+
+  add.method('urlForModuleDirectory', function (directory) {
+    if (! directory) { directory = ""; }
+    if (directory && directory[directory.length] !== '/') { directory += '/'; }
+    var baseDirURL = URL.source.getDirectory().withRelativePath("javascripts/");
+    return baseDirURL.withRelativePath(directory);
+  }, {category: ['saving to WebDAV']});
+
+  add.method('urlForModuleName', function (name, directory) {
+    var moduleDirURL = this.urlForModuleDirectory(directory);
+    return moduleDirURL.withFilename(name + ".js");
+  }, {category: ['saving to WebDAV']});
+
+  add.method('loadJSFile', function (url, scriptLoadedCallback) {
+    // I really hope "with" is the right thing to do here. We seem to need
+    // it in order to make globally-defined things work.
+    with (Global) { eval(FileDirectory.getContent(url)); }
+    // Doing this the callback way because we may in the future want to switch to loading
+    // the file asynchronously.
+    scriptLoadedCallback();
+  }, {category: ['transporting']});
+
+  add.method('fileIn', function (directory, name, scriptLoadedCallback) {
+    var url = this.urlForModuleName(name, directory);
+    this.loadJSFile(url, function() {
+      var module = this.existingOneNamed(name);
+      if (module) {
+        if (module.postFileIn) { module.postFileIn(); }
+      } else {
+        // Could just be some external Javascript library - doesn't have
+        // to be one of our modules.
+      }
+      if (scriptLoadedCallback) { scriptLoadedCallback(module); }
+    }.bind(this));
+  }, {category: ['transporting']});
+
+  add.method('requires', function(moduleDir, moduleName) {
+    if (! this._requirements) { this._requirements = []; }
+    this._requirements.push([moduleDir, moduleName]);
+    
+    if (transporter.module.existingOneNamed(name)) { return; }
+    transporter.module.fileIn(moduleDir, moduleName);
+  }, {category: ['requirements']});
+
+});
+
+});
