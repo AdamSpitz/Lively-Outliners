@@ -106,9 +106,18 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['transporting']});
 
   add.method('fileOut', function () {
-    var buffer = stringBuffer.create("lobby.transporter.module.create('").append(this.name()).append("', function(thisModule) {\n\n\n");
+    var buffer = stringBuffer.create();
+    
+    if (this._requirements && this._requirements.length > 0) {
+      this._requirements.each(function(dirAndName) {
+          buffer.append("transporter.module.fileIn(").append(dirAndName[0].inspect()).append(", ").append(dirAndName[1]).append(");\n");
+      });
+      buffer.append("\n\n");
+    }
+    
+    buffer.append("transporter.module.create('").append(this.name()).append("', function(thisModule) {\n\n\n");
     this.fileOutSlots(buffer);
-    buffer.append("});");
+    buffer.append("});\n");
 
     var doc = buffer.toString();
 
@@ -197,7 +206,7 @@ thisModule.addSlots(transporter.module, function(add) {
     scriptLoadedCallback();
   }, {category: ['transporting']});
 
-  add.method('fileIn', function (name, directory, scriptLoadedCallback) {
+  add.method('fileIn', function (directory, name, scriptLoadedCallback) {
     var url = this.urlForModuleName(name, directory);
     this.loadJSFile(url, function() {
       var module = this.existingOneNamed(name);

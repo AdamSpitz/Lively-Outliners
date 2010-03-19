@@ -83,7 +83,7 @@ thisModule.addSlots(mirror, function(add) {
   add.method('name', function () {
     if (! this.canHaveCreatorSlot()) {return Object.inspect(this.reflectee());}
 
-    var chain = this.creatorSlotChain();
+    var chain = this.creatorSlotChainOfMeOrAnAncestor();
     if (chain) {
       if (chain.length === 0) {return "";}
       var isThePrototype = chain[0].contents().equals(this);
@@ -151,6 +151,16 @@ thisModule.addSlots(mirror, function(add) {
       chain.push(cs);
       mir = cs.holder();
     }
+  }, {category: ['annotations', 'creator slot']});
+
+  add.method('creatorSlotChainOfMeOrAnAncestor', function () {
+      var mir = this;
+      while (true) {
+        var chain = mir.creatorSlotChain();
+        if (chain) { return chain; }
+        if (! mir.hasAccessibleParent()) { return null; }
+        mir = mir.parent();
+      }
   }, {category: ['annotations', 'creator slot']});
 
   add.method('eachSlot', function (f) {
@@ -401,7 +411,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['annotations']});
 
   add.method('annotation', function () {
-    if (! this.canHaveAnnotation()) { return null; }
+    if (! this.hasAnnotation()) { return null; }
     return this.reflectee().__annotation__;
   }, {category: ['annotations']});
 
@@ -695,14 +705,15 @@ thisModule.addSlots(slots.plain, function(add) {
     var array = null;
     var isCreator = false;
     var initializer = this.initializationExpression();
+    if (this.name() === '_requirements') { try { throw "aaaaa"; } catch (ex) {} }
     if (initializer) {
       contentsExpr = initializer;
     } else {
-      if (! contents.canHaveCreatorSlot()) {
+      if (! contents.canHaveCreatorSlot() || contents.isReflecteeArray()) {
         contentsExpr = contents.expressionEvaluatingToMe();
       } else {
         var cs = contents.creatorSlot();
-        if (! cs) {
+        if (!cs) {
           throw "Cannot file out a reference to " + contents.name();
         } else if (! cs.equals(this)) {
           // This is just a reference to some well-known object that's created elsewhere.
@@ -844,7 +855,7 @@ thisModule.addSlots(mirror.Tests.prototype, function(add) {
     this.assertThrowsException(function() { reflect([1, 'two', 3]).creatorSlotChainExpression(); });
     this.assertEqual("transporter", reflect(transporter).creatorSlotChainExpression());
     this.assertEqual("transporter.module", reflect(transporter.module).creatorSlotChainExpression());
-    this.assertEqual("TestCase.prototype.Morph.prototype", reflect(new TestCase.prototype.Morph(new mirror.Tests())).creatorSlotChainExpression());
+    this.assertEqual("TestCase.prototype.Morph.prototype", reflect(TestCase.prototype.Morph.prototype).creatorSlotChainExpression());
     this.assertEqual("lobby", reflect(Global).creatorSlotChainExpression());
   });
 

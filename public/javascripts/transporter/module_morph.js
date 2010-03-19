@@ -136,7 +136,7 @@ thisModule.addSlots(transporter, function(add) {
       menuItems.push([n, function(evt) {
         var moduleName = n.substring(0, n.length - 3);
         MessageNotifierMorph.showIfErrorDuring(function() {
-          lobby.transporter.module.fileIn(moduleName, pathFromModuleSystemRootDir);
+          lobby.transporter.module.fileIn(pathFromModuleSystemRootDir, moduleName);
         }, evt);
       }]);
     });
