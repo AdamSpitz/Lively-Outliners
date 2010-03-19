@@ -182,3 +182,12 @@ lobby.transporter.module.addSlots = function(holder, block) {
   slotAdder.holder = holder;
   block(slotAdder);
 };
+
+lobby.transporter.module.requires = function(moduleDir, moduleName) {
+  if (! this._requirements) {
+    this.addSlots(this, function(add) {add.data('_requirements', []);});
+  }
+  this._requirements.push([moduleDir, moduleName]);
+  
+  transporter.module.require(moduleDir, moduleName);
+};

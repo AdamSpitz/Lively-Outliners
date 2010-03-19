@@ -1,5 +1,5 @@
-transporter.module.fileIn('lk-ext', 'lk_ext');
-transporter.module.fileIn('outliners', 'self_like_environment');
+transporter.module.require('lk-ext', 'lk_ext');
+transporter.module.require('outliners', 'self_like_environment');
 
 var debugMode = true;
 Morph.suppressAllHandlesForever(); // those things are annoying

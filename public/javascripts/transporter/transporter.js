@@ -105,21 +105,29 @@ thisModule.addSlots(transporter.module, function(add) {
     return allMirrors.toArray().sort(function(a, b) { var an = a.name(); var bn = b.name(); return an === bn ? 0 : an < bn ? -1 : 1; });
   }, {category: ['transporting']});
 
-  add.method('fileOut', function () {
+  add.method('codeToFileOut', function () {
     var buffer = stringBuffer.create();
+    
+    buffer.append("transporter.module.create('").append(this.name()).append("', function(thisModule) {\n\n");
     
     if (this._requirements && this._requirements.length > 0) {
       this._requirements.each(function(dirAndName) {
-          buffer.append("transporter.module.fileIn(").append(dirAndName[0].inspect()).append(", ").append(dirAndName[1]).append(");\n");
+          buffer.append("thisModule.requires(").append(dirAndName[0].inspect()).append(", ").append(dirAndName[1]).append(");\n");
       });
-      buffer.append("\n\n");
+      buffer.append("\n");
     }
-    
-    buffer.append("transporter.module.create('").append(this.name()).append("', function(thisModule) {\n\n\n");
+
+    buffer.append("\n");
+
     this.fileOutSlots(buffer);
+
     buffer.append("});\n");
 
-    var doc = buffer.toString();
+    return buffer.toString();
+  }, {category: ['transporting']});
+
+  add.method('fileOut', function () {
+    var doc = this.codeToFileOut().toString();
 
     // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
     if (URL.source.hostname.include("adamspitz.com")) {
@@ -218,6 +226,11 @@ thisModule.addSlots(transporter.module, function(add) {
       }
       if (scriptLoadedCallback) { scriptLoadedCallback(module); }
     }.bind(this));
+  }, {category: ['transporting']});
+
+  add.method('require', function (directory, name, scriptLoadedCallback) {
+    if (this.existingOneNamed(name)) { return; }
+    this.fileIn(directory, name, scriptLoadedCallback);
   }, {category: ['transporting']});
 
   add.method('eachModule', function (f) {
