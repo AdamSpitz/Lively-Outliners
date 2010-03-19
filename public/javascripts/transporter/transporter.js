@@ -176,7 +176,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['saving to WebDAV']});
 
   add.method('urlForCoreModulesDirectory', function () {
-    return URL.source.getDirectory().withRelativePath("javascripts/fileouts/");
+    return URL.source.getDirectory().withRelativePath("javascripts/");
   }, {category: ['saving to WebDAV']});
 
   add.method('urlForNonCoreModulesDirectory', function () {
@@ -188,18 +188,27 @@ thisModule.addSlots(transporter.module, function(add) {
     return moduleDirURL.withFilename(name + ".js");
   }, {category: ['saving to WebDAV']});
 
-  add.method('fileIn', function (name) {
-    var url = this.urlForModuleName(name, "non-core/");
-    var code = FileDirectory.getContent(url);
-    eval(code);
-    var module = this.existingOneNamed(name);
-    if (module) {
-      if (module.postFileIn) { module.postFileIn(); }
-      return module;
-    } else {
-      // Could just be some external Javascript library - doesn't have
-      // to be one of our modules.
-    }
+  add.method('loadJSFile', function (url, scriptLoadedCallback) {
+    // I really hope "with" is the right thing to do here. We seem to need
+    // it in order to make globally-defined things work.
+    with (Global) { eval(FileDirectory.getContent(url)); }
+    // Doing this the callback way because we may in the future want to switch to loading
+    // the file asynchronously.
+    scriptLoadedCallback();
+  }, {category: ['transporting']});
+
+  add.method('fileIn', function (name, directory, scriptLoadedCallback) {
+    var url = this.urlForModuleName(name, directory);
+    this.loadJSFile(url, function() {
+      var module = this.existingOneNamed(name);
+      if (module) {
+        if (module.postFileIn) { module.postFileIn(); }
+      } else {
+        // Could just be some external Javascript library - doesn't have
+        // to be one of our modules.
+      }
+      if (scriptLoadedCallback) { scriptLoadedCallback(module); }
+    }.bind(this));
   }, {category: ['transporting']});
 
   add.method('eachModule', function (f) {

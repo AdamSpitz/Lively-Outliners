@@ -110,21 +110,38 @@ thisModule.addSlots(transporter, function(add) {
     // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
     if (! URL.source.hostname.include("adamspitz.com")) {
 
-    menu.addItem(["file in...", function(evt) {
-      var world = evt.hand.world();
-
-      var filenames = new FileDirectory(lobby.transporter.module.urlForNonCoreModulesDirectory()).filenames().select(function(n) {return n.endsWith(".js");});
-      
-      var modulesMenu = new MenuMorph(filenames.map(function(n) {return [n, function(evt) {
-        var moduleName = n.substring(0, n.length - 3);
-        MessageNotifierMorph.showIfErrorDuring(function() { lobby.transporter.module.fileIn(moduleName); }, evt);
-      }];}), world);
-      
-      modulesMenu.openIn(world, evt.point());
-    }]);
+      menu.addItem(["file in...", function(evt) {
+        var world = evt.hand.world();
+        var baseDir = new FileDirectory(lobby.transporter.module.urlForCoreModulesDirectory());
+        var modulesMenu = new MenuMorph(this.moduleMenuItemsForDir(baseDir, ""), world);
+        modulesMenu.openIn(world, evt.point());
+      }.bind(this)]);
 
     }
 
+  }, {category: ['menu']});
+
+  add.method('moduleMenuItemsForDir', function(dir, pathFromModuleSystemRootDir) {
+    var menuItems = [];
+
+    var subdirURLs = dir.subdirectories();
+    subdirURLs.each(function(subdirURL) {
+      var subdir = new FileDirectory(subdirURL);
+      var subdirName = subdirURL.filename();
+      menuItems.push([subdirName, this.moduleMenuItemsForDir(subdir, pathFromModuleSystemRootDir + "/" + subdirName)]);
+    }.bind(this));
+        
+    var jsFileNames = dir.filenames().select(function(n) {return n.endsWith(".js");});
+    jsFileNames.each(function(n) {
+      menuItems.push([n, function(evt) {
+        var moduleName = n.substring(0, n.length - 3);
+        MessageNotifierMorph.showIfErrorDuring(function() {
+          lobby.transporter.module.fileIn(moduleName, pathFromModuleSystemRootDir);
+        }, evt);
+      }]);
+    });
+
+    return menuItems;
   }, {category: ['menu']});
 
 });
