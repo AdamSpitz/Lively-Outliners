@@ -1,3 +1,5 @@
+transporter.module.require('core', 'core');
+transporter.module.require('mirrors', 'mirrors');
 transporter.module.require('lk-ext', 'lk_ext');
 transporter.module.require('outliners', 'self_like_environment');
 
