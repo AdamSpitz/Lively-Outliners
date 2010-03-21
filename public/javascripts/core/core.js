@@ -1,14 +1,16 @@
-lobby.transporter.module.create('core', function(thisModule) {
+lobby.transporter.module.create('core', function(requires) {
 
-thisModule.requires('core', 'exit');
-thisModule.requires('core', 'enumerator');
-thisModule.requires('core', 'hash_table');
-thisModule.requires('core', 'notifier');
-thisModule.requires('core', 'string_buffer');
-thisModule.requires('core', 'string_extensions');
-thisModule.requires('core', 'value_holder');
-thisModule.requires('core', 'dependencies');
-thisModule.requires('core', 'little_profiler');
+requires('core', 'exit');
+requires('core', 'enumerator');
+requires('core', 'hash_table');
+requires('core', 'notifier');
+requires('core', 'string_buffer');
+requires('core', 'string_extensions');
+requires('core', 'value_holder');
+requires('core', 'dependencies');
+requires('core', 'little_profiler');
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(modules.core, function(add) {

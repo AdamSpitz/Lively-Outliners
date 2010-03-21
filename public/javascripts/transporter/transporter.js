@@ -1,4 +1,4 @@
-lobby.transporter.module.create('transporter', function(thisModule) {
+lobby.transporter.module.create('transporter', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(modules.transporter, function(add) {
@@ -108,16 +108,16 @@ thisModule.addSlots(transporter.module, function(add) {
   add.method('codeToFileOut', function () {
     var buffer = stringBuffer.create();
     
-    buffer.append("transporter.module.create('").append(this.name()).append("', function(thisModule) {\n\n");
+    buffer.append("transporter.module.create('").append(this.name()).append("', function(requires) {");
     
     if (this._requirements && this._requirements.length > 0) {
       this._requirements.each(function(dirAndName) {
-          buffer.append("thisModule.requires(").append(dirAndName[0].inspect()).append(", ").append(dirAndName[1]).append(");\n");
+          buffer.append("requires(").append(dirAndName[0].inspect()).append(", ").append(dirAndName[1]).append(");\n");
       });
-      buffer.append("\n");
+      buffer.append("\n\n");
     }
 
-    buffer.append("\n");
+    buffer.append("}, function(thisModule) {\n\n\n");
 
     this.fileOutSlots(buffer);
 

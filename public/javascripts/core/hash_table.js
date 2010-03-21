@@ -1,4 +1,8 @@
-lobby.transporter.module.create('hash_table', function(thisModule) {
+lobby.transporter.module.create('hash_table', function(requires) {
+
+requires('core', 'lk_TestFramework');
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(modules.hash_table, function(add) {

@@ -1,4 +1,4 @@
-lobby.transporter.module.create('string_buffer', function(thisModule) {
+lobby.transporter.module.create('string_buffer', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(modules.string_buffer, function(add) {

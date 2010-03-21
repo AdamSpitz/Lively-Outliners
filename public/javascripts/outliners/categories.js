@@ -1,4 +1,8 @@
-lobby.transporter.module.create('categories', function(thisModule) {
+lobby.transporter.module.create('categories', function(requires) {
+
+requires('lk-ext', 'rows_and_columns');
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(modules.categories, function(add) {

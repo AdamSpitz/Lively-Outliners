@@ -1,4 +1,8 @@
-lobby.transporter.module.create('module_morph', function(thisModule) {
+lobby.transporter.module.create('module_morph', function(requires) {
+
+requires('lk-ext', 'rows_and_columns');
+
+}, function(thisModule) {
 
 
 

@@ -94,7 +94,7 @@ function hackToMakeSuperWork(holder, property, contents) {
   var value = contents;
   var superclass = holder.constructor && holder.constructor.superclass;
   var ancestor = superclass ? superclass.prototype : holder['__proto__']; // using [] to fool JSLint
-  if (ancestor && Object.isFunction(value) && value.argumentNames && value.argumentNames().first() === "$super") {
+  if (ancestor && typeof(value) === 'function' && value.argumentNames && value.argumentNames().first() === "$super") {
     (function() { // wrapped in a method to save the value of 'method' for advice
       var method = value;
       var advice = (function(m) {
@@ -104,15 +104,51 @@ function hackToMakeSuperWork(holder, property, contents) {
       })(property);
       advice.methodName = "$super:" + (superclass ? superclass.type + "." : "") + property;
       
-      value = Object.extend(advice.wrap(method), {
-        valueOf:  function() { return method; },
-        toString: function() { return method.toString(); },
-        originalFunction: method
-      });
+      value = advice.wrap(method);
+      value.valueOf = function() { return method; };
+      value.toString = function() { return method.toString(); };
+      value.originalFunction = method;
     })();
   }
   return value;
 }
+
+
+function waitForAllCallbacks(functionThatYieldsCallbacks, functionToRunWhenDone) {
+  var numberOfCallsExpected = 0;
+  var numberCalledSoFar = 0;
+  var doneYieldingCallbacks = false;
+  var alreadyDone = false;
+  
+  var checkWhetherDone = function() {
+    if (alreadyDone) {
+      throw "Whoa, called a callback again after we're already done.";
+    }
+
+    if (! doneYieldingCallbacks) { return; }
+
+    if (numberCalledSoFar >= numberOfCallsExpected) {
+      alreadyDone = true;
+      functionToRunWhenDone();
+    }
+  };
+
+  functionThatYieldsCallbacks(function() {
+    numberOfCallsExpected += 1;
+    var callback = function() {
+      if (callback.alreadyCalled) {
+        throw "Wait a minute, this one was already called!";
+      }
+      callback.alreadyCalled = true;
+      numberCalledSoFar += 1;
+      checkWhetherDone();
+    };
+    return callback;
+  });
+  doneYieldingCallbacks = true;
+  if (! alreadyDone) { checkWhetherDone(); }
+}
+
 
 
 var lobby = window; // still not sure whether I want this to be window, or Object.create(window), or {}
@@ -125,10 +161,14 @@ lobby.transporter = {};
 setCreatorSlot(annotationOf(lobby.transporter), 'transporter', lobby);
 setSlotAnnotation(lobby, 'transporter', {category: ['transporter']});
 
+lobby.transporter.loadedURLs = {};
+
 lobby.transporter.module = {};
 setCreatorSlot(annotationOf(lobby.transporter.module), 'module', lobby.transporter);
 
 lobby.transporter.module.cache = {};
+
+lobby.transporter.module.onLoadCallbacks = {};
 
 lobby.transporter.module.named = function(n) {
   var m = lobby.modules[n];
@@ -140,9 +180,26 @@ lobby.transporter.module.named = function(n) {
   return m;
 };
 
-lobby.transporter.module.create = function(n, block) {
+lobby.transporter.module.create = function(n, reqBlock, contentsBlock) {
+  // console.log("Creating module: " + n);
   if (lobby.modules[n]) { throw 'The ' + n + ' module is already loaded.'; }
-  block(this.named(n));
+  var newModule = this.named(n);
+  waitForAllCallbacks(function(finalCallback) {
+    reqBlock(function(reqDir, reqName) {
+      var cb = finalCallback();
+      if (n === 'outliners') {try {throw "halt";} catch(ex) {}}
+      newModule.requires(reqDir, reqName, cb);
+    });
+  }, function() {
+    contentsBlock(newModule);
+    // console.log("Finished loading module: " + n);
+    if (newModule.postFileIn) { newModule.postFileIn(); }
+    var onLoadCallback = transporter.module.onLoadCallbacks[n];
+    if (onLoadCallback) {
+      delete transporter.module.onLoadCallbacks[n];
+      onLoadCallback();
+    }
+  });
 };
 
 lobby.transporter.module.slotAdder = {
@@ -155,7 +212,12 @@ lobby.transporter.module.slotAdder = {
       var a = annotationOf(contents);
       a.creatorSlotName   = name;
       a.creatorSlotHolder = this.holder;
-      Object.extend(a, contentsAnnotation);
+      
+      for (var property in contentsAnnotation) {
+        if (contentsAnnotation.hasOwnProperty(property)) {
+          a[property] = contentsAnnotation[property];
+        }
+      }
       
       if (contentsAnnotation.copyDownParents) {
         for (var i = 0; i < contentsAnnotation.copyDownParents.length; i += 1) {
@@ -184,7 +246,7 @@ lobby.transporter.module.addSlots = function(holder, block) {
 };
 
 
-lobby.transporter.module.create('bootstrap', function(thisModule) {
+lobby.transporter.module.create('bootstrap', function(requires) {}, function(thisModule) {
 
 thisModule.addSlots(transporter.module, function(add) {
 
@@ -195,44 +257,89 @@ thisModule.addSlots(transporter.module, function(add) {
   add.method('urlForModuleDirectory', function (directory) {
     if (! directory) { directory = ""; }
     if (directory && directory[directory.length] !== '/') { directory += '/'; }
-    var baseDirURL = URL.source.getDirectory().withRelativePath("javascripts/");
-    return baseDirURL.withRelativePath(directory);
+    var docURL = document.documentURI;
+    var baseDirURL = docURL.substring(0, docURL.lastIndexOf("/")) + "/javascripts/";
+    return baseDirURL + directory;
   }, {category: ['saving to WebDAV']});
 
   add.method('urlForModuleName', function (name, directory) {
     var moduleDirURL = this.urlForModuleDirectory(directory);
-    return moduleDirURL.withFilename(name + ".js");
+    return moduleDirURL + name + ".js";
   }, {category: ['saving to WebDAV']});
 
   add.method('loadJSFile', function (url, scriptLoadedCallback) {
-    // I really hope "with" is the right thing to do here. We seem to need
-    // it in order to make globally-defined things work.
-    with (Global) { eval(FileDirectory.getContent(url)); }
-    // Doing this the callback way because we may in the future want to switch to loading
-    // the file asynchronously.
-    scriptLoadedCallback();
+    // aaa old way, relies on a bunch of stuff that I'd rather not have to load first:
+    // var _fileContents = FileDirectory.getContent(url);
+
+    var loadingStatus = transporter.loadedURLs[url];
+    if (typeof loadingStatus === 'function') {
+      transporter.loadedURLs[url] = function() {
+        loadingStatus();
+        scriptLoadedCallback();
+      };
+      return;
+    } else if (loadingStatus === 'done') {
+      return scriptLoadedCallback();
+    }
+
+    transporter.loadedURLs[url] = scriptLoadedCallback;
+
+    var shouldUseXMLHttpRequest = false; // aaa - not sure which way is better; seems to be a tradeoff
+    if (shouldUseXMLHttpRequest) {
+      var req = new XMLHttpRequest();
+      req.open("GET", url, true);
+      req.onreadystatechange = function() {
+        if (req.readyState === 4) {
+          var _fileContents = req.responseText;
+          // I really hope "with" is the right thing to do here. We seem to need
+          // it in order to make globally-defined things work.
+          with (lobby) { eval(_fileContents); }
+          transporter.loadedURLs[url]();
+          transporter.loadedURLs[url] = 'done';
+        }
+      };
+      req.send();
+    } else {
+      var head = document.getElementsByTagName("head")[0];         
+      var script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.onload = function() {
+        transporter.loadedURLs[url]();
+        transporter.loadedURLs[url] = 'done';
+      };
+      script.src = url;
+      head.appendChild(script);
+    }
   }, {category: ['transporting']});
 
   add.method('fileIn', function (directory, name, scriptLoadedCallback) {
     var url = this.urlForModuleName(name, directory);
+    
+    transporter.module.onLoadCallbacks[name] = scriptLoadedCallback;
+
     this.loadJSFile(url, function() {
-      var module = this.existingOneNamed(name);
-      if (module) {
-        if (module.postFileIn) { module.postFileIn(); }
-      } else {
-        // Could just be some external Javascript library - doesn't have
-        // to be one of our modules.
+      var module = modules[name];
+      if (!module) {
+        // Must just be some external Javascript library - not
+        // one of our modules.
+        delete transporter.module.onLoadCallbacks[name];
+        if (scriptLoadedCallback) { scriptLoadedCallback(); }
       }
-      if (scriptLoadedCallback) { scriptLoadedCallback(module); }
-    }.bind(this));
+    });
   }, {category: ['transporting']});
 
-  add.method('requires', function(moduleDir, moduleName) {
+  add.method('requires', function(moduleDir, moduleName, reqLoadedCallback) {
     if (! this._requirements) { this._requirements = []; }
     this._requirements.push([moduleDir, moduleName]);
     
-    if (transporter.module.existingOneNamed(name)) { return; }
-    transporter.module.fileIn(moduleDir, moduleName);
+    if (transporter.module.existingOneNamed(moduleName)) {
+      if (reqLoadedCallback) { reqLoadedCallback(); }
+    } else {
+      transporter.module.fileIn(moduleDir, moduleName, reqLoadedCallback);
+    }
+  }, {category: ['requirements']});
+
+  add.method('requirements', function(requirementsFunction, moduleBody) {
   }, {category: ['requirements']});
 
 });

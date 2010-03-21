@@ -1,4 +1,8 @@
-lobby.transporter.module.create('slot_morph', function(thisModule) {
+lobby.transporter.module.create('slot_morph', function(requires) {
+
+requires('lk-ext', 'rows_and_columns');
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(modules.slot_morph, function(add) {

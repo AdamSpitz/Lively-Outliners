@@ -1,4 +1,4 @@
-lobby.transporter.module.create('value_holder', function(thisModule) {
+lobby.transporter.module.create('value_holder', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(modules.value_holder, function(add) {

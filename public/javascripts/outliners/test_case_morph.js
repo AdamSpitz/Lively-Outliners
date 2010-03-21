@@ -1,4 +1,8 @@
-lobby.transporter.module.create('test_case_morph', function(thisModule) {
+lobby.transporter.module.create('test_case_morph', function(requires) {
+
+requires('lk-ext', 'rows_and_columns');
+
+}, function(thisModule) {
 
 
 

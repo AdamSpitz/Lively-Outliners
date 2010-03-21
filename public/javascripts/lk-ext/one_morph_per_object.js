@@ -1,4 +1,4 @@
-lobby.transporter.module.create('one_morph_per_object', function(thisModule) {
+lobby.transporter.module.create('one_morph_per_object', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(modules.one_morph_per_object, function(add) {

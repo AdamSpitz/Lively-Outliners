@@ -1,4 +1,4 @@
-lobby.transporter.module.create('enumerator', function(thisModule) {
+lobby.transporter.module.create('enumerator', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(modules.enumerator, function(add) {

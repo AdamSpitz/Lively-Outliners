@@ -1,12 +1,13 @@
-lobby.transporter.module.create('self_like_environment', function(thisModule) {
+lobby.transporter.module.create('self_like_environment', function(requires) {
 
-thisModule.requires('outliners', 'categories');
-thisModule.requires('outliners', 'slot_morph');
-thisModule.requires('outliners', 'evaluator');
-thisModule.requires('outliners', 'slice');
-thisModule.requires('outliners', 'outliners');
-thisModule.requires('outliners', 'test_case_morph');
+requires('outliners', 'categories');
+requires('outliners', 'slot_morph');
+requires('outliners', 'evaluator');
+requires('outliners', 'slice');
+requires('outliners', 'outliners');
+requires('outliners', 'test_case_morph');
 
+}, function(thisModule) {
 
 thisModule.addSlots(modules.self_like_environment, function(add) {
     

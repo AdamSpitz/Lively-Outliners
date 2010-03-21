@@ -1,4 +1,4 @@
-lobby.transporter.module.create('animation', function(thisModule) {
+lobby.transporter.module.create('animation', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(modules.animation, function(add) {

@@ -1,4 +1,4 @@
-lobby.transporter.module.create('dependencies', function(thisModule) {
+lobby.transporter.module.create('dependencies', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(modules.dependencies, function(add) {

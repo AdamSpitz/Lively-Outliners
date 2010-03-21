@@ -1,4 +1,4 @@
-lobby.transporter.module.create('commands', function(thisModule) {
+lobby.transporter.module.create('commands', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(modules.commands, function(add) {

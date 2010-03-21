@@ -1,4 +1,4 @@
-lobby.transporter.module.create('sound', function(thisModule) {
+lobby.transporter.module.create('sound', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(modules.sound, function(add) {

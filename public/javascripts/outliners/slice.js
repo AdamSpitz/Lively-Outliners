@@ -1,4 +1,8 @@
-lobby.transporter.module.create('slice', function(thisModule) {
+lobby.transporter.module.create('slice', function(requires) {
+
+requires('lk-ext', 'rows_and_columns');
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(modules.slice, function(add) {

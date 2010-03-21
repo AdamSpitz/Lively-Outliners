@@ -1,4 +1,11 @@
-lobby.transporter.module.create('outliners', function(thisModule) {
+lobby.transporter.module.create('outliners', function(requires) {
+
+try { throw "halt"; } catch (ex) {}
+
+requires('mirrors', 'mirrors');
+requires('outliners', 'categories');
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(modules.outliners, function(add) {
@@ -327,25 +334,14 @@ thisModule.addSlots(livelyOutliners, function(add) {
 
     poses.addMenuItemsTo(cmdList);
 
-    if (debugMode) {
-      cmdList.addLine();
+    cmdList.addLine();
 
-      cmdList.addItem(["get tests", function(evt) {
-        var testCaseClasses = [dictionary.Tests, set.Tests, mirror.Tests];
-        var testCases = testCaseClasses.map(function(c) {return c.prototype;});
-        var world = evt.hand.world();
-        world.assumePose(world.listPoseOfMorphsFor(testCases, "test cases for the outliner stuff"));
-      }]);
-
-      /*
-      cmdList.addLine();
-      
-      cmdList.addItem(["aaaaa", function(evt) {
-        var s = sound.fromFile('sounds/zoomaway.wav');
-        s.play();
-      }]);
-      */
-    }
+    cmdList.addItem(["get tests", function(evt) {
+      var testCaseClasses = [dictionary.Tests, set.Tests, mirror.Tests];
+      var testCases = testCaseClasses.map(function(c) {return c.prototype;});
+      var world = evt.hand.world();
+      world.assumePose(world.listPoseOfMorphsFor(testCases, "test cases for the outliner stuff"));
+    }]);
   }, {category: ['menu']});
 
   add.method('prepareDemoWorld', function (world) {

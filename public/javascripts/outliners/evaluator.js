@@ -1,4 +1,8 @@
-lobby.transporter.module.create('evaluator', function(thisModule) {
+lobby.transporter.module.create('evaluator', function(requires) {
+
+requires('lk-ext', 'rows_and_columns');
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(modules.evaluator, function(add) {

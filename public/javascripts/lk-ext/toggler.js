@@ -1,4 +1,4 @@
-lobby.transporter.module.create('toggler', function(thisModule) {
+lobby.transporter.module.create('toggler', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(modules.toggler, function(add) {

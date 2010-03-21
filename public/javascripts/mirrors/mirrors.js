@@ -1,4 +1,8 @@
-lobby.transporter.module.create('mirrors', function(thisModule) {
+lobby.transporter.module.create('mirrors', function(requires) {
+
+requires('core', 'lk_TestFramework');
+
+}, function(thisModule) {
 
 
 thisModule.addSlots(modules.mirrors, function(add) {

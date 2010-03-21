@@ -1,4 +1,4 @@
-lobby.transporter.module.create('notifier', function(thisModule) {
+lobby.transporter.module.create('notifier', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(modules.notifier, function(add) {

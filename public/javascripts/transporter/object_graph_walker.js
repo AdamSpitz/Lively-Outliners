@@ -1,4 +1,4 @@
-lobby.transporter.module.create('object_graph_walker', function(thisModule) {
+lobby.transporter.module.create('object_graph_walker', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(lobby, function(add) {
