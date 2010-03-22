@@ -186,9 +186,7 @@ lobby.transporter.module.create = function(n, reqBlock, contentsBlock) {
   var newModule = this.named(n);
   waitForAllCallbacks(function(finalCallback) {
     reqBlock(function(reqDir, reqName) {
-      var cb = finalCallback();
-      if (n === 'outliners') {try {throw "halt";} catch(ex) {}}
-      newModule.requires(reqDir, reqName, cb);
+      newModule.requires(reqDir, reqName, finalCallback());
     });
   }, function() {
     contentsBlock(newModule);

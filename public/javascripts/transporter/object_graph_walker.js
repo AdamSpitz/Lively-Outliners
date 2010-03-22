@@ -70,8 +70,8 @@ thisModule.addSlots(CreatorSlotMarker, function(add) {
   // aaa - WTFJS, damned for loops don't seem to see String and Number and Array and their 'prototype' slots.
   ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function'].each(function(typeName) {
     var type = window[typeName];
-    marker.markContents(window, typeName, type, annotationOf(type));
-    marker.markContents(type, 'prototype', type.prototype, annotationOf(type.prototype));
+    marker.markContents(window, typeName, type);
+    marker.markContents(type, 'prototype', type.prototype);
     marker.walk(type.prototype);
   });
 });
@@ -83,7 +83,9 @@ thisModule.addSlots(CreatorSlotMarker.prototype, function(add) {
 
   add.data('constructor', CreatorSlotMarker);
 
-  add.method('markContents', function (holder, slotName, contents, contentsAnno) {
+  add.method('markContents', function (holder, slotName, contents) {
+    var contentsAnno;
+    try { contentsAnno = annotationOf(contents); } catch (ex2) { return false; } // stupid FireFox bug
     if (contentsAnno.hasOwnProperty('creatorSlotName')) {
       if (creatorChainLength(holder) < creatorChainLength(contentsAnno.creatorSlotHolder)) {
         // This one's shorter, so probably better; use it instead.
@@ -225,11 +227,13 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
     return false;
   });
 
-  add.method('markContents', function (holder, slotName, contents, contentsAnno) {
+  add.method('markContents', function (holder, slotName, contents) {
     // Return false if this object has already been marked; otherwise mark it and return true.
     //
     // Would use an identity dictionary here, if JavaScript could do one. As it is, we'll
     // have to mark the annotation and then come by again and unmark it.
+    var contentsAnno;
+    try { contentsAnno = annotationOf(contents); } catch (ex2) { return false; } // stupid FireFox bug
     var walkers = contentsAnno.walkers = contentsAnno.walkers || [];
     for (var i = 0; i < walkers.length; i += 1) {
       if (walkers[i] === this) {return false;}
@@ -248,11 +252,6 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
 
   add.method('walk', function (currentObj, nesting) {
     nesting = nesting || 0;
-    if (nesting > 10) {
-      console.log("Nesting level is " + nesting + "; something might be wrong. Not going any deeper.");
-      return;
-    }
-
     this._objectCount += 1;
     this.reachedObject(currentObj);
 
@@ -264,13 +263,10 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
         if (! encounteredStupidFirefoxBug) {
           this.reachedSlot(currentObj, name, contents);
           if (this.canHaveSlots(contents)) {
-            if (contents.constructor !== Array) { // aaa - this isn't right. But I don't wanna walk all the indexables.
+            if (contents.constructor !== Array || this.shouldWalkIndexables) { // aaa - this isn't right. But I don't wanna walk all the indexables.
               if (! this.shouldIgnoreObject(contents)) {
-                try { contentsAnno = annotationOf(contents); } catch (ex2) { encounteredStupidFirefoxBug = true; }
-                if (! encounteredStupidFirefoxBug) {
-                  if (this.markContents(currentObj, name, contents, contentsAnno)) {
-                    this.walk(contents, nesting + 1);
-                  }
+                if (this.markContents(currentObj, name, contents)) {
+                  this.walk(contents, nesting + 1);
                 }
               }
             }

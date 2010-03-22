@@ -8,6 +8,7 @@ requires('mirrors', 'mirrors');
 requires('lk-ext', 'lk_ext');
 requires('outliners', 'self_like_environment');
 requires('transporter', 'module_morph'); // aaa - where does this belong?
+requires('transporter', 'snapshotter'); // aaa - where does this belong?
 
 }, function(thisModule) {
 

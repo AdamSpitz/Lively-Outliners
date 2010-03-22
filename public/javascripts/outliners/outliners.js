@@ -1,7 +1,5 @@
 lobby.transporter.module.create('outliners', function(requires) {
 
-try { throw "halt"; } catch (ex) {}
-
 requires('mirrors', 'mirrors');
 requires('outliners', 'categories');
 

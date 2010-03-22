@@ -35,6 +35,12 @@ thisModule.addSlots(stringBuffer, function(add) {
     return this.buffer.join("");
   }, {category: ['converting']});
 
+  add.method('concat', function (other1, other2) {
+    var newOne = this.create();
+    newOne.buffer = this.buffer.concat(other1.buffer, other2 ? other2.buffer : undefined);
+    return newOne;
+  }, {category: ['concatenating']});
+
 });
 
 

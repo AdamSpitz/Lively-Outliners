@@ -101,6 +101,20 @@ thisModule.addSlots(transporter, function(add) {
   add.method('addMenuItemsTo', function(menu, evt) {
     menu.addLine();
 
+    menu.addItem(["save snapshot", function(evt) {
+      var snapshotter = new Snapshotter();
+      snapshotter.walk(lobby);
+      var snapshot = snapshotter.completeSnapshotText();
+
+      var baseDirURL = URL.source.getDirectory().withRelativePath("javascripts/snapshots/");
+      var fileName = "snapshot_" + snapshotter._number + ".js";
+      var url = baseDirURL.withFilename(fileName);
+      var status = new Resource(Record.newPlainInstance({URL: url})).store(snapshot, true).getStatus();
+      if (! status.isSuccess()) {
+        throw "failed to write " + fileName + ", status is " + status.code();
+      }
+    }]);
+
     menu.addItem(["all modules", function(evt) {
       var world = evt.hand.world();
       world.assumePose(world.listPoseOfMorphsFor(Object.newChildOf(enumerator, transporter.module, 'eachModule'), "all modules"));
