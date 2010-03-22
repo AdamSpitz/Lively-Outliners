@@ -83,7 +83,13 @@ thisModule.addSlots(Snapshotter.prototype, function(add) {
     // anything to do here?
   });
 
+  add.method('isNativeFunction', function (o) {
+    // Is there a better way to test for native functions?
+    return typeof(o) === 'function' && o.toString().include('[native code]') && o !== this.isNativeFunction;
+  });
+
   add.method('reachedSlot', function (holder, slotName, contents) {
+    if (this.isNativeFunction(contents)) { return; }
     this._buffer.append(this.referenceTo(holder)).append('[').append(slotName.inspect()).append('] = ').append(this.referenceTo(contents)).append(';\n');
   });
 
@@ -97,16 +103,21 @@ thisModule.addSlots(Snapshotter.prototype, function(add) {
     // aaa - What other objects need to really be the real ones in the new image?
 
     var t = typeof(o);
-    if (t === 'function') { return o.toString(); }
+    if (t === 'function') {
+      if (this.isNativeFunction(o)) { return reflect(o).creatorSlotChainExpression(); }
+      if (o instanceof RegExp) { return "new RegExp(" + RegExp.escape(o.source).inspect() + ")"; }
+      return o.toString();
+    }
     if (t === 'object' && o instanceof Array) { return '[]'; }
 
     var parent = o['__proto__'];
     if (parent === Object.prototype) { return '{}'; } // not really necessary, but looks nicer
-    return 'Object.create(' + this.referenceTo(parent) + ')';
+    return 'createChildOf(' + this.referenceTo(parent) + ')';
   });
 
   add.method('completeSnapshotText', function () {
     var setupBuf = stringBuffer.create('(function() {\n');
+    setupBuf.append("var createChildOf = function(parent) { function F() {}; F.prototype = parent; return new F(); };\n");
     setupBuf.append("var __objectsByOID__ = [];\n");
     for (var i = 0, n = this._objectsByOID.length; i < n; ++i) {
       var o = this._objectsByOID[i];
