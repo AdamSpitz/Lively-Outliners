@@ -45,7 +45,7 @@ thisModule.addSlots(Snapshotter.prototype, function(add) {
     this._buffer = stringBuffer.create();
   });
 
-  add.data('namesToIgnore', ["__snapshotNumberOfOID__", "__snapshotNumber__", "__oid__", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just a hack for now - what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__annotation__", "enabledPlugin"]'});
+  add.data('namesToIgnore', ["__snapshotNumberOfOID__", "__snapshotNumber__", "__oid__", "localStorage", "sessionStorage", "globalStorage", "enabledPlugin"], {comment: 'Having enabledPlugin in here is just a hack for now - what\'s this clientInformation thing, and what are these arrays that aren\'t really arrays?', initializeTo: '["__annotation__", "enabledPlugin"]'});
 
   add.data('shouldWalkIndexables', true);
 
@@ -75,6 +75,7 @@ thisModule.addSlots(Snapshotter.prototype, function(add) {
     if (o === undefined) { return 'undefined'; }
     var t = typeof(o);
     if (t === 'number' || t === 'string' || t === 'boolean') { return Object.inspect(o); }
+    if (this.isNativeFunction(o)) { return reflect(o).creatorSlotChainExpression(); }
     var oid = this.oidForObject(o);
     return "(__objectsByOID__[" + oid + "])";
   });
@@ -89,26 +90,23 @@ thisModule.addSlots(Snapshotter.prototype, function(add) {
   });
 
   add.method('reachedSlot', function (holder, slotName, contents) {
-    if (this.isNativeFunction(contents)) { return; }
+    var slotAnno = existingSlotAnnotation(holder, slotName);
+    if (slotAnno && slotAnno.module === modules.init) { return; }
     this._buffer.append(this.referenceTo(holder)).append('[').append(slotName.inspect()).append('] = ').append(this.referenceTo(contents)).append(';\n');
   });
 
   add.method('creationStringFor', function (o) {
-    if (o ===   Object.prototype) { return 'Object.prototype';   }
-    if (o ===    Array.prototype) { return 'Array.prototype';    }
-    if (o ===  Boolean.prototype) { return 'Boolean.prototype';  }
-    if (o ===   String.prototype) { return 'String.prototype';   }
-    if (o ===   Number.prototype) { return 'Number.prototype';   }
-    if (o === Function.prototype) { return 'Function.prototype'; }
-    // aaa - What other objects need to really be the real ones in the new image?
+    var mir = reflect(o);
+    var cs = mir.creatorSlot();
+    if (cs && cs.module() === modules.init) { return mir.creatorSlotChainExpression(); }
 
     var t = typeof(o);
     if (t === 'function') {
-      if (this.isNativeFunction(o)) { return reflect(o).creatorSlotChainExpression(); }
+      if (this.isNativeFunction(o)) { return mir.creatorSlotChainExpression(); }
       if (o instanceof RegExp) { return "new RegExp(" + RegExp.escape(o.source).inspect() + ")"; }
       return o.toString();
     }
-    if (t === 'object' && o instanceof Array) { return '[]'; }
+    if (mir.isReflecteeArray()) { return '[]'; }
 
     var parent = o['__proto__'];
     if (parent === Object.prototype) { return '{}'; } // not really necessary, but looks nicer
@@ -123,7 +121,12 @@ thisModule.addSlots(Snapshotter.prototype, function(add) {
       var o = this._objectsByOID[i];
       setupBuf.append('__objectsByOID__[').append(i).append('] = ').append(this.creationStringFor(o)).append(';\n');
     }
-    var tearDownBuf = stringBuffer.create('\n})();\n');
+
+    var tearDownBuf = stringBuffer.create('\n');
+    tearDownBuf.append('var canvas = Global.document.getElementById("canvas");\n');
+    tearDownBuf.append('WorldMorph.current().displayOnCanvas(canvas);\n');
+    tearDownBuf.append('})();\n');
+
     return setupBuf.concat(this._buffer, tearDownBuf).toString();
   });
 

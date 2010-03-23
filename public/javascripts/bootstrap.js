@@ -22,9 +22,19 @@ if (typeof Object.newChildOf !== 'function') {
     };
 }
 
+// Gotta overwrite the standard Object.extend, or bad things happen with annotations.
+Object.extend = function extend(destination, source) {
+  for (var property in source) {
+    if (property !== '__annotation__') {
+      destination[property] = source[property];
+    }
+  }
+  return destination;
+};
+
+
 function annotationOf(o) {
   if (o.hasOwnProperty('__annotation__')) { return o.__annotation__; }
-  // Why doesn't JSLint like it when I put this all on one line?
   var a = {slotAnnotations: {}};
   o.__annotation__ = a;
   return a;
@@ -48,7 +58,8 @@ function setCreatorSlot(annotation, name, holder) {
 }
 
 function setSlotAnnotation(holder, name, slotAnnotation) {
-  annotationOf(holder).slotAnnotations[annotationNameForSlotNamed(name)] = slotAnnotation;
+  var holderAnno = annotationOf(holder);
+  holderAnno.slotAnnotations[annotationNameForSlotNamed(name)] = slotAnnotation;
 }
 
 function creatorChainLength(o) {

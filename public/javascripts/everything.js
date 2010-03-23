@@ -2,7 +2,6 @@ lobby.transporter.module.create('everything', function(requires) {
 
 requires('core', 'lk_TestFramework'); // aaa - hack - how should I deal with LK modules that don't actually load until you ask for them?
 requires('transporter', 'transporter');
-requires('transporter', 'object_graph_walker'); // aaa - where does this belong?
 requires('core', 'core');
 requires('mirrors', 'mirrors');
 requires('lk-ext', 'lk_ext');
