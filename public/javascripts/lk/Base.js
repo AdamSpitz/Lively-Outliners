@@ -369,7 +369,7 @@ Object.extend(Function.prototype, {
 	var ancestor = this.superclass && this.superclass.prototype;
 
 	for (var property in source) {
-
+          if (property !== '__annotation__') { // aaa - Hacked by Adam, not sure what else to do.
 	    var getter = source.__lookupGetter__(property);
 	    if (getter) this.prototype.__defineGetter__(property, getter);
 	    var setter = source.__lookupSetter__(property);
@@ -416,6 +416,7 @@ Object.extend(Function.prototype, {
 		    value.methodName = property;
 		}
 	    }
+          }
 	}
 	return this;
 

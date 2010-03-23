@@ -123,6 +123,13 @@ thisModule.addSlots(mirror, function(add) {
     return false;
   }, {category: ['testing']});
 
+  add.method('canSlotNameBeUsedAsJavascriptToken', function (n) {
+    // This isn't really correct; just a quick approximation, because I don't actually know the real rules.
+    if (/[+\-*/=^!~<>;]/.test(n)) { return false; }
+    if (javascriptReservedWords[n]) { return false; }
+    return true;
+  }, {category: ['testing']});
+
   add.method('creatorSlotChainExpression', function () {
     if (! this.canHaveCreatorSlot()) {throw this.inspect() + " does not have a creator slot chain.";}
 
@@ -130,11 +137,22 @@ thisModule.addSlots(mirror, function(add) {
     if (! chain) {throw this.inspect() + " does not have a creator slot chain.";}
     if (chain.length === 0) {return "lobby";}
 
-    var s = stringBuffer.create(lobby === window ? "" : "lobby."); // don't need to say "lobby" if the lobby is the global JS namespace
-    
+    var s = stringBuffer.create();
     var sep = "";
+    if (lobby === window && this.canSlotNameBeUsedAsJavascriptToken(chain[chain.length - 1].name())) {
+      // don't need to say "lobby" if the lobby is the global JS namespace
+    } else {
+      s.append("lobby");
+      sep = ".";
+    }
+    
     for (var i = chain.length - 1; i >= 0; i -= 1) {
-      s.append(sep).append(chain[i].name());
+      var n = chain[i].name();
+      if (this.canSlotNameBeUsedAsJavascriptToken(n)) {
+        s.append(sep).append(n);
+      } else {
+        s.append('[').append(n.inspect()).append(']');
+      }
       sep = ".";
     }
     return s.toString();
@@ -830,6 +848,8 @@ thisModule.addSlots(mirror.Tests.prototype, function(add) {
     this.assertEqual("a Function", reflect(function() {}).name());
     this.assertEqual("an Object", reflect({}).name());
     this.assertEqual("an Array", reflect([1, 'two', 3]).name());
+    this.assertEqual("a TestCase", reflect(new TestCase()).name());
+    this.assertEqual("TestCase.prototype", reflect(TestCase.prototype).name());
     this.assertEqual("transporter", reflect(transporter).name());
     this.assertEqual("transporter.module", reflect(transporter.module).name());
     this.assertEqual("a TestCase.Morph", reflect(new TestCase.prototype.Morph(new mirror.Tests())).name());
@@ -861,6 +881,7 @@ thisModule.addSlots(mirror.Tests.prototype, function(add) {
     this.assertEqual("transporter.module", reflect(transporter.module).creatorSlotChainExpression());
     this.assertEqual("TestCase.prototype.Morph.prototype", reflect(TestCase.prototype.Morph.prototype).creatorSlotChainExpression());
     this.assertEqual("lobby", reflect(Global).creatorSlotChainExpression());
+    this.assertEqual("Selector.operators['!=']", reflect(Selector.operators['!=']).creatorSlotChainExpression());
   });
 
 });

@@ -150,8 +150,12 @@ var Class = (function() {
   var _toString = Object.prototype.toString;
 
   function extend(destination, source) {
-    for (var property in source)
-      destination[property] = source[property];
+    // aaa: Hacked by Adam, not sure what else to do.
+    for (var property in source) {
+      if (property !== '__annotation__') {
+        destination[property] = source[property];
+      }
+    }
     return destination;
   }
 
