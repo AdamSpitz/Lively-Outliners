@@ -125,7 +125,8 @@ function hackToMakeSuperWork(holder, property, contents) {
 }
 
 
-function waitForAllCallbacks(functionThatYieldsCallbacks, functionToRunWhenDone) {
+function waitForAllCallbacks(functionThatYieldsCallbacks, functionToRunWhenDone, aaa_name) {
+  var callbacks = [];
   var numberOfCallsExpected = 0;
   var numberCalledSoFar = 0;
   var doneYieldingCallbacks = false;
@@ -140,6 +141,7 @@ function waitForAllCallbacks(functionThatYieldsCallbacks, functionToRunWhenDone)
 
     if (numberCalledSoFar >= numberOfCallsExpected) {
       alreadyDone = true;
+      //console.log("OK, we seem to be done " + aaa_name + ". Here are the subguys: " + callbacks.map(function(cb) {return cb.aaa_name;}).join(', '));
       functionToRunWhenDone();
     }
   };
@@ -154,6 +156,7 @@ function waitForAllCallbacks(functionThatYieldsCallbacks, functionToRunWhenDone)
       numberCalledSoFar += 1;
       checkWhetherDone();
     };
+    callbacks.push(callback);
     return callback;
   });
   doneYieldingCallbacks = true;
@@ -197,7 +200,7 @@ lobby.transporter.module.create = function(n, reqBlock, contentsBlock) {
   var newModule = this.named(n);
   waitForAllCallbacks(function(finalCallback) {
     reqBlock(function(reqDir, reqName) {
-      newModule.requires(reqDir, reqName, finalCallback());
+      newModule.requires(reqDir, reqName, Object.extend(finalCallback(), {aaa_name: reqName}));
     });
   }, function() {
     contentsBlock(newModule);
@@ -208,7 +211,7 @@ lobby.transporter.module.create = function(n, reqBlock, contentsBlock) {
       delete transporter.module.onLoadCallbacks[n];
       onLoadCallback();
     }
-  });
+  }, n);
 };
 
 lobby.transporter.module.slotAdder = {
@@ -329,8 +332,9 @@ thisModule.addSlots(transporter.module, function(add) {
     this.loadJSFile(url, function() {
       var module = modules[name];
       if (!module) {
-        // Must just be some external Javascript library - not
-        // one of our modules.
+        // Must just be some external Javascript library - not one of our
+        // modules. So onLoadCallbacks[name] won't have been called, so
+        // let's just delete it from there and call it ourselves.
         delete transporter.module.onLoadCallbacks[name];
         if (scriptLoadedCallback) { scriptLoadedCallback(); }
       }

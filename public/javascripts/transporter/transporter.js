@@ -99,12 +99,6 @@ thisModule.addSlots(transporter.module, function(add) {
     return deps;
   }, {category: ['transporting'], comment: 'If Javascript could do "become", this would be unnecessary, since we could just put in a placeholder and then swap it for the real object later.'});
 
-  add.method('mirrorsInOrderForFilingOut', function () {
-    var allMirrors = set.copyRemoveAll(); // aaa - remember that mirrors don't hash well; this'll be slow for big modules unless we fix that
-    this.objectsThatMightContainSlotsInMe().each(function(obj) { allMirrors.add(reflect(obj)); }.bind(this));
-    return allMirrors.toArray().sort(function(a, b) { var an = a.name(); var bn = b.name(); return an === bn ? 0 : an < bn ? -1 : 1; });
-  }, {category: ['transporting']});
-
   add.method('codeToFileOut', function () {
     var buffer = stringBuffer.create();
     
@@ -144,8 +138,7 @@ thisModule.addSlots(transporter.module, function(add) {
     } else {
       
       var baseDirURL = URL.source.getDirectory().withRelativePath("javascripts/");
-      //new FileDirectory(baseDirURL.withRelativePath("javascripts/")).createDirectory(this.directory());
-      var moduleDirURL = this.urlForModuleDirectory("non-core/" + this.directory());
+      var moduleDirURL = new URL(this.urlForModuleDirectory("non-core/" + this.directory() + "/"));
       var url = moduleDirURL.withFilename(this.name() + ".js");
       var status = new Resource(Record.newPlainInstance({URL: url})).store(doc, true).getStatus();
       if (! status.isSuccess()) {
@@ -159,14 +152,6 @@ thisModule.addSlots(transporter.module, function(add) {
 
   add.method('eachSlotInOrderForFilingOut', function (f) {
     Object.newChildOf(this.slotOrderizer, this).determineOrder().each(f);
-  }, {category: ['transporting']});
-
-  add.method('aaa_old_eachSlotInOrderForFilingOut', function (f) {
-    this.mirrorsInOrderForFilingOut().each(function(mir) {
-      this.eachSlotInMirror(mir, function(s) {
-        f(s);
-      });
-    }.bind(this));
   }, {category: ['transporting']});
 
   add.method('fileOutSlots', function (buffer) {
