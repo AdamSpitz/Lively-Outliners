@@ -141,7 +141,7 @@ function waitForAllCallbacks(functionThatYieldsCallbacks, functionToRunWhenDone,
 
     if (numberCalledSoFar >= numberOfCallsExpected) {
       alreadyDone = true;
-      //console.log("OK, we seem to be done " + aaa_name + ". Here are the subguys: " + callbacks.map(function(cb) {return cb.aaa_name;}).join(', '));
+      console.log("OK, we seem to be done " + aaa_name + ". Here are the subguys: " + callbacks.map(function(cb) {return cb.aaa_name;}).join(', '));
       functionToRunWhenDone();
     }
   };

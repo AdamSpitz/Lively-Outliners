@@ -91,14 +91,18 @@ thisModule.addSlots(Snapshotter.prototype, function(add) {
 
   add.method('reachedSlot', function (holder, slotName, contents) {
     var slotAnno = existingSlotAnnotation(holder, slotName);
-    if (slotAnno && slotAnno.module === modules.init) { return; }
+    if (slotAnno && slotAnno.module === modules.init) {
+      return; // aaa - meh, the below stuff gave me grief
+      //if (reflect(contents).isWellKnown()) { return; }
+      //console.log("Keeping init-module slot: " + reflect(holder).name() + "." + slotName);
+    }
     this._buffer.append(this.referenceTo(holder)).append('[').append(slotName.inspect()).append('] = ').append(this.referenceTo(contents)).append(';\n');
   });
 
   add.method('creationStringFor', function (o) {
     var mir = reflect(o);
     var cs = mir.creatorSlot();
-    if (cs && cs.module() === modules.init) { return mir.creatorSlotChainExpression(); }
+    if (cs && cs.module() === modules.init /* && cs.contents().equals(mir) */) { return mir.creatorSlotChainExpression(); }
 
     var t = typeof(o);
     if (t === 'function') {
@@ -124,7 +128,9 @@ thisModule.addSlots(Snapshotter.prototype, function(add) {
 
     var tearDownBuf = stringBuffer.create('\n');
     tearDownBuf.append('var canvas = Global.document.getElementById("canvas");\n');
-    tearDownBuf.append('WorldMorph.current().displayOnCanvas(canvas);\n');
+    // aaa - For now, let's just create a new world - recreating the morphs is tricky, I think.
+    // tearDownBuf.append('WorldMorph.current().displayOnCanvas(canvas);\n');
+    tearDownBuf.append('new WorldMorph(canvas).displayOnCanvas(canvas);\n');
     tearDownBuf.append('})();\n');
 
     return setupBuf.concat(this._buffer, tearDownBuf).toString();

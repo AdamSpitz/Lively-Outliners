@@ -125,9 +125,11 @@ thisModule.addSlots(mirror, function(add) {
 
   add.method('canSlotNameBeUsedAsJavascriptToken', function (n) {
     // This isn't really correct; just a quick approximation, because I don't actually know the real rules.
-    if (/[+\-*/=^!~<>;]/.test(n)) { return false; }
     if (javascriptReservedWords[n]) { return false; }
-    return true;
+    // if (/[+\-*/=^!~<>;0123456789]/.test(n)) { return false; }
+    // return true;
+    // aaa - What about Unicode?
+    return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(n);
   }, {category: ['testing']});
 
   add.method('creatorSlotChainExpression', function () {
