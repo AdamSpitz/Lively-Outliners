@@ -99,25 +99,19 @@ thisModule.addSlots(transporter.module, function(add) {
     return deps;
   }, {category: ['transporting'], comment: 'If Javascript could do "become", this would be unnecessary, since we could just put in a placeholder and then swap it for the real object later.'});
 
+  add.creator('filerOuter', {}, {category: ['transporting']});
+
   add.method('codeToFileOut', function () {
-    var buffer = stringBuffer.create();
-    
-    buffer.append("transporter.module.create('").append(this.name()).append("', function(requires) {");
-    
-    if (this._requirements && this._requirements.length > 0) {
-      this._requirements.each(function(dirAndName) {
-          buffer.append("requires(").append(dirAndName[0].inspect()).append(", ").append(dirAndName[1]).append(");\n");
-      });
-      buffer.append("\n\n");
-    }
+    var filerOuter = Object.newChildOf(this.filerOuter);
 
-    buffer.append("}, function(thisModule) {\n\n\n");
+    filerOuter.writeModule(this.name(), this._requirements, function() {
+      this.eachSlotInOrderForFilingOut(function(s) {
+        filerOuter.writeSlot(s);
+      }.bind(this));
+      filerOuter.doneWithThisObject();
+    }.bind(this));
 
-    this.fileOutSlots(buffer);
-
-    buffer.append("});\n");
-
-    return buffer.toString();
+    return filerOuter.fullText();
   }, {category: ['transporting']});
 
   add.method('fileOut', function () {
@@ -154,22 +148,6 @@ thisModule.addSlots(transporter.module, function(add) {
     Object.newChildOf(this.slotOrderizer, this).determineOrder().each(f);
   }, {category: ['transporting']});
 
-  add.method('fileOutSlots', function (buffer) {
-    var previousHolder = null;
-    
-    this.eachSlotInOrderForFilingOut(function(s) {
-      var holder = s.holder();
-      if (!previousHolder || ! holder.equals(previousHolder)) {
-        if (previousHolder) { buffer.append("});\n\n\n"); }
-        buffer.append("thisModule.addSlots(").append(holder.creatorSlotChainExpression()).append(", function(add) {\n\n");
-        previousHolder = holder;
-      }
-      s.fileOutTo(buffer);
-    }.bind(this));
-
-    buffer.append("});\n\n\n");
-  }, {category: ['transporting']});
-
   add.method('urlForCoreModulesDirectory', function () {
     return URL.source.getDirectory().withRelativePath("javascripts/");
   }, {category: ['saving to WebDAV']});
@@ -185,6 +163,64 @@ thisModule.addSlots(transporter.module, function(add) {
   add.method('changedOnes', function () {
     return Object.newChildOf(enumerator, this, 'eachModule').select(function(m) { return m.hasChangedSinceLastFileOut(); });
   }, {category: ['keeping track of changes']});
+
+});
+
+
+thisModule.addSlots(transporter.module.filerOuter, function(add) {
+
+  add.method('initialize', function (m) {
+    this._module = m;
+    this._buffer = stringBuffer.create();
+    this._previousHolder = null;
+  }, {category: ['creating']});
+    
+  add.method('fullText', function () {
+    return this._buffer.toString();
+  }, {category: ['accessing']});
+
+  add.method('writeModule', function (name, reqs, bodyBlock) {
+    this._buffer.append("transporter.module.create(").append(name.inspect()).append(", function(requires) {");
+    
+    if (reqs && reqs.length > 0) {
+      this._buffer.append("\n\n");
+      reqs.each(function(dirAndName) {
+        this._buffer.append("requires(").append(dirAndName[0].inspect()).append(", ").append(dirAndName[1]).append(");\n");
+      }.bind(this));
+      this._buffer.append("\n");
+    }
+
+    this._buffer.append("}, function(thisModule) {\n\n\n");
+
+    bodyBlock();
+
+    this._buffer.append("});\n");
+  }, {category: ['writing']});
+
+  add.method('writeObjectStarter', function (mir) {
+    this._buffer.append("thisModule.addSlots(").append(mir.creatorSlotChainExpression()).append(", function(add) {\n\n");
+  }, {category: ['writing']});
+
+  add.method('writeObjectEnder', function (mir) {
+    this._buffer.append("});\n\n\n");
+  }, {category: ['writing']});
+
+  add.method('writeSlot', function (s) {
+    var holder = s.holder();
+    if (!this._previousHolder || ! holder.equals(this._previousHolder)) {
+      this.doneWithThisObject();
+      this.writeObjectStarter(holder);
+      this._previousHolder = holder;
+    }
+    s.fileOutTo(this._buffer);
+  }, {category: ['writing']});
+
+  add.method('doneWithThisObject', function () {
+    if (this._previousHolder) {
+      this.writeObjectEnder(this._previousHolder);
+      this._previousHolder = null;
+    }
+  }, {category: ['writing']});
 
 });
 
