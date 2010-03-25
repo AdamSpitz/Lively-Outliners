@@ -45,6 +45,21 @@
 <p>I've mostly been testing with Safari, but I think it should run on Firefox and Chrome too. Not sure about Opera. Definitely not IE (though it could be used to produce JavaScript code that runs on IE, as long as you're careful to avoid the features that IE doesn't support).</p>
 
 
+<h2>How does this compare to Self?</h2>
+
+<ul>
+
+<li><b>The language is JavaScript.</b> JavaScript has a core of pretty good stuff - dynamic typing, a prototype-based object system, more-or-less proper closures - surrounded by a huge pile of really bad stuff. If someone were to dress up JavaScript with a better syntax that hides the bad stuff and makes the good stuff easier, it could actually be a pretty decent Self-like language. (Sooner or later I'll get around to doing this myself.)</li>
+
+<li><b>Gotta use the browser's debugger.</b> The Safari and FireFox JavaScript debuggers are better than nothing, but still not up to the standards of Self or Smalltalk. If I understand correctly, it's just not possible (in current browsers) to write a JavaScript debugger in JavaScript - the introspection facilities just aren't there. (Someone please correct me if I'm wrong about this!)</li>
+
+<li><b>No snapshotting.</b> Because JavaScript can't reflect on a function's local variables, I don't think there's a way to save a snapshot of a running system. We may be able to hack together something that'll sorta work OK most of the time.</li>
+
+<li><b>It runs in a web browser.</b> Honestly, if you want to know what object-oriented, prototype-based programming <i>should</i> be like, go try out <a href="http://selflanguage.org">Self</a>. It's awesome. But if you want something that runs in a web browser... well, this thing does and Self doesn't.</li>
+
+</ul>
+
+
 </body>
 
 </html>
