@@ -99,14 +99,17 @@ thisModule.addSlots(transporter.module, function(add) {
     return deps;
   }, {category: ['transporting'], comment: 'If Javascript could do "become", this would be unnecessary, since we could just put in a placeholder and then swap it for the real object later.'});
 
-  add.creator('filerOuter', {}, {category: ['transporting']});
+  add.creator('abstractFilerOuter', {}, {category: ['transporting']});
 
-  add.method('codeToFileOut', function () {
-    var filerOuter = Object.newChildOf(this.filerOuter);
+  add.creator('filerOuter', Object.create(transporter.module.abstractFilerOuter), {category: ['transporting']});
 
+  add.creator('annotationlessFilerOuter', Object.create(transporter.module.abstractFilerOuter), {category: ['transporting']});
+
+  add.method('codeToFileOut', function (filerOuter) {
     filerOuter.writeModule(this.name(), this._requirements, function() {
       this.eachSlotInOrderForFilingOut(function(s) {
-        filerOuter.writeSlot(s);
+        filerOuter.nextSlotIsIn(s.holder());
+        s.fileOutWith(filerOuter);
       }.bind(this));
       filerOuter.doneWithThisObject();
     }.bind(this));
@@ -115,7 +118,7 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['transporting']});
 
   add.method('fileOut', function () {
-    var doc = this.codeToFileOut().toString();
+    var doc = this.codeToFileOut(Object.newChildOf(this.filerOuter)).toString();
 
     // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
     if (URL.source.hostname.include("adamspitz.com")) {
@@ -167,10 +170,9 @@ thisModule.addSlots(transporter.module, function(add) {
 });
 
 
-thisModule.addSlots(transporter.module.filerOuter, function(add) {
+thisModule.addSlots(transporter.module.abstractFilerOuter, function(add) {
 
-  add.method('initialize', function (m) {
-    this._module = m;
+  add.method('initialize', function () {
     this._buffer = stringBuffer.create();
     this._previousHolder = null;
   }, {category: ['creating']});
@@ -178,6 +180,26 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
   add.method('fullText', function () {
     return this._buffer.toString();
   }, {category: ['accessing']});
+
+  add.method('nextSlotIsIn', function (holder) {
+    if (!this._previousHolder || ! holder.equals(this._previousHolder)) {
+      this.doneWithThisObject();
+      this.writeObjectStarter(holder);
+      this._previousHolder = holder;
+    }
+  }, {category: ['writing']});
+
+  add.method('doneWithThisObject', function () {
+    if (this._previousHolder) {
+      this.writeObjectEnder(this._previousHolder);
+      this._previousHolder = null;
+    }
+  }, {category: ['writing']});
+
+});
+
+
+thisModule.addSlots(transporter.module.filerOuter, function(add) {
 
   add.method('writeModule', function (name, reqs, bodyBlock) {
     this._buffer.append("transporter.module.create(").append(name.inspect()).append(", function(requires) {");
@@ -205,21 +227,33 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
     this._buffer.append("});\n\n\n");
   }, {category: ['writing']});
 
-  add.method('writeSlot', function (s) {
-    var holder = s.holder();
-    if (!this._previousHolder || ! holder.equals(this._previousHolder)) {
-      this.doneWithThisObject();
-      this.writeObjectStarter(holder);
-      this._previousHolder = holder;
-    }
-    s.fileOutTo(this._buffer);
+  add.method('writeSlot', function (creationMethod, slotName, contentsExpr, optionalArgs) {
+    this._buffer.append("  add.").append(creationMethod).append("('").append(slotName).append("', ").append(contentsExpr);
+    this._buffer.append(optionalArgs);
+    this._buffer.append(");\n\n");
   }, {category: ['writing']});
 
-  add.method('doneWithThisObject', function () {
-    if (this._previousHolder) {
-      this.writeObjectEnder(this._previousHolder);
-      this._previousHolder = null;
-    }
+});
+
+
+thisModule.addSlots(transporter.module.annotationlessFilerOuter, function(add) {
+
+  add.method('writeModule', function (name, reqs, bodyBlock) {
+    this._buffer.append("modules[").append(name.inspect()).append("] = {};\n\n");
+    bodyBlock();
+  }, {category: ['writing']});
+
+  add.method('writeObjectStarter', function (mir) {
+    this._buffer.append("Object.extend(").append(mir.creatorSlotChainExpression()).append(", {\n\n");
+  }, {category: ['writing']});
+
+  add.method('writeObjectEnder', function (mir) {
+    this._buffer.append("});\n\n\n");
+  }, {category: ['writing']});
+
+  add.method('writeSlot', function (creationMethod, slotName, contentsExpr, optionalArgs) {
+    this._buffer.append("  ").append(slotName).append(": ").append(contentsExpr);
+    this._buffer.append(",\n\n");
   }, {category: ['writing']});
 
 });

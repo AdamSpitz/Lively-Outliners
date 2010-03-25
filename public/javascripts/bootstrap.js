@@ -345,8 +345,21 @@ thisModule.addSlots(transporter.module, function(add) {
     if (! this._requirements) { this._requirements = []; }
     this._requirements.push([moduleDir, moduleName]);
     
-    if (transporter.module.existingOneNamed(moduleName)) {
-      if (reqLoadedCallback) { reqLoadedCallback(); }
+    var module = transporter.module.existingOneNamed(moduleName);
+    if (module) {
+      // Make sure it's done loading.
+      var url = this.urlForModuleName(module._name, module._directory);
+      var urlLoadedCallback = transporter.loadedURLs[url];
+      if (urlLoadedCallback === 'done') {
+        if (reqLoadedCallback) { reqLoadedCallback(); }
+      } else if (typeof(urlLoadedCallback) === 'function') {
+        transporter.loadedURLs[url] = function() {
+          urlLoadedCallback();
+          if (reqLoadedCallback) { reqLoadedCallback(); }
+        };
+      } else {
+        throw "Hmm, that's weird; why does the module exist when there's nothing in transporter.loadedURLs for it?";
+      }
     } else {
       transporter.module.fileIn(moduleDir, moduleName, reqLoadedCallback);
     }

@@ -722,7 +722,7 @@ thisModule.addSlots(slots.plain, function(add) {
     }.bind(this));
   }, {category: ['testing']});
 
-  add.method('fileOutTo', function (buffer) {
+  add.method('fileOutWith', function (filerOuter) {
     var creationMethod = "data";
     var contentsExpr;
     var contents = this.contents();
@@ -765,8 +765,6 @@ thisModule.addSlots(slots.plain, function(add) {
       }
     }
 
-    buffer.append("  add.").append(creationMethod).append("('").append(this.name()).append("', ").append(contentsExpr);
-
     var slotAnnoToStringify = {};
     var slotAnno = this.annotation();
     if (slotAnno.comment     ) { slotAnnoToStringify.comment      = slotAnno.comment;      }
@@ -793,13 +791,12 @@ thisModule.addSlots(slots.plain, function(add) {
     if (optionalArgs !== '' || (slotAnnoExpr && slotAnnoExpr !== '{}')) {
       optionalArgs = ", " + slotAnnoExpr + optionalArgs;
     }
-    buffer.append(optionalArgs);
 
-    buffer.append(");\n\n");
+    filerOuter.writeSlot(creationMethod, this.name(), contentsExpr, optionalArgs);
 
     if (array) {
       for (var i = 0, n = array.length; i < n; i += 1) {
-        contents.slotAt(i.toString()).fileOutTo(buffer);
+        contents.slotAt(i.toString()).fileOutWith(filerOuter);
       }
     }
   }, {category: ['filing out']});
