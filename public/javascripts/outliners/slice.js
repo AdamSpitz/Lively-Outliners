@@ -50,8 +50,7 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
     this.redoButton = createButton("Redo", function(evt) { this.redo(evt); }.bind(this), 1);
     this.dismissButton = this.createDismissButton();
 
-    // aaa - redo doesn't work yet because we don't unmark the objects after we're done
-    this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel, createSpacer(), /* this.redoButton, */ this.dismissButton],
+    this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel, createSpacer(), this.redoButton, this.dismissButton],
                                             {top: 0, bottom: 0, left: 3, right: 3, between: 3});
 
     this.setPotentialContent([this._headerRow, createOptionalMorph(this._slotsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
@@ -84,6 +83,7 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
   });
 
   add.method('redo', function () {
+    this._slotsPanel.setRows([]);
     var ss = this.searcher().go().sort(function(sp1, sp2) {var n1 = sp1.holder().name(); var n2 = sp2.holder().name(); return n1 === n2 ? 0 : n1 < n2 ? -1 : 1;});
     var sms = ss.map(function(s) { return this.createRowForSlot(s); }.bind(this));
     this._slotsPanel.setRows(sms);

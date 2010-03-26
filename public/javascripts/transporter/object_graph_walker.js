@@ -195,12 +195,14 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
     this.reset();
     this._startTime = new Date().getTime();
     this.walk(root === undefined ? lobby : root, 0);
+    this.undoAllMarkings();
     return this.results();
   });
 
   add.method('reset', function () {
     // children can override
     this._results = [];
+    this._marked = [];
     this._objectCount = 0;
   });
 
@@ -248,12 +250,19 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
     // have to mark the annotation and then come by again and unmark it.
     var contentsAnno;
     try { contentsAnno = annotationOf(contents); } catch (ex) { return false; } // stupid FireFox bug
-    var walkers = contentsAnno.walkers = contentsAnno.walkers || [];
-    for (var i = 0; i < walkers.length; i += 1) {
-      if (walkers[i] === this) {return false;}
-    }
-    walkers.push(this);
+    var walkers = contentsAnno.walkers = contentsAnno.walkers || Object.newChildOf(set, hashTable.identityComparator);
+    if (walkers.include(this)) { return false; }
+    walkers.add(this);
+    this._marked.push(contentsAnno);
     return true;
+  });
+
+  add.method('undoAllMarkings', function () {
+    // Could walk the graph again so that we don't need to create this big
+    // list of marked stuff. But for now this'll do.
+    if (! this._marked) { return; }
+    this._marked.each(function(m) { m.walkers.remove(this); }.bind(this));
+    this._marked = [];
   });
 
   add.method('reachedObject', function (o) {
