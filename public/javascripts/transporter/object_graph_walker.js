@@ -163,14 +163,18 @@ thisModule.addSlots(ReferenceFinder.prototype, function(add) {
   });
 
   add.method('reachedSlot', function (holder, slotName, contents) {
-    if (contents === this.objectToSearchFor && reflect(holder).creatorSlotChain()) {
-      this._results.push(holder);
+    if (contents === this.objectToSearchFor) {
+      var holderMir = reflect(holder);
+      if (holderMir.creatorSlotChain()) {
+        this._results.push(holderMir.slotAt(slotName));
+      }
     }
   });
 
   add.method('reachedObject', function (o) {
-    if (reflect(o).parent().reflectee() === this.objectToSearchFor && reflect(o).creatorSlotChain()) {
-      this._results.push(o);
+    var mir = reflect(o);
+    if (mir.parent().reflectee() === this.objectToSearchFor && mir.creatorSlotChain()) {
+      this._results.push(mir.parentSlot());
     }
   });
 

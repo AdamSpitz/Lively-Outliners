@@ -454,7 +454,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['searching']});
 
   add.method('wellKnownReferences', function () {
-    return new ReferenceFinder(this.reflectee()).go();
+    return new ReferenceFinder(this.reflectee()).go().toArray();
   }, {category: ['searching']});
 
   add.method('categorizeUncategorizedSlotsAlphabetically', function () {

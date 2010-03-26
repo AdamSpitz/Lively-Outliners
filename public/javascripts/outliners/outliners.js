@@ -225,7 +225,9 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     cmdList.addLine();
 
     cmdList.addItem({label: "well-known references", go: function(evt) {
-      evt.hand.world().morphFor(reflect(this.mirror().wellKnownReferences())).grabMe(evt);
+      var slice = new SliceMorph(new ReferenceFinder(this.mirror().reflectee()));
+      slice.grabMe(evt);
+      slice.redo();
     }.bind(this)});
     
     cmdList.addItem({label: "well-known children", go: function(evt) {
