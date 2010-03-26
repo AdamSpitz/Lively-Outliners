@@ -36,21 +36,28 @@ Morph.subclass("RowOrColumnMorph", {
     });
     totalForwards += direction.forwardPadding2(padding);
 
-    var p = this._cachedMinimumExtent = direction.point(totalForwards, biggestSideways);
+    var p = direction.point(totalForwards, biggestSideways);
+    this._cachedMinimumExtent = p;
 
-    return p;
+    var currentExtent = this.getExtent();
+    return pt(this.horizontalLayoutMode === LayoutModes.Rigid ? Math.max(p.x, currentExtent.x) : p.x,
+              this.  verticalLayoutMode === LayoutModes.Rigid ? Math.max(p.y, currentExtent.y) : p.y);
   },
 
   rejiggerTheLayout: function(availableSpace) {
     // console.log(this.inspect() + " has asked for at least " + this._cachedMinimumExtent + " and received " + availableSpace);
     
-    var availableSpaceToUse = pt(this.horizontalLayoutMode === LayoutModes.ShrinkWrap ? this._cachedMinimumExtent.x : availableSpace.x,
-                                 this.  verticalLayoutMode === LayoutModes.ShrinkWrap ? this._cachedMinimumExtent.y : availableSpace.y);
+    var thisExtent = this.getExtent();
+    var availableSpaceToUse = availableSpace.copy();
+    if (this.horizontalLayoutMode === LayoutModes.ShrinkWrap) { availableSpaceToUse.x =          this._cachedMinimumExtent.x;                }
+    if (this.horizontalLayoutMode === LayoutModes.Rigid     ) { availableSpaceToUse.x = Math.max(this._cachedMinimumExtent.x, thisExtent.x); }
+    if (this.  verticalLayoutMode === LayoutModes.ShrinkWrap) { availableSpaceToUse.y =          this._cachedMinimumExtent.y;                }
+    if (this.  verticalLayoutMode === LayoutModes.Rigid     ) { availableSpaceToUse.y = Math.max(this._cachedMinimumExtent.y, thisExtent.y); }
     if (this.aaaDebugMe) { console.log("availableSpace: " + availableSpace + ", availableSpaceToUse: " + availableSpaceToUse); }
 
     if (this._layoutIsStillValid && this._spaceUsedLastTime && this._spaceUsedLastTime.eqPt(availableSpaceToUse)) {
       if (this.aaaDebugMe) { console.log("Not gonna lay out " + this.inspect() + ", since it's already laid out in the appropriate amount of space."); }
-      return this.getExtent();
+      return thisExtent;
     }
     this._spaceUsedLastTime = availableSpaceToUse;
 
@@ -77,7 +84,10 @@ Morph.subclass("RowOrColumnMorph", {
       extraForwardSpacePerSpaceFillingChild = extraForwardSpace / forwardSpaceFillingChildren.size();
     }
     
-    var forward = 0;
+    var topLeft = this.shape.bounds().topLeft();
+    var forward = direction.forwardCoordinateOfPoint(topLeft);
+    var sidewaysOrigin = direction.sidewaysCoordinateOfPoint(topLeft);
+
     if (this.aaaDebugMe) { console.log("Starting off, availableSpace: " + availableSpace); }
     this.eachThingy(function(m) {
       var availableSpaceToPassOnToThisChild = direction.point(direction. forwardCoordinateOfPoint(m._cachedMinimumExtent),
@@ -92,7 +102,7 @@ Morph.subclass("RowOrColumnMorph", {
       if (this.aaaDebugMe) { console.log("f is: " + f + ", m.extent is " + mExtent); }
       var unusedSidewaysSpace = direction.sidewaysCoordinateOfPoint(availableSpaceToPassOnToThisChild) - direction.sidewaysCoordinateOfPoint(mExtent);
       forward += paddingBeforeNextMorph;
-      var p = direction.point(forward, direction.sidewaysPadding1(padding) + (unusedSidewaysSpace / 2));
+      var p = direction.point(forward, sidewaysOrigin + direction.sidewaysPadding1(padding) + (unusedSidewaysSpace / 2));
       forward += f;
       m.setPosition(p);
       if (this.aaaDebugMe) { console.log("Added " + m.inspect() + " at " + p + ", forward is now: " + forward); }
@@ -157,7 +167,8 @@ Morph.subclass("RowOrColumnMorph", {
   },
 
   // aaa - This should probably just be in Morph.
-  /* aaa - Doesn't work yet; I need to rethink this. What if you try to reshape something to be smaller than its minimum needs?
+  // aaa - Still doesn't work right if you reshape an internal guy.
+  /* 
   reshape: function($super, partName, newPoint, lastCall) {
     var r = $super(partName, newPoint, lastCall);
     this.horizontalLayoutMode = this.verticalLayoutMode = LayoutModes.Rigid;

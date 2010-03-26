@@ -24,9 +24,9 @@ Morph.addMethods({
 
   hasMinimumExtentActuallyChanged: function() {
     var old_cachedMinimumExtent = this._cachedMinimumExtent;
-    delete this._cachedMinimumExtent;
-    this.minimumExtent();
-    return ! (old_cachedMinimumExtent && old_cachedMinimumExtent.eqPt(this._cachedMinimumExtent));
+    this._cachedMinimumExtent = null;
+    var newMinimumExtent = this.minimumExtent();
+    return ! (old_cachedMinimumExtent && old_cachedMinimumExtent.eqPt(newMinimumExtent));
   },
 
   // aaa - This method should probably be called something like minimumExtentMayHaveChanged.
