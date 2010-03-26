@@ -538,6 +538,10 @@ function main() {
         }
     if(Config.testTracing) lively.lang.Execution.testTrace();
     if(Config.testPlotDemo) new PlotDemo().open();
+
+    // aaa - Added by Adam.
+    world._application = livelyOutliners;
+    new MessageNotifierMorph("Right-click the background to start", Color.green).ignoreEvents().showInCenterOfWorld(world);
 }
 
 

@@ -58,6 +58,11 @@ thisModule.addSlots(MessageNotifierMorph.prototype, function(add) {
     this.zoomOuttaHereTimer = setInterval(function() {this.startZoomingOuttaHere();}.bind(this), ms || 5000);
   });
 
+  add.method('showInCenterOfWorld', function(w) {
+    var p = w.getExtent().scaleBy(0.5).subPt(this.getExtent().scaleBy(0.5));
+    this.ensureIsInWorld(w, p, true, false, true, function() {this.zoomAwayAfter(5000);}.bind(this));
+  });
+
 });
 
 
