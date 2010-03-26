@@ -1,6 +1,6 @@
 ButtonMorph.subclass("ExpanderMorph", {
   initialize: function($super, expandee) {
-    $super(pt(0, 0).extent(pt(12, 12)));
+    $super(pt(0, 0).extent(pt(12, 12))); // aaa - should fix ButtonMorph so that its initial shape doesn't have to be a rectangle
     var model = booleanHolder.containing(false);
     this.connectModel({model: model, getValue: "isChecked", setValue: "setChecked"});
     if (expandee) { model.notifier.add_observer(function() {this.updateExpandedness();}.bind(expandee)); }
@@ -8,18 +8,25 @@ ButtonMorph.subclass("ExpanderMorph", {
   },
 
   toggle: true,
+  styleClass: ['button', 'expander'],
 
   focusHaloBorderWidth: 0, // I don't like the halo
 
+  verticesForValue: function(value) {
+    return value ? [pt(0,0),pt(12,0),pt(6,12),pt(0,0)] : [pt(0,0),pt(12,6),pt(0,12),pt(0,0)];
+  },
+
   changeAppearanceFor: function($super, value) {
-    var baseColor = Color.blue; // Not sure how the LK style system works. -- Adam
-    var vertices  = value ? [pt(0,0),pt(12,0),pt(6,12),pt(0,0)] : [pt(0,0),pt(12,6),pt(0,12),pt(0,0)];
+    var baseColor = baseColorOf(this.getFill());
     var direction = value ? lively.paint.LinearGradient.SouthNorth : lively.paint.LinearGradient.WestEast;
     var stops = [new lively.paint.Stop(0, baseColor          ),
                  new lively.paint.Stop(1, baseColor.lighter())];
     var gradient = new lively.paint.LinearGradient(stops, direction);
-    var shape = new lively.scene.Polygon(vertices, Color.green, 1, Color.red); // I don't really understand what these colors do.
-    this.setShape(shape);
+    if (this.shape.setVertices) {
+      this.shape.setVertices(this.verticesForValue(value));
+    } else {
+      this.setShape(new lively.scene.Polygon(this.verticesForValue(false)));
+    }
     this.setFill(gradient);
     // $super(value); // Messes things up, I think. -- Adam
   },
@@ -29,3 +36,8 @@ ButtonMorph.subclass("ExpanderMorph", {
      collapse: function( ) {this.setExpanded(false);},
   setExpanded: function(b) {if (!!this.isExpanded() !== !!b) {this.setModelValue("setValue", !!b); this.updateView("all");}}
 });
+
+// Not sure I like this, but for now I think I want expanders to look different from regular buttons.
+WorldMorph.prototype.displayThemes.primitive.expander = {fill: Color.blue};
+WorldMorph.prototype.displayThemes.lively   .expander = {fill: Color.blue};
+WorldMorph.prototype.displayThemes.turquoise.expander = {fill: Color.blue};
