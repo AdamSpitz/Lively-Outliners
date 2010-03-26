@@ -332,7 +332,8 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   }, {category: ['creator slots']});
 
   add.method('grabCopy', function (evt) {
-    var newSlot = this.slot().copyTo(reflect({}));
+    var newMirror = reflect({});
+    var newSlot = this.slot().copyTo(newMirror);
     var newSlotMorph = new SlotMorph(newSlot);
     newSlotMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
     newSlotMorph.forceLayoutRejiggering();

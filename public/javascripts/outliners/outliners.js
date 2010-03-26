@@ -131,6 +131,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('expandCategory', function (c) {
+    if (! c.isRoot()) { this.expandCategory(c.supercategory()); }
     var m = c.isRoot() ? this : this.categoryMorphFor(c);
     m.expander().expand();
     m.populateSlotsPanel();

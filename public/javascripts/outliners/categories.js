@@ -46,8 +46,20 @@ thisModule.addSlots(Category.prototype, function(add) {
 
   add.method('parts', function () { return this._parts; }, {category: ['accessing']});
 
+  add.method('supercategory', function () {
+    return new Category(this._parts.slice(0, this._parts.length - 1));
+  }, {category: ['creating']});
+
   add.method('subcategory', function (subcatName) {
     return new Category(this._parts.concat([subcatName]));
+  }, {category: ['creating']});
+
+  add.method('concat', function (otherCat) {
+    return new Category(this._parts.concat(otherCat.parts()));
+  }, {category: ['creating']});
+
+  add.method('withoutFirstParts', function (n) {
+    return new Category(this._parts.slice(n));
   }, {category: ['creating']});
 
   add.method('toString', function () { return this.fullName(); }, {category: ['printing']});
@@ -96,6 +108,25 @@ thisModule.addSlots(Category.prototype, function(add) {
     }
     return true;
   }, {category: ['comparing']});
+
+  add.method('copySlots', function (sourceMir, targetMir, targetCat) {
+    targetCat = targetCat || Category.root();
+    var numPartsToLopOffTheBeginning = this.parts().length - 1;
+    if (numPartsToLopOffTheBeginning < 0) { throw "something is wrong - can't copy the root category"; } // aaa - wait, why not?
+
+    sourceMir.eachSlotNestedSomewhereUnderCategory(this, function(slot) {
+      var newSlot = slot.copyTo(targetMir);
+      var newCategory = targetCat.concat(slot.category().withoutFirstParts(numPartsToLopOffTheBeginning));
+      newSlot.setCategory(newCategory);
+    }.bind(this));
+    return targetCat.concat(this.withoutFirstParts(numPartsToLopOffTheBeginning));
+  }, {category: ['copying']});
+
+  add.method('removeSlots', function (mir) {
+    mir.eachSlotNestedSomewhereUnderCategory(this, function(slot) {
+      slot.remove();
+    }.bind(this));
+  }, {category: ['removing']});
 
 });
 
@@ -253,6 +284,19 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
     if (this.mirror().canHaveSlots()) {
       cmdList.addSection([{ label: "add slot",     go: function(evt) { this.addSlot    (evt); }.bind(this) }]);
       cmdList.addSection([{ label: "add category", go: function(evt) { this.addCategory(evt); }.bind(this) }]);
+
+      if (!this.category().isRoot()) {
+        cmdList.addLine();
+
+        cmdList.addItem({label: "copy", go: function(evt) { this.grabCopy(evt); }.bind(this)});
+      
+        cmdList.addItem({label: "move", go: function(evt) {
+          this.grabCopy(evt);
+          this.category().removeSlots(this.mirror());
+          var outliner = this.outliner();
+          if (outliner) { outliner.updateAppearance(); }
+        }.bind(this)});
+      }
     }
   }, {category: ['menu']});
 
@@ -353,6 +397,37 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
   add.method('addCommandsTo', function (cmdList) {
     this.addCategoryCommandsTo(cmdList);
   }, {category: ['menu']});
+
+  add.method('grabCopy', function (evt) {
+    var newMirror = reflect({});
+    var newCategory = this.category().copySlots(this.mirror(), newMirror);
+    var newCategoryMorph = new CategoryMorph(evt.hand.world().morphFor(newMirror), newCategory);
+    newCategoryMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
+    newCategoryMorph.forceLayoutRejiggering();
+    evt.hand.grabMorphWithoutAskingPermission(newCategoryMorph, evt);
+    return newCategoryMorph;
+  }, {category: ['drag and drop']});
+
+  add.method('wasJustDroppedOnOutliner', function (outliner) {
+    var newCategory = this.category().copySlots(this.mirror(), outliner.mirror());
+    outliner.expandCategory(newCategory);
+    this.remove();
+    outliner.updateAppearance();
+  }, {category: ['drag and drop']});
+
+  add.method('wasJustDroppedOnCategory', function (categoryMorph) {
+    var newCategory = this.category().copySlots(this.mirror(), categoryMorph.outliner().mirror(), categoryMorph.category());
+    categoryMorph.outliner().expandCategory(newCategory);
+    this.remove();
+    categoryMorph.outliner().updateAppearance();
+  }, {category: ['drag and drop']});
+
+  add.method('wasJustDroppedOnWorld', function (world) {
+    var outliner = world.morphFor(this.mirror());
+    world.addMorphAt(outliner, this.position());
+    outliner.expandCategory(this.category());
+    this.remove();
+  }, {category: ['drag and drop']});
 
 });
 
