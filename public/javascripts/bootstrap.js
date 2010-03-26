@@ -283,6 +283,8 @@ thisModule.addSlots(transporter.module, function(add) {
     // aaa old way, relies on a bunch of stuff that I'd rather not have to load first:
     // var _fileContents = FileDirectory.getContent(url);
 
+    scriptLoadedCallback = scriptLoadedCallback || function() {};
+
     var loadingStatus = transporter.loadedURLs[url];
     if (typeof loadingStatus === 'function') {
       transporter.loadedURLs[url] = function() {
@@ -358,7 +360,7 @@ thisModule.addSlots(transporter.module, function(add) {
           if (reqLoadedCallback) { reqLoadedCallback(); }
         };
       } else {
-        throw "Hmm, that's weird; why does the module exist when there's nothing in transporter.loadedURLs for it?";
+        throw "Hmm, that's weird; why does the " + moduleName + " module exist when there's nothing in transporter.loadedURLs for it? urlLoadedCallback is " + urlLoadedCallback;
       }
     } else {
       transporter.module.fileIn(moduleDir, moduleName, reqLoadedCallback);

@@ -45,13 +45,17 @@ thisModule.addSlots(MessageNotifierMorph.prototype, function(add) {
   add.method('initialize', function($super, msg, color) {
     $super();
     this.shape.roundEdgesBy(10);
-    this._message = "" + msg;
+    this._message = msg.toString();
     this.setFill(defaultFillWithColor(color || Color.red));
     this.setRows([createLabel(this._message)]);
   });
 
   add.method('wasJustDroppedOnWorld', function(world) {
-    this.zoomOuttaHereTimer = setInterval(function() {this.startZoomingOuttaHere();}.bind(this), 5000);
+    this.zoomAwayAfter(5000);
+  });
+
+  add.method('zoomAwayAfter', function(ms) {
+    this.zoomOuttaHereTimer = setInterval(function() {this.startZoomingOuttaHere();}.bind(this), ms || 5000);
   });
 
 });
