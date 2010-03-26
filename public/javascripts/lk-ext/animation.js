@@ -3,7 +3,7 @@ lobby.transporter.module.create('animation', function(requires) {}, function(thi
 
 thisModule.addSlots(modules.animation, function(add) {
     
-    add.data('_directory', 'lk-ext');
+    add.data('_directory', 'lk_ext');
 
 });
 

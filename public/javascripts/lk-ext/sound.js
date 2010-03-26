@@ -3,7 +3,7 @@ lobby.transporter.module.create('sound', function(requires) {}, function(thisMod
 
 thisModule.addSlots(modules.sound, function(add) {
     
-    add.data('_directory', 'lk-ext');
+    add.data('_directory', 'lk_ext');
 
 });
 

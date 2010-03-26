@@ -3,7 +3,7 @@ lobby.transporter.module.create('one_morph_per_object', function(requires) {}, f
 
 thisModule.addSlots(modules.one_morph_per_object, function(add) {
     
-  add.data('_directory', 'lk-ext');
+  add.data('_directory', 'lk_ext');
 
 });
 

@@ -4,7 +4,7 @@ requires('core', 'lk_TestFramework'); // aaa - hack - how should I deal with LK 
 requires('transporter', 'transporter');
 requires('core', 'core');
 requires('mirrors', 'mirrors');
-requires('lk-ext', 'lk_ext');
+requires('lk_ext', 'lk_ext');
 requires('outliners', 'self_like_environment');
 requires('transporter', 'module_morph'); // aaa - where does this belong?
 requires('transporter', 'snapshotter'); // aaa - where does this belong?

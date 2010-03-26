@@ -3,7 +3,7 @@ lobby.transporter.module.create('applications', function(requires) {}, function(
 
 thisModule.addSlots(modules.applications, function(add) {
     
-    add.data('_directory', 'lk-ext');
+    add.data('_directory', 'lk_ext');
 
 });
 
