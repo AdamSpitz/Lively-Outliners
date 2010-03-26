@@ -141,7 +141,7 @@ function waitForAllCallbacks(functionThatYieldsCallbacks, functionToRunWhenDone,
 
     if (numberCalledSoFar >= numberOfCallsExpected) {
       alreadyDone = true;
-      console.log("OK, we seem to be done " + aaa_name + ". Here are the subguys: " + callbacks.map(function(cb) {return cb.aaa_name;}).join(', '));
+      //console.log("OK, we seem to be done " + aaa_name + ". Here are the subguys: " + callbacks.map(function(cb) {return cb.aaa_name;}).join(', '));
       functionToRunWhenDone();
     }
   };
@@ -187,6 +187,7 @@ lobby.transporter.module.onLoadCallbacks = {};
 lobby.transporter.module.named = function(n) {
   var m = lobby.modules[n];
   if (m) {return m;}
+  //console.log("Creating module named " + n);
   m = lobby.modules[n] = Object.create(this);
   m._name = n;
   setCreatorSlot(annotationOf(m), n, lobby.modules);
@@ -195,7 +196,6 @@ lobby.transporter.module.named = function(n) {
 };
 
 lobby.transporter.module.create = function(n, reqBlock, contentsBlock) {
-  // console.log("Creating module: " + n);
   if (lobby.modules[n]) { throw 'The ' + n + ' module is already loaded.'; }
   var newModule = this.named(n);
   waitForAllCallbacks(function(finalCallback) {
@@ -206,12 +206,43 @@ lobby.transporter.module.create = function(n, reqBlock, contentsBlock) {
     contentsBlock(newModule);
     // console.log("Finished loading module: " + n);
     if (newModule.postFileIn) { newModule.postFileIn(); }
-    var onLoadCallback = transporter.module.onLoadCallbacks[n];
-    if (onLoadCallback) {
-      delete transporter.module.onLoadCallbacks[n];
-      onLoadCallback();
-    }
+    transporter.module.doneLoadingModuleNamed(n);
   }, n);
+};
+
+lobby.transporter.module.callWhenDoneLoadingModuleNamed = function(n, callback) {
+  callback = callback || function() {};
+
+  if (typeof(callback) !== 'function') { throw "What kind of callback is that? " + callback; }
+  
+  var existingOnLoadCallback = transporter.module.onLoadCallbacks[n];
+  if (!existingOnLoadCallback) {
+    transporter.module.onLoadCallbacks[n] = callback;
+  } else if (typeof(existingOnLoadCallback) === 'function') {
+    transporter.module.onLoadCallbacks[n] = function() {
+      existingOnLoadCallback();
+      callback();
+    };
+  } else if (existingOnLoadCallback === 'done') {
+    // Already done; just call it right now.
+    callback();
+    return true;
+  } else {
+    throw "Whoa, what's wrong with the on-load callback? " + typeof(existingOnLoadCallback);
+  }
+  return false;
+};
+
+lobby.transporter.module.doneLoadingModuleNamed = function(n) {
+  var onLoadCallback = transporter.module.onLoadCallbacks[n];
+  if (typeof(onLoadCallback) === 'function') {
+    transporter.module.onLoadCallbacks[n] = 'done';
+    onLoadCallback();
+  } else if (onLoadCallback === 'done') {
+    // Fine, I think.
+  } else {
+    throw "Whoa, what's wrong with the on-load callback for " + n + "? " + typeof(onLoadCallback);
+  }
 };
 
 lobby.transporter.module.slotAdder = {
@@ -257,7 +288,7 @@ lobby.transporter.module.addSlots = function(holder, block) {
   block(slotAdder);
 };
 
-
+transporter.module.callWhenDoneLoadingModuleNamed('bootstrap', function() {});
 lobby.transporter.module.create('bootstrap', function(requires) {}, function(thisModule) {
 
 thisModule.addSlots(transporter.module, function(add) {
@@ -280,11 +311,9 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['saving to WebDAV']});
 
   add.method('loadJSFile', function (url, scriptLoadedCallback) {
-    // aaa old way, relies on a bunch of stuff that I'd rather not have to load first:
-    // var _fileContents = FileDirectory.getContent(url);
-
     scriptLoadedCallback = scriptLoadedCallback || function() {};
 
+    // Don't load the same JS file more than once.
     var loadingStatus = transporter.loadedURLs[url];
     if (typeof loadingStatus === 'function') {
       transporter.loadedURLs[url] = function() {
@@ -294,10 +323,14 @@ thisModule.addSlots(transporter.module, function(add) {
       return;
     } else if (loadingStatus === 'done') {
       return scriptLoadedCallback();
+    } else if (loadingStatus) {
+      throw "Wait, it's not a callback function and it's not 'done'; what is it?"
     }
 
     transporter.loadedURLs[url] = scriptLoadedCallback;
 
+    // Intentionally using primitive mechanisms (either XHR or script tags), so
+    // that we don't depend on having any other code loaded.
     var shouldUseXMLHttpRequest = false; // aaa - not sure which way is better; seems to be a tradeoff
     if (shouldUseXMLHttpRequest) {
       var req = new XMLHttpRequest();
@@ -326,19 +359,18 @@ thisModule.addSlots(transporter.module, function(add) {
     }
   }, {category: ['transporting']});
 
-  add.method('fileIn', function (directory, name, scriptLoadedCallback) {
+  add.method('fileIn', function (directory, name, moduleLoadedCallback) {
     var url = this.urlForModuleName(name, directory);
     
-    transporter.module.onLoadCallbacks[name] = scriptLoadedCallback;
+    if (transporter.module.callWhenDoneLoadingModuleNamed(name, moduleLoadedCallback)) { return; }
 
     this.loadJSFile(url, function() {
       var module = modules[name];
       if (!module) {
         // Must just be some external Javascript library - not one of our
-        // modules. So onLoadCallbacks[name] won't have been called, so
-        // let's just delete it from there and call it ourselves.
-        delete transporter.module.onLoadCallbacks[name];
-        if (scriptLoadedCallback) { scriptLoadedCallback(); }
+        // modules. So we consider the module to be loaded now, since the
+        // file is loaded.
+        transporter.module.doneLoadingModuleNamed(name);
       }
     });
   }, {category: ['transporting']});
@@ -346,28 +378,15 @@ thisModule.addSlots(transporter.module, function(add) {
   add.method('requires', function(moduleDir, moduleName, reqLoadedCallback) {
     if (! this._requirements) { this._requirements = []; }
     this._requirements.push([moduleDir, moduleName]);
-    
+
+    reqLoadedCallback = reqLoadedCallback || function() {};
+
     var module = transporter.module.existingOneNamed(moduleName);
     if (module) {
-      // Make sure it's done loading.
-      var url = this.urlForModuleName(module._name, module._directory);
-      var urlLoadedCallback = transporter.loadedURLs[url];
-      if (urlLoadedCallback === 'done') {
-        if (reqLoadedCallback) { reqLoadedCallback(); }
-      } else if (typeof(urlLoadedCallback) === 'function') {
-        transporter.loadedURLs[url] = function() {
-          urlLoadedCallback();
-          if (reqLoadedCallback) { reqLoadedCallback(); }
-        };
-      } else {
-        throw "Hmm, that's weird; why does the " + moduleName + " module exist when there's nothing in transporter.loadedURLs for it? urlLoadedCallback is " + urlLoadedCallback + ", this module is " + this._name;
-      }
+      transporter.module.callWhenDoneLoadingModuleNamed(moduleName, reqLoadedCallback);
     } else {
       transporter.module.fileIn(moduleDir, moduleName, reqLoadedCallback);
     }
-  }, {category: ['requirements']});
-
-  add.method('requirements', function(requirementsFunction, moduleBody) {
   }, {category: ['requirements']});
 
 });
