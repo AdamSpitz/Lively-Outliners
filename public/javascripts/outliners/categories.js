@@ -103,7 +103,9 @@ thisModule.addSlots(Category.prototype, function(add) {
 thisModule.addSlots(CategoryMorphMixin, function(add) {
 
   add.method('initializeCategoryUI', function () {
-    this._highlighter = booleanHolder.containing(true).add_observer(function() {this.updateFill();}.bind(this));
+    this.setFill(defaultFillWithColor(Color.neutral.gray.lighter()));
+
+    this._highlighter = booleanHolder.containing(true).add_observer(function() {this.updateHighlighting();}.bind(this));
     this._highlighter.setChecked(false);
 
     this._expander = new ExpanderMorph(this);
@@ -221,14 +223,18 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
     return s.toString();
   }, {category: ['modules']});
 
-  add.method('calculateAppropriateFill', function () {
-    var color = Color.neutral.gray.lighter();
-    if (this.highlighter().isChecked()) {color = color.lighter().lighter();}
-    return defaultFillWithColor(color);
-  }, {category: ['highlighting']});
-
-  add.method('updateFill', function () {
-    this.setFill(this.calculateAppropriateFill());
+  add.method('updateHighlighting', function () {
+    if (this.highlighter().isChecked()) {
+      if (this._baseColor === undefined) {
+        this._baseColor = baseColorOf(this.getFill());
+        this.setFill(defaultFillWithColor(this._baseColor.lighter().lighter()));
+      }
+    } else {
+      if (this._baseColor !== undefined) {
+        this.setFill(defaultFillWithColor(this._baseColor));
+        delete this._baseColor;
+      }
+    }
   }, {category: ['highlighting']});
 
   add.method('highlighter', function () { return this._highlighter; }, {category: ['highlighting']});
