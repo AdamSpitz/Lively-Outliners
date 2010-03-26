@@ -117,8 +117,12 @@ thisModule.addSlots(transporter.module, function(add) {
     return filerOuter.fullText();
   }, {category: ['transporting']});
 
-  add.method('fileOut', function () {
-    var doc = this.codeToFileOut(Object.newChildOf(this.filerOuter)).toString();
+  add.method('fileOutWithoutAnnotations', function () {
+    return this.fileOut(Object.newChildOf(this.annotationlessFilerOuter));
+  }, {category: ['transporting']});
+
+  add.method('fileOut', function (filerOuter) {
+    var doc = this.codeToFileOut(filerOuter || Object.newChildOf(this.filerOuter)).toString();
 
     // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
     if (URL.source.hostname.include("adamspitz.com")) {

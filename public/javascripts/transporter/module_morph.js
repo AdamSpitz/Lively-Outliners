@@ -87,11 +87,6 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
   add.method('addCommandsTo', function (cmdList) {
     cmdList.addItem({label: 'file out', pluralLabel: 'file out modules', go: this.fileOut.bind(this)});
 
-    var shouldOfferAnnotationlessFileout = false;
-    if (shouldOfferAnnotationlessFileout) {
-      cmdList.addItem({label: 'file out without annotations', go: this.fileOutWithoutAnnotations.bind(this)});
-    }
-
     cmdList.addItem({label: 'forget I was changed', go: this.forgetIWasChanged.bind(this)});
 
     cmdList.addLine();
