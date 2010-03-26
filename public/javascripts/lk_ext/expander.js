@@ -25,7 +25,9 @@ ButtonMorph.subclass("ExpanderMorph", {
     if (this.shape.setVertices) {
       this.shape.setVertices(this.verticesForValue(value));
     } else {
+      var oldStyle = this.makeStyleSpec();
       this.setShape(new lively.scene.Polygon(this.verticesForValue(false)));
+      this.applyStyle(oldStyle); // workaround for ButtonMorphs having to start off being a rectangle
     }
     this.setFill(gradient);
     // $super(value); // Messes things up, I think. -- Adam
@@ -38,6 +40,6 @@ ButtonMorph.subclass("ExpanderMorph", {
 });
 
 // Not sure I like this, but for now I think I want expanders to look different from regular buttons.
-WorldMorph.prototype.displayThemes.primitive.expander = {fill: Color.blue};
+WorldMorph.prototype.displayThemes.primitive.expander = {fill: Color.blue.lighter()};
 WorldMorph.prototype.displayThemes.lively   .expander = {fill: Color.blue};
-WorldMorph.prototype.displayThemes.turquoise.expander = {fill: Color.blue};
+WorldMorph.prototype.displayThemes.turquoise.expander = {fill: Color.turquoise};
