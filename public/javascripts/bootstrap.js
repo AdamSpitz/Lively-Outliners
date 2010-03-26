@@ -360,7 +360,7 @@ thisModule.addSlots(transporter.module, function(add) {
           if (reqLoadedCallback) { reqLoadedCallback(); }
         };
       } else {
-        throw "Hmm, that's weird; why does the " + moduleName + " module exist when there's nothing in transporter.loadedURLs for it? urlLoadedCallback is " + urlLoadedCallback;
+        throw "Hmm, that's weird; why does the " + moduleName + " module exist when there's nothing in transporter.loadedURLs for it? urlLoadedCallback is " + urlLoadedCallback + ", this module is " + this._name;
       }
     } else {
       transporter.module.fileIn(moduleDir, moduleName, reqLoadedCallback);
