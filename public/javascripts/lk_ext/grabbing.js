@@ -33,7 +33,7 @@ Morph.addMethods({
 
         // If no DnD check, then we have a hit (unless no handler in which case a miss)
         if (!checkForDnD) {
-          if (this.mouseHandler) {
+          if (this.mouseHandler && (!this.grabsShouldFallThrough || evt.isForContextMenu() || evt.isForMorphMenu())) { // Modified to check grabsShouldFallThrough and the menu stuff. -- Adam, March 2010
             //if (droppingMorph) {console.log(this.inspect() + ">>morphToGrabOrReceive has a mouseHandler");}
             return this;
           } else {

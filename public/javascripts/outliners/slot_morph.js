@@ -39,7 +39,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this._slot = slot;
 
     this.setPadding(0);
-    this.setFill(defaultFillWithColor(Color.gray));
+    this.updateFill();
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
     this.beUngrabbable();
@@ -70,6 +70,8 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
 
     this.updateAppearance();
   }, {category: ['creating']});
+  
+  add.data('grabsShouldFallThrough', true, {category: ['grabbing']});
 
   add.method('isMethodThatShouldBeShownAsPartOfTheBox', function () {
     return this.slot().isSimpleMethod();
@@ -272,8 +274,12 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   }, {category: ['updating']});
 
   add.method('updateFill', function () {
-    var color = this.slot().isFromACopyDownParent() ? Color.red.lighter().lighter() : Color.gray;
-    this.setFill(defaultFillWithColor(color));
+    if (this.slot().isFromACopyDownParent()) {
+      this.setFill(Color.red.lighter().lighter());
+      this.setFillOpacity(0.5); 
+    } else {
+      this.setFill(null);
+    }
   }, {category: ['updating']});
 
   add.method('potentialContent', function () {
