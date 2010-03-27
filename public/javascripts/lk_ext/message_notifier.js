@@ -27,11 +27,11 @@ thisModule.addSlots(MessageNotifierMorph, function(add) {
 
   add.data('type', 'MessageNotifierMorph');
 
-  add.method('showIfErrorDuring', function(f, evt) {
+  add.method('showIfErrorDuring', function(f, evt, color) {
     try {
       return f();
     } catch (ex) {
-      new this(ex, Color.red).grabMe(evt);
+      new this(ex, color || Color.red).grabMe(evt);
     }
   });
 
@@ -59,7 +59,10 @@ thisModule.addSlots(MessageNotifierMorph.prototype, function(add) {
   });
 
   add.method('showInCenterOfWorld', function(w) {
-    var p = w.getExtent().scaleBy(0.5).subPt(this.getExtent().scaleBy(0.5));
+    this.showInWorldAt(w, w.getExtent().scaleBy(0.5).subPt(this.getExtent().scaleBy(0.5)));
+  });
+
+  add.method('showInWorldAt', function(w, p) {
     this.ensureIsInWorld(w, p, true, false, true, function() {this.zoomAwayAfter(5000);}.bind(this));
   });
 

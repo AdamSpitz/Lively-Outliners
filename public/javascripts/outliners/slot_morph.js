@@ -164,8 +164,17 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     };
     var setter = function(s) {
       MessageNotifierMorph.showIfErrorDuring(function() {
-        thisSlotMorph.setContents(reflect(eval("(" + s + ")")));
-      }.bind(this), createFakeEvent());
+        // need the assignment and the semicolon so that JSLint doesn't gripe about seeing a naked expression
+        var ok = JSLINT(stringBuffer.create('var ___contents___ = (').append(s).append(');').toString());
+        if (!ok) {
+          JSLINT.errors.each(function(error) {
+            throw "JSLint says: " + error.reason;
+          });
+        }
+        MessageNotifierMorph.showIfErrorDuring(function() {
+          thisSlotMorph.setContents(reflect(eval("(" + s + ")")));
+        }.bind(this), createFakeEvent());
+      }.bind(this), createFakeEvent(), new Color(1.0, 0.55, 0.0));
     };
     m = createInputBox(getter, setter);
     m.setFontFamily('monospace');
