@@ -17,7 +17,6 @@ requires('lk_ext', 'toggler');
 requires('lk_ext', 'layout');
 requires('lk_ext', 'rows_and_columns');
 requires('lk_ext', 'animation');
-requires('lk_ext', 'zooming_around_and_scaling');
 requires('lk_ext', 'quickhull');
 requires('lk_ext', 'expander');
 requires('lk_ext', 'message_notifier');
