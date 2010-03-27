@@ -252,11 +252,3 @@ HandMorph.addMethods({
 HandleMorph.addMethods({
   shouldNotBePartOfRowOrColumn: true
 });
-
-function createSpacer(klass) {
-  var spacer = new RowMorph().beInvisible();
-  spacer.inspect = function() { return "a spacer"; };
-  spacer.horizontalLayoutMode = LayoutModes.SpaceFill;
-  spacer.  verticalLayoutMode = LayoutModes.SpaceFill;
-  return spacer;
-}

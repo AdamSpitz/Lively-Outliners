@@ -1,4 +1,3 @@
-/// aaa - A lot of duplication with TwoModeTextMorph.
 TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
   initialize: function($super, rect, textString, modelPlugSpec) {
     $super(rect, textString);

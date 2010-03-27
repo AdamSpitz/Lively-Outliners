@@ -122,6 +122,14 @@ function createOptionalMorph(m, condition, layoutModes) {
   return om;
 }
 
+function createSpacer() {
+  var spacer = new RowMorph().beInvisible();
+  spacer.inspect = function() { return "a spacer"; };
+  spacer.horizontalLayoutMode = LayoutModes.SpaceFill;
+  spacer.  verticalLayoutMode = LayoutModes.SpaceFill;
+  return spacer;
+}
+
 function createFakeEvent(hand) {
   return {
     hand: hand || WorldMorph.current().firstHand(),
