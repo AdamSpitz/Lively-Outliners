@@ -343,6 +343,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     var newMirror = reflect({});
     var newSlot = this.slot().copyTo(newMirror);
     var newSlotMorph = new SlotMorph(newSlot);
+    newSlotMorph.setFill(defaultFillWithColor(Color.gray));
     newSlotMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
     newSlotMorph.forceLayoutRejiggering();
     evt.hand.grabMorphWithoutAskingPermission(newSlotMorph, evt);

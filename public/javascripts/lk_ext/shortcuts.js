@@ -2,6 +2,7 @@
 // Maybe some of this is handled by the style/theme mechanism?
 
 function defaultFillWithColor(c) {
+  if (!c) { return null; }
   return new lively.paint.LinearGradient([new lively.paint.Stop(0, c),
                                           new lively.paint.Stop(1, c.lighter())],
                                          lively.paint.LinearGradient.SouthNorth);

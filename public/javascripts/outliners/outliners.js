@@ -45,6 +45,8 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this._slotMorphs     = dictionary.copyRemoveAll();
     this._categoryMorphs = dictionary.copyRemoveAll();
 
+    this.setFill(defaultFillWithColor(Color.neutral.gray.lighter()));
+
     this.initializeCategoryUI(); // aaa - can be a bit slow
     
     this._evaluatorsPanel = new ColumnMorph().beInvisible();

@@ -134,8 +134,6 @@ thisModule.addSlots(Category.prototype, function(add) {
 thisModule.addSlots(CategoryMorphMixin, function(add) {
 
   add.method('initializeCategoryUI', function () {
-    this.setFill(defaultFillWithColor(Color.neutral.gray.lighter()));
-
     this._highlighter = booleanHolder.containing(true).add_observer(function() {this.updateHighlighting();}.bind(this));
     this._highlighter.setChecked(false);
 
@@ -258,7 +256,12 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
     if (this.highlighter().isChecked()) {
       if (this._baseColor === undefined) {
         this._baseColor = baseColorOf(this.getFill());
-        this.setFill(defaultFillWithColor(this._baseColor.lighter().lighter()));
+        if (this._baseColor === null) {
+          this.setFill(Color.white);
+          this.setFillOpacity(0.7);
+        } else {
+          this.setFill(defaultFillWithColor(this._baseColor.lighter().lighter()));
+        }
       }
     } else {
       if (this._baseColor !== undefined) {
@@ -327,6 +330,8 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     this.beUngrabbable();
     // this.ignoreEvents();  // aaa - This makes grabbing-the-outliner-through-me work, but breaks the category's menu. Can't I have both?
 
+    this.setFill(null);
+
     this.initializeCategoryUI();
 
     var categoryMorph = this;
@@ -350,6 +355,8 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
   add.method('mirror', function () { return this._outliner.mirror(); }, {category: ['accessing']});
 
   add.method('category', function () { return this._category;          }, {category: ['accessing']});
+
+  add.data('grabsShouldFallThrough', true, {category: ['grabbing']});
 
   add.method('updateAppearance', function () {
     if (! this.world() || ! this.expander().isExpanded()) {return;}
@@ -401,6 +408,7 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     var newMirror = reflect({});
     var newCategory = this.category().copySlots(this.mirror(), newMirror);
     var newCategoryMorph = new CategoryMorph(evt.hand.world().morphFor(newMirror), newCategory);
+    newCategoryMorph.setFill(defaultFillWithColor(Color.gray));
     newCategoryMorph.horizontalLayoutMode = LayoutModes.ShrinkWrap;
     newCategoryMorph.forceLayoutRejiggering();
     evt.hand.grabMorphWithoutAskingPermission(newCategoryMorph, evt);
