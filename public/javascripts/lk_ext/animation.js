@@ -474,7 +474,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
       if (ratio > 0.5) {
         var bounds = this.bounds();
         var allVertices = bounds.vertices().concat(bounds.translatedBy(difference).vertices());
-        var convexVertices = getConvexHull(allVertices).map(function(a) {return a[0];});
+        var convexVertices = quickhull.getConvexHull(allVertices).map(function(a) {return a.pointA;});
         var motionBlurMorph = Morph.makePolygon(convexVertices, 0, Color.black, this.getFill());
         // could try adjusting the opacity based on the distance, but I tried that and
         // couldn't figure out how to make it look non-weird

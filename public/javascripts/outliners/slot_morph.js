@@ -96,7 +96,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
         arrow.noLongerNeedsToBeVisible();
       }
     }.bind(this), 1);
-    beArrowEndpoint(m);
+    m.beArrowEndpoint();
 
     arrow = m.arrow = new ArrowMorph(slot, m, null);
     arrow.noLongerNeedsToBeUpdated = true;

@@ -255,6 +255,15 @@ Morph.addMethods({
     return m;
   },
 
+
+  beArrowEndpoint: function() {
+    this.determineWhichMorphToAttachTo = function() { return !!this.world(); };
+    this.attachToTheRightPlace = function() {};
+    this.noLongerNeedsToBeVisibleAsArrowEndpoint = function() {};
+    this.relativeLineEndpoint = this.getExtent().scaleBy(0.5);
+    this.setShapeToLookLikeACircle = function() {};
+  },
+
   ownerCenterpoint: function() {
     var o = this.owner;
     if (!o || !o.world()) {return pt(0, 0);}
@@ -272,12 +281,3 @@ Morph.addMethods({
     return this.worldPoint(this.relativeLineEndpoint);
   }
 });
-
-
-function beArrowEndpoint(m) {
-  m.determineWhichMorphToAttachTo = function() {return !!this.world();};
-  m.attachToTheRightPlace = function() {};
-  m.noLongerNeedsToBeVisibleAsArrowEndpoint = function() {};
-  m.relativeLineEndpoint = m.getExtent().scaleBy(0.5);
-  m.setShapeToLookLikeACircle = function() {};
-}

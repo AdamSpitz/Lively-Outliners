@@ -1,20 +1,39 @@
-// http://en.literateprograms.org/Quickhull_(Javascript)
+// 
 
 
-function getDistant(cpt, bl) {
-    var Vy = bl[1].x - bl[0].x;
-    var Vx = bl[0].y - bl[1].y;
-    return Vx * (cpt.x - bl[0].x) + Vy * (cpt.y - bl[0].y);
-}
+lobby.transporter.module.create('quickhull', function(requires) {}, function(thisModule) {
 
 
-function findMostDistantPointFromBaseLine(baseLine, points) {
+thisModule.addSlots(modules.quickhull, function(add) {
+    
+    add.data('_directory', 'lk_ext');
+
+});
+
+
+thisModule.addSlots(lobby, function(add) {
+
+  add.creator('quickhull', {}, {category: ['ui', 'convex hulls']}, {comment: 'http://en.literateprograms.org/Quickhull_(Javascript)'});
+
+});
+
+
+thisModule.addSlots(quickhull, function(add) {
+
+  add.method('getDistance', function (cpt, bl) {
+    var Vy = bl.pointB.x - bl.pointA.x;
+    var Vx = bl.pointA.y - bl.pointB.y;
+    return Vx * (cpt.x - bl.pointA.x) + Vy * (cpt.y - bl.pointA.y);
+  });
+
+
+  add.method('findMostDistantPointFromBaseLine', function (baseLine, points) {
     var maxD = 0;
     var maxPt = null;
     var newPoints = [];
     for (var i = 0, n = points.length; i < n; ++i) {
         var p = points[i];
-        var d = getDistant(p, baseLine);
+        var d = this.getDistance(p, baseLine);
         if (d > 0) {
           newPoints.push(p);
           if (d > maxD) {
@@ -24,37 +43,36 @@ function findMostDistantPointFromBaseLine(baseLine, points) {
         }
     } 
     return {maxPoint: maxPt, newPoints: newPoints};
-}
+  });
 
+  add.method('buildConvexHull', function (baseLine, points, iterator) {
+    var t = this.findMostDistantPointFromBaseLine(baseLine, points);
+    if (t.maxPoint) { // if there is still a point "outside" the base line
+      this.buildConvexHull( this.createLine(baseLine.pointA,  t.maxPoint), t.newPoints, iterator );
+      this.buildConvexHull( this.createLine(t.maxPoint,  baseLine.pointB), t.newPoints, iterator );
+    } else {  // if there is no more point "outside" the base line, the current base line is part of the convex hull
+      iterator(baseLine);
+    }
+  });
 
-function buildConvexHull(baseLine, points) {
-    
-  var convexHullBaseLines = [];
-  var t = findMostDistantPointFromBaseLine(baseLine, points);
-  if (t.maxPoint) { // if there is still a point "outside" the base line
-    convexHullBaseLines = convexHullBaseLines.concat( buildConvexHull( [baseLine[0],  t.maxPoint], t.newPoints) );
-    convexHullBaseLines = convexHullBaseLines.concat( buildConvexHull( [t.maxPoint,  baseLine[1]], t.newPoints) );
-    return convexHullBaseLines;
-  } else {  // if there is no more point "outside" the base line, the current base line is part of the convex hull
-    return [baseLine];
-  }    
-}
+  add.method('createLine', function (pointA, pointB) {
+    return {pointA: pointA, pointB: pointB};
+  });
 
-
-
-function getConvexHull(points) {
+  add.method('getConvexHull', function (points) {
     // find first baseline
-    var maxX, minX;
     var maxPt, minPt;
     points.each(function(p) {
-        if (maxX === undefined || p.x > maxX) {
-            maxPt = p;
-            maxX = p.x;
-        }
-        if (minX === undefined || p.x < minX) {
-            minPt = p;
-            minX = p.x;
-        }
+      if (!maxPt || p.x > maxPt.x) { maxPt = p; }
+      if (!minPt || p.x < minPt.x) { minPt = p; }
     });
-    return buildConvexHull([minPt, maxPt], points).concat(buildConvexHull([maxPt, minPt], points));
-}
+    var convexHullBaseLines = [];
+    this.buildConvexHull(this.createLine(minPt, maxPt), points, function(p) { if (!p) {throw "Gah";} convexHullBaseLines.push(p); });
+    this.buildConvexHull(this.createLine(maxPt, minPt), points, function(p) { convexHullBaseLines.push(p); });
+    return convexHullBaseLines;
+  });
+
+});
+
+
+});
