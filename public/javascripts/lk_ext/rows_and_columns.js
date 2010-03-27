@@ -172,7 +172,7 @@ Morph.subclass("RowOrColumnMorph", {
   reshape: function($super, partName, newPoint, lastCall) {
     var r = $super(partName, newPoint, lastCall);
     this.horizontalLayoutMode = this.verticalLayoutMode = LayoutModes.Rigid;
-    this.minimumExtentChanged();
+    this.minimumExtentMayHaveChanged();
     return r;
   },
   */

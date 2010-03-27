@@ -29,8 +29,7 @@ Morph.addMethods({
     return ! (old_cachedMinimumExtent && old_cachedMinimumExtent.eqPt(newMinimumExtent));
   },
 
-  // aaa - This method should probably be called something like minimumExtentMayHaveChanged.
-  minimumExtentChanged: function() {
+  minimumExtentMayHaveChanged: function() {
     if (! this.hasMinimumExtentActuallyChanged()) { return false; }
     this.forceLayoutRejiggering(true);
     return true;
@@ -46,7 +45,7 @@ Morph.addMethods({
       return;
     }
     if (doesMyOwnerNeedToKnow) { 
-      var layoutRejiggeringHasBeenTriggeredHigherUp = o.minimumExtentChanged();
+      var layoutRejiggeringHasBeenTriggeredHigherUp = o.minimumExtentMayHaveChanged();
       if (layoutRejiggeringHasBeenTriggeredHigherUp) { return; }
     }
     if (this._spaceUsedLastTime) {
@@ -61,8 +60,8 @@ Morph.addMethods({
 TextMorph.addMethods({
   layoutChanged: function($super) {
     var r = $super();
-    this.adjustForNewBounds();   // make the focus halo look right
-    this.minimumExtentChanged(); // play nicely with my new layout system
+    this.adjustForNewBounds();          // make the focus halo look right
+    this.minimumExtentMayHaveChanged(); // play nicely with my new layout system
     return r;
   }
 });

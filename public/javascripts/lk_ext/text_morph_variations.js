@@ -30,7 +30,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
 
   updateLayoutIfNecessary: function() {
     this.adjustForNewBounds(); // makes the focus halo look right   // aaa should probably be outside the conditional, or even in the Core code
-    this.minimumExtentChanged();
+    this.minimumExtentMayHaveChanged();
   },
 
   checkForAcceptOrCancel: function(evt) {
@@ -75,7 +75,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
       this.setBorderColor(Color.red);
       this.setBorderWidth(this.borderWidthWhenModified);
     }
-    this.minimumExtentChanged();
+    this.minimumExtentMayHaveChanged();
     $super();
   },
 

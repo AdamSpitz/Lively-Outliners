@@ -62,7 +62,7 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
   add.method('updateAppearance', function () {
     if (! this.world()) {return;}
     this.titleLabel.refreshText();
-    this.minimumExtentChanged();
+    this.minimumExtentMayHaveChanged();
   });
 
   add.method('inspect', function () {return this.searcher().inspect();});
