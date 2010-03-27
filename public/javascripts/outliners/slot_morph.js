@@ -43,6 +43,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
     this.beUngrabbable();
+    this.closeDnD();
 
     this._sourceToggler     = Object.newChildOf(toggler, this.updateAppearance.bind(this),                   this.createRow(function() {return this.    sourceMorph();}.bind(this))       );
     this._commentToggler    = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.comment    ? this.createRow(function() {return this.   commentMorph();}.bind(this)) : null);
@@ -128,6 +129,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     icon.setFill(null);
     icon.beUngrabbable();
     icon.ignoreEvents();
+    icon.closeDnD();
     return icon;
   }, {category: ['creating']});
 

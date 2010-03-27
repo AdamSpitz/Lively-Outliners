@@ -31,7 +31,6 @@ thisModule.addSlots(OutlinerMorph, function(add) {
 
 });
 
-
 thisModule.addSlots(OutlinerMorph.prototype, function(add) {
 
   add.data('constructor', OutlinerMorph);

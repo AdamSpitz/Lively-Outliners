@@ -313,7 +313,6 @@ thisModule.addSlots(CategoryMorph, function(add) {
 
 });
 
-
 thisModule.addSlots(CategoryMorph.prototype, function(add) {
 
   add.data('constructor', CategoryMorph);
