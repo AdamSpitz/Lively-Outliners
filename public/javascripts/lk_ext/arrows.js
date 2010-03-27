@@ -4,6 +4,7 @@ Morph.subclass("ArrowMorph", {
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
     this.setFill(null);
+    this.notificationFunction = function() {this.putVerticesInTheRightPlace();}.bind(this);
     this.endpoint1 = ep1 || new ArrowEndpoint(assoc, this);
     this.endpoint2 = ep2 || new ArrowEndpoint(assoc, this);
     this.endpoint1.otherEndpoint = this.endpoint2;
@@ -131,41 +132,54 @@ Morph.subclass("ArrowEndpoint", {
 
   attachToTheRightPlace: function() {
     if (this.isZoomingSomewhere) {return;}
+    var oldOwner = this.owner;
     var morphToAttachTo = this.morphToAttachTo;
-    if (morphToAttachTo instanceof HandMorph) {return;}
-    if (morphToAttachTo === this.owner && this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner) {return;}
-
-    if (morphToAttachTo !== WorldMorph.current()) {
-      var localCenter = this.ownerRelativeCenterpoint();
-      var vectorFromHereToMidpoint = this.otherEndpoint.ownerCenterpoint().subPt(this.ownerCenterpoint()).scaleBy(0.5);
-      var localPositionToBeClosestTo = localCenter.addPt(vectorFromHereToMidpoint);
-      var localNewLoc = this.localPositionClosestTo(localPositionToBeClosestTo, localCenter).roundTo(1);
-      var globalNewLoc = morphToAttachTo.worldPoint(localNewLoc);
-
-      var shouldMakeArrowsGrowSmoothly = false; // aaa - doesn't quite work properly yet
-      if (shouldMakeArrowsGrowSmoothly) {
-        this.isZoomingSomewhere = true;
-        var world = this.world();
-        if (world) {
-          world.addMorphAt(this, this.owner.worldPoint(this.getPosition()));
+    if (! (morphToAttachTo instanceof HandMorph)) {
+      if (morphToAttachTo === oldOwner && this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner) {return;}
+  
+      if (morphToAttachTo !== WorldMorph.current()) {
+        var localCenter = this.ownerRelativeCenterpoint();
+        var vectorFromHereToMidpoint = this.otherEndpoint.ownerCenterpoint().subPt(this.ownerCenterpoint()).scaleBy(0.5);
+        var localPositionToBeClosestTo = localCenter.addPt(vectorFromHereToMidpoint);
+        var localNewLoc = this.localPositionClosestTo(localPositionToBeClosestTo, localCenter).roundTo(1);
+        var globalNewLoc = morphToAttachTo.worldPoint(localNewLoc);
+        
+        var shouldMakeArrowsGrowSmoothly = false; // aaa - doesn't quite work properly yet
+        if (shouldMakeArrowsGrowSmoothly) {
+          this.isZoomingSomewhere = true;
+          var world = this.world();
+          if (world) {
+            world.addMorphAt(this, this.owner.worldPoint(this.getPosition()));
+          } else {
+            this.otherEndpoint.world().addMorphAt(this, this.otherEndpoint.worldPoint(this.otherEndpoint.relativeLineEndpoint));
+          }
+          this.startZoomingInAStraightLineTo(globalNewLoc, false, false, false, function() {
+            var wasAlreadyAttachedToThisMorph = morphToAttachTo === this.owner;
+            morphToAttachTo.addMorphAt(this, localNewLoc);
+            if (!wasAlreadyAttachedToThisMorph) { morphToAttachTo.wiggle(100); }
+            this.isZoomingSomewhere = false;
+          }.bind(this));
         } else {
-          this.otherEndpoint.world().addMorphAt(this, this.otherEndpoint.worldPoint(this.otherEndpoint.relativeLineEndpoint));
-        }
-        this.startZoomingInAStraightLineTo(globalNewLoc, false, false, false, function() {
-          var wasAlreadyAttachedToThisMorph = morphToAttachTo === this.owner;
           morphToAttachTo.addMorphAt(this, localNewLoc);
-          if (!wasAlreadyAttachedToThisMorph) { morphToAttachTo.wiggle(100); }
-          this.isZoomingSomewhere = false;
-        }.bind(this));
+        }
+        
+        this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = true;
       } else {
-        morphToAttachTo.addMorphAt(this, localNewLoc);
+        if (! this.vectorFromOtherEndpoint) {this.vectorFromOtherEndpoint = this.calculateDefaultVectorFromOtherEndpoint();}
+        var newLoc = this.otherEndpoint.world() ? this.otherEndpoint.worldPoint(pt(0,0)).addPt(this.vectorFromOtherEndpoint) : pt(0,0);
+        morphToAttachTo.addMorphAt(this, newLoc);
       }
-      
-      this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner = true;
-    } else {
-      if (! this.vectorFromOtherEndpoint) {this.vectorFromOtherEndpoint = this.calculateDefaultVectorFromOtherEndpoint();}
-      var newLoc = this.otherEndpoint.world() ? this.otherEndpoint.worldPoint(pt(0,0)).addPt(this.vectorFromOtherEndpoint) : pt(0,0);
-      morphToAttachTo.addMorphAt(this, newLoc);
+    }
+
+    this.registerToBeNotifiedOfChanges(oldOwner, morphToAttachTo);
+  },
+
+  registerToBeNotifiedOfChanges: function(oldOwner, newOwner) {
+    // Not really necessary because we have the update process, but it makes the UI look smoother
+    // if we register to be notified whenever the owner changes position.
+    if (newOwner !== oldOwner) {
+      if (oldOwner) { oldOwner.changeNotifier().remove_observer(this.arrow.notificationFunction); }
+      newOwner.changeNotifier().add_observer(this.arrow.notificationFunction);
     }
   },
 

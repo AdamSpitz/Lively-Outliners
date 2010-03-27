@@ -3,6 +3,7 @@ lobby.transporter.module.create('lk_ext', function(requires) {
 requires('lk_ext', 'math');
 requires('lk_ext', 'fixes');
 requires('lk_ext', 'changes');
+requires('lk_ext', 'change_notification');
 requires('lk_ext', 'commands');
 requires('lk_ext', 'menus');
 requires('lk_ext', 'applications');
