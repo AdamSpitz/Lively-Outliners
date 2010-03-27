@@ -168,14 +168,12 @@ Morph.subclass("RowOrColumnMorph", {
 
   // aaa - This should probably just be in Morph.
   // aaa - Still doesn't work right if you reshape an internal guy.
-  /* 
   reshape: function($super, partName, newPoint, lastCall) {
     var r = $super(partName, newPoint, lastCall);
     this.horizontalLayoutMode = this.verticalLayoutMode = LayoutModes.Rigid;
     this.minimumExtentMayHaveChanged();
     return r;
   },
-  */
 
   beInvisible: function() {
     this.setPadding(0);
