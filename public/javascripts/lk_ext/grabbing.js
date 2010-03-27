@@ -64,6 +64,10 @@ Morph.addMethods({
   grabMe: function(evt, inChasingMode) {
     var shouldDoCoolAnimations = true;
     var shouldChaseHandIfItMoves = false; // sigh... it's fun, but annoying
+
+    // don't use evt because it'll bring up the menu if evt.isForContextMenu(), etc.
+    var eventForFinalGrab = createFakeEvent(evt.hand);
+
     if (shouldDoCoolAnimations) {
       var originalHandPosition = evt.hand.position();
       var desiredPos = originalHandPosition.subPt(this.getExtent().scaleBy(0.5));
@@ -71,11 +75,11 @@ Morph.addMethods({
         if (shouldChaseHandIfItMoves && originalHandPosition.subPt(evt.hand.position()).r() > 30) {
           this.grabMe(evt, true);
         } else {
-          this.grabMeWithoutZoomingAroundFirst(evt);
+          this.grabMeWithoutZoomingAroundFirst(eventForFinalGrab); 
         }
       }.bind(this));
     } else {
-      this.grabMeWithoutZoomingAroundFirst(evt);
+      this.grabMeWithoutZoomingAroundFirst(eventForFinalGrab); 
     }
   },
 

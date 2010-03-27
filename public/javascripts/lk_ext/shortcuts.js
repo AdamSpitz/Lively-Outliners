@@ -122,9 +122,9 @@ function createOptionalMorph(m, condition, layoutModes) {
   return om;
 }
 
-function createFakeEvent() {
+function createFakeEvent(hand) {
   return {
-    hand: WorldMorph.current().hands[0],
+    hand: hand || WorldMorph.current().firstHand(),
     isShiftDown: Functions.False,
     isForContextMenu: Functions.False,
     isForMorphMenu: Functions.False
