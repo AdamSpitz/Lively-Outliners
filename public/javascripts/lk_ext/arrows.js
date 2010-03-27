@@ -178,8 +178,8 @@ Morph.subclass("ArrowEndpoint", {
     // Not really necessary because we have the update process, but it makes the UI look smoother
     // if we register to be notified whenever the owner changes position.
     if (newOwner !== oldOwner) {
-      if (oldOwner) { oldOwner.changeNotifier().remove_observer(this.arrow.notificationFunction); }
-      newOwner.changeNotifier().add_observer(this.arrow.notificationFunction);
+      if (oldOwner) { oldOwner.topmostOwnerBesidesTheWorld().changeNotifier().remove_observer(this.arrow.notificationFunction); }
+      newOwner.topmostOwnerBesidesTheWorld().changeNotifier().add_observer(this.arrow.notificationFunction);
     }
   },
 
@@ -247,6 +247,14 @@ Object.extend(ArrowEndpoint, {
 });
 
 Morph.addMethods({
+  topmostOwnerBesidesTheWorld: function() {
+    var m = this;
+    while (m.owner && ! (m.owner instanceof WorldMorph)) {
+      m = m.owner;
+    }
+    return m;
+  },
+
   ownerCenterpoint: function() {
     var o = this.owner;
     if (!o || !o.world()) {return pt(0, 0);}
