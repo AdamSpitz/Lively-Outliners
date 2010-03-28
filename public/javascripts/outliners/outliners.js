@@ -249,12 +249,16 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
   add.method('createChild', function (evt) {
     var child = this.mirror().createChild();
     var childOutliner = this.world().morphFor(child);
-    childOutliner.grabMe(evt);
-
+    
     // might as well show the arrow from the child to the parent
+
+    evt.hand.world().addMorphAt(childOutliner, pt(-1000, -1000));
     childOutliner.expander().expand();
-    var parentSlotMorph = childOutliner.slotMorphFor(child.parentSlot());
-    parentSlotMorph.contentsPointer().getModel().setValue(false);
+
+    childOutliner.growFromNothing(evt, function() {
+      var parentSlotMorph = childOutliner.slotMorphFor(child.parentSlot());
+      parentSlotMorph.contentsPointer().getModel().setValue(false);
+    });
   }, {category: ['creating children']});
 
   add.method('createSubclass', function (evt) {
@@ -328,18 +332,11 @@ thisModule.addSlots(livelyOutliners, function(add) {
 
   add.method('addCommandsTo', function (cmdList) {
     cmdList.addItem(["create new object", function(evt) {
-      var world = evt.hand.world();
-      var outliner = world.morphFor(reflect({}));
-      outliner.setScale(0.01);
-      outliner.grabMeWithoutZoomingAroundFirst(evt);
-      outliner.stayCenteredAndSmoothlyScaleTo(1, pt(0,0), function() {
-        evt.hand.showAsGrabbed(outliner); // to make the drop shadow look right
-      });
+      evt.hand.world().morphFor(reflect({})).growFromNothing(evt);
     }]);
 
     cmdList.addItem(["get the Global object", function(evt) {
-      var world = evt.hand.world();
-      world.morphFor(reflect(Global)).grabMe(evt);
+      evt.hand.world().morphFor(reflect(Global)).grabMe(evt);
     }]);
 
     transporter.addMenuItemsTo(cmdList);

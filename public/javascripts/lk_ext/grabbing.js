@@ -92,6 +92,15 @@ Morph.addMethods({
   addCenteredAt: function(centerPos, newOwner) {
     var desiredPos = centerPos.subPt(this.getExtent().scaleBy(this.getScale() * 0.5));
     newOwner.addMorphAt(this, desiredPos);
+  },
+
+  growFromNothing: function(evt, callWhenDone) {
+    this.setScale(0.01);
+    this.grabMeWithoutZoomingAroundFirst(evt);
+    this.stayCenteredAndSmoothlyScaleTo(1, pt(0,0), function() {
+      evt.hand.showAsGrabbed(this); // to make the drop shadow look right
+      if (callWhenDone) { callWhenDone(); }
+    }.bind(this));
   }
 
 });
