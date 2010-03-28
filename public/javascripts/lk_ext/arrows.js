@@ -4,7 +4,7 @@ Morph.subclass("ArrowMorph", {
     this.setBorderWidth(1);
     this.setBorderColor(Color.black);
     this.setFill(null);
-    this.notificationFunction = function() {this.putVerticesInTheRightPlace();}.bind(this);
+    this.notificationFunction = function() {setTimeout(this.putVerticesInTheRightPlace.bind(this), 0);}.bind(this);
     this.endpoint1 = ep1 || new ArrowEndpoint(assoc, this);
     this.endpoint2 = ep2 || new ArrowEndpoint(assoc, this);
     this.endpoint1.otherEndpoint = this.endpoint2;
@@ -14,6 +14,8 @@ Morph.subclass("ArrowMorph", {
     this.beUngrabbable();
     this.needsToBeVisible();
   },
+
+  shouldGrowSmoothly: true,
 
   stopUpdating: function() {
     if (this._updateProcess) {
@@ -36,10 +38,9 @@ Morph.subclass("ArrowMorph", {
 
   noLongerNeedsToBeVisible: function() {
     this.noLongerNeedsToBeUpdated = true;
-    this.stopUpdating();
-    this.remove();
-    this.endpoint1.noLongerNeedsToBeVisibleAsArrowEndpoint();
-    this.endpoint2.noLongerNeedsToBeVisibleAsArrowEndpoint();
+    this.disappear(function() {
+      this.stopUpdating();
+    }.bind(this));
   },
 
   needsToBeVisible: function() {
@@ -56,13 +57,21 @@ Morph.subclass("ArrowMorph", {
       }
       this.changeVerticesIfNecessary();
     } else {
-      this.endpoint1.noLongerNeedsToBeVisibleAsArrowEndpoint();
-      this.endpoint2.noLongerNeedsToBeVisibleAsArrowEndpoint();
+      this.disappear();
+    }
+  },
+
+  disappear: function(callWhenDone) {
+    waitForAllCallbacks(function(finalCallback) {
+      this.endpoint1.noLongerNeedsToBeVisibleAsArrowEndpoint(finalCallback());
+      this.endpoint2.noLongerNeedsToBeVisibleAsArrowEndpoint(finalCallback());
+    }.bind(this), function() {
       if (this.owner) {
         this.remove();
         this.tickSlowly();
       }
-    }
+      if (callWhenDone) { callWhenDone(); }
+    }.bind(this), "making the arrow disappear");
   },
 
   shouldBeShown: function() {
@@ -90,8 +99,16 @@ Morph.subclass("ArrowMorph", {
 
     if (! newVertices[0].eqPt(newVertices[1])) {
       var arrowDirection = newVertices[1].subPt(newVertices[0]);
-      this.endpoint1.setShapeToLookLikeACircle(arrowDirection          .theta());
-      this.endpoint2.setShapeToLookLikeAnArrow(arrowDirection.negated().theta());
+      if (arrowDirection.rSquared() >= 225) {
+        //console.log("endpoint1: " + newVertices[0] + ", endpoint2: " + newVertices[1] + ", arrowDirection: " + arrowDirection + ", arrowDirection.theta(): " + arrowDirection.theta());
+        this.endpoint1.setShapeToLookLikeACircle(arrowDirection          .theta());
+        this.endpoint2.setShapeToLookLikeAnArrow(arrowDirection.negated().theta());
+      } else {
+        // Workaround: the endpoint keeps being in weird places when it's very near the source,
+        // and so the arrow head kept pointing in weird directions. Until I figure out the cause,
+        // let's just not show the arrow head until it gets a bit further away.
+        this.endpoint2.setShapeToLookLikeNothing();
+      }
     }
   },
 
@@ -130,35 +147,51 @@ Morph.subclass("ArrowEndpoint", {
     return outliner ? (outliner.world() ? outliner : null) : null;
   },
 
+  stopCurrentAnimationIfAny: function() {
+    if (this._animator) { this._animator.stopAnimating(); }
+  },
+
+  isZoomingTo: function() {
+    return this._animator ? this._animator.isZoomingTo : undefined;
+  },
+
   attachToTheRightPlace: function() {
-    if (this.isZoomingSomewhere) {return;}
-    var oldOwner = this.owner;
     var morphToAttachTo = this.morphToAttachTo;
+    var isZoomingTo = this.isZoomingTo();
+    if (isZoomingTo === morphToAttachTo) {return;}
+    this.stopCurrentAnimationIfAny();
+    var oldOwner = this.owner;
     if (! (morphToAttachTo instanceof HandMorph)) {
       if (morphToAttachTo === oldOwner && this.doesNotNeedToBeRepositionedIfItStaysWithTheSameOwner) {return;}
-  
+      
       if (morphToAttachTo !== WorldMorph.current()) {
-        var localCenter = this.ownerRelativeCenterpoint();
-        var vectorFromHereToMidpoint = this.otherEndpoint.ownerCenterpoint().subPt(this.ownerCenterpoint()).scaleBy(0.5);
-        var localPositionToBeClosestTo = localCenter.addPt(vectorFromHereToMidpoint);
-        var localNewLoc = this.localPositionClosestTo(localPositionToBeClosestTo, localCenter).roundTo(1);
+        var otherEndpointLoc = this.otherEndpoint.worldPoint(this.otherEndpoint.relativeLineEndpoint);
+        var localCenterOfMorphToAttachTo = morphToAttachTo.relativeCenterpoint();
+        var globalCenterOfMorphToAttachTo = morphToAttachTo.worldPoint(localCenterOfMorphToAttachTo);
+        var vectorFromCenterToOtherEndpoint = otherEndpointLoc.subPt(globalCenterOfMorphToAttachTo);
+        var localPositionOfOtherEndpoint = localCenterOfMorphToAttachTo.addPt(vectorFromCenterToOtherEndpoint);
+        var localNewLoc = this.localPositionClosestTo(localPositionOfOtherEndpoint, localCenterOfMorphToAttachTo).roundTo(1);
         var globalNewLoc = morphToAttachTo.worldPoint(localNewLoc);
         
-        var shouldMakeArrowsGrowSmoothly = false; // aaa - doesn't quite work properly yet
-        if (shouldMakeArrowsGrowSmoothly) {
-          this.isZoomingSomewhere = true;
+        if (this.arrow.shouldGrowSmoothly) {
           var world = this.world();
+          var globalCurLoc;
           if (world) {
-            world.addMorphAt(this, this.owner.worldPoint(this.getPosition()));
+            globalCurLoc = this.owner.worldPoint(this.getPosition());
           } else {
-            this.otherEndpoint.world().addMorphAt(this, this.otherEndpoint.worldPoint(this.otherEndpoint.relativeLineEndpoint));
+            globalCurLoc = otherEndpointLoc;
+            world = this.otherEndpoint.world();
           }
-          this.startZoomingInAStraightLineTo(globalNewLoc, false, false, false, function() {
+          world.addMorphAt(this, globalCurLoc);
+          this.stopCurrentAnimationIfAny();
+          // aaa console.log("Now zooming from " + globalCurLoc + " to " + globalNewLoc + "; morphToAttachTo is " + Object.inspect(morphToAttachTo) + "; noLongerNeedsToBeUpdated is " + this.arrow.noLongerNeedsToBeUpdated);
+          this._animator = this.startZoomingInAStraightLineTo(globalNewLoc, false, false, false, function() {
             var wasAlreadyAttachedToThisMorph = morphToAttachTo === this.owner;
             morphToAttachTo.addMorphAt(this, localNewLoc);
             if (!wasAlreadyAttachedToThisMorph) { morphToAttachTo.wiggle(100); }
-            this.isZoomingSomewhere = false;
+            delete this._animator;
           }.bind(this));
+          this._animator.isZoomingTo = morphToAttachTo;
         } else {
           morphToAttachTo.addMorphAt(this, localNewLoc);
         }
@@ -171,16 +204,47 @@ Morph.subclass("ArrowEndpoint", {
       }
     }
 
-    this.registerToBeNotifiedOfChanges(oldOwner, morphToAttachTo);
+    this.registerForChangeNotification(oldOwner, morphToAttachTo);
   },
 
-  registerToBeNotifiedOfChanges: function(oldOwner, newOwner) {
+  registerForChangeNotification: function(oldOwner, newOwner) {
     // Not really necessary because we have the update process, but it makes the UI look smoother
     // if we register to be notified whenever the owner changes position.
     if (newOwner !== oldOwner) {
-      if (oldOwner) { oldOwner.topmostOwnerBesidesTheWorld().changeNotifier().remove_observer(this.arrow.notificationFunction); }
-      newOwner.topmostOwnerBesidesTheWorld().changeNotifier().add_observer(this.arrow.notificationFunction);
+      this.unregisterFromChangeNotification(oldOwner);
+      newOwner.topmostOwnerBesidesTheWorldAndTheHand().changeNotifier().add_observer(this.arrow.notificationFunction);
     }
+  },
+
+  unregisterFromChangeNotification: function(oldOwner) {
+    if (oldOwner) { oldOwner.topmostOwnerBesidesTheWorldAndTheHand().changeNotifier().remove_observer(this.arrow.notificationFunction); }
+  },
+
+  noLongerNeedsToBeVisibleAsArrowEndpoint: function(callWhenDone) {
+    var isZoomingTo = this.isZoomingTo();
+    if (isZoomingTo === null) {return;}
+    this.unregisterFromChangeNotification(this.owner);
+    this.stopCurrentAnimationIfAny();
+    var world = this.world();
+    if (this.arrow.shouldGrowSmoothly && world && this.otherEndpoint.world()) {
+      var globalCurLoc = this.owner.worldPoint(this.getPosition());
+      var globalNewLoc = this.otherEndpoint.worldPoint(this.otherEndpoint.relativeLineEndpoint);
+      // aaa console.log("OK, zooming from " + globalCurLoc + " to " + globalNewLoc + "; noLongerNeedsToBeUpdated is " + this.arrow.noLongerNeedsToBeUpdated);
+      world.addMorphAt(this, globalCurLoc);
+      this._animator = this.startZoomingInAStraightLineTo(globalNewLoc, false, false, false, function() {
+        delete this._animator;
+        this.remove();
+        callWhenDone();
+      }.bind(this));
+      this._animator.isZoomingTo = null;
+    } else {
+      this.remove();
+      callWhenDone();
+    }
+  },
+
+  justDidAnimatedPositionChange: function() {
+    this.arrow.changeVerticesIfNecessary();
   },
 
   localPositionClosestTo: function(localPositionToBeClosestTo, localCenter) {
@@ -196,8 +260,15 @@ Morph.subclass("ArrowEndpoint", {
     if (! this.wasAlreadySetToLookLikeACircle) {
       this.setShape(new lively.scene.Ellipse(pt(0,0).extent(pt(10,10))));
       this.wasAlreadySetToLookLikeACircle = true;
+      this.wasAlreadySetToLookLikeAnArrow = false;
     }
     this.setRotation(arrowTheta);
+  },
+
+  setShapeToLookLikeNothing: function(arrowTheta) {
+    this.setShape(new lively.scene.Rectangle(pt(0,0).extent(pt(0,0))));
+    this.wasAlreadySetToLookLikeACircle = false;
+    this.wasAlreadySetToLookLikeAnArrow = false;
   },
 
   setShapeToLookLikeAnArrow: function(arrowTheta) {
@@ -209,12 +280,9 @@ Morph.subclass("ArrowEndpoint", {
       var verticesOfArrow = [pointOnTipOfArrow, middleOfBaseOfArrow.addPt(vectorToPointOnBaseOfArrow), middleOfBaseOfArrow.subPt(vectorToPointOnBaseOfArrow)];
       this.setShape(new lively.scene.Polygon(verticesOfArrow, Color.black, 1, Color.black));
       this.wasAlreadySetToLookLikeAnArrow = true;
+      this.wasAlreadySetToLookLikeACircle = false;
     }
     this.setRotation(arrowTheta);
-  },
-
-  noLongerNeedsToBeVisibleAsArrowEndpoint: function() {
-    this.remove();
   },
 
   calculateDefaultVectorFromOtherEndpoint: function() {
@@ -247,19 +315,29 @@ Object.extend(ArrowEndpoint, {
 });
 
 Morph.addMethods({
-  topmostOwnerBesidesTheWorld: function() {
+  topmostOwnerBesidesTheWorldAndTheHand: function() {
     var m = this;
-    while (m.owner && ! (m.owner instanceof WorldMorph)) {
+    while (m.owner && ! (m.owner instanceof WorldMorph) && ! (m.owner instanceof HandMorph)) {
       m = m.owner;
     }
     return m;
   },
 
+  detachArrowEndpoints: function() {
+    var world = this.world();
+    if (world) {
+      this.submorphs.each(function(m) {
+        if (m instanceof ArrowEndpoint) {
+          world.addMorphAt(m, this.worldPoint(m.getPosition()));
+        }
+      }.bind(this));
+    }
+  },
 
   beArrowEndpoint: function() {
     this.determineWhichMorphToAttachTo = function() { return !!this.world(); };
     this.attachToTheRightPlace = function() {};
-    this.noLongerNeedsToBeVisibleAsArrowEndpoint = function() {};
+    this.noLongerNeedsToBeVisibleAsArrowEndpoint = function(callWhenDone) {callWhenDone();};
     this.relativeLineEndpoint = this.getExtent().scaleBy(0.5);
     this.setShapeToLookLikeACircle = function() {};
   },
@@ -270,10 +348,8 @@ Morph.addMethods({
     return o.worldPoint(o.shape.bounds().center());
   },
 
-  ownerRelativeCenterpoint: function() {
-    var o = this.owner;
-    if (!o || !o.world()) {return pt(0, 0);}
-    return o.shape.bounds().extent().scaleBy(0.5);
+  relativeCenterpoint: function() {
+    return this.shape.bounds().extent().scaleBy(0.5);
   },
 
   lineEndpoint: function() {

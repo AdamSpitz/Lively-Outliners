@@ -280,6 +280,11 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     }
   }, {category: ['drag and drop']});
 
+  add.method('remove', function ($super) {
+    this.detachArrowEndpoints();
+    $super();
+  }, {category: ['removing']});
+
   add.method('constructUIStateMemento', function () {
     var mem = {
       isExpanded: this.expander().isExpanded(),

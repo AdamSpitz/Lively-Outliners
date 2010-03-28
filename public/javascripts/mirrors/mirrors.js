@@ -42,6 +42,8 @@ thisModule.addSlots(mirror, function(add) {
   add.method('hashCode', function () {
     // Damned JavaScript. Can I get a proper object ID hash somehow?;
     var o = this.reflectee();
+    if (o === undefined) { return "a mirror on undefined"; }
+    if (o === null     ) { return "a mirror on null";      }
     try {
       if (o.identityHashCode) { return o.identityHashCode(); }
     } catch (ex) {

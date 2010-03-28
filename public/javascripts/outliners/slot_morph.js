@@ -90,8 +90,9 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     m = this._contentsPointer = createButton(icon, function() {
       if (arrow.noLongerNeedsToBeUpdated) {
         var w = this.world();
-        w.morphFor(slot.contents()).ensureIsInWorld(w, m.worldPoint(pt(150,0)), false, true, true);
-        arrow.needsToBeVisible();
+        w.morphFor(slot.contents()).ensureIsInWorld(w, m.worldPoint(pt(150,0)), false, true, true, function() {
+          arrow.needsToBeVisible();
+        });
       } else {
         arrow.noLongerNeedsToBeVisible();
       }
@@ -100,6 +101,9 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
 
     arrow = m.arrow = new ArrowMorph(slot, m, null);
     arrow.noLongerNeedsToBeUpdated = true;
+
+    this.topmostOwnerBesidesTheWorldAndTheHand().changeNotifier().add_observer(arrow.notificationFunction);
+
 
     arrow.endpoint2.wasJustDroppedOnOutliner = function(outliner) {
       this.wasJustDroppedOn(outliner);

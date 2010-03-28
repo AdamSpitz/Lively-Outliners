@@ -27,7 +27,7 @@ thisModule.addSlots(animation, function(add) {
 
   add.creator('timeSegment', Object.create(animation.abstract));
 
-  add.creator('resetter', Object.create(animation.abstract));
+  add.creator('instantaneous', Object.create(animation.abstract));
 
   add.creator('accelerator', {});
 
@@ -48,8 +48,8 @@ thisModule.addSlots(animation, function(add) {
     centerPt = centerPt || morph.getPosition();
 
     var wigglerizer = Object.newChildOf(this.sequential, "wiggler", timePerStep);
-    wigglerizer.timeSegments().push(Object.newChildOf(this.timeSegment, "wiggling",   timePerStep, (duration || 200) / timePerStep, Object.newChildOf(this.wiggler, centerPt)));
-    wigglerizer.timeSegments().push(Object.newChildOf(this.resetter,    "reset loc",  function(morph) {morph.setPosition(centerPt);}));
+    wigglerizer.timeSegments().push(Object.newChildOf(this.timeSegment,   "wiggling",   timePerStep, (duration || 200) / timePerStep, Object.newChildOf(this.wiggler, centerPt)));
+    wigglerizer.timeSegments().push(Object.newChildOf(this.instantaneous, "reset loc",  function(morph) {morph.setPosition(centerPt);}));
 
     return Object.newChildOf(this.simultaneous, "wiggler", timePerStep, [wigglerizer]);
   });
@@ -87,7 +87,7 @@ thisModule.addSlots(animation, function(add) {
       return wholeThing;
 
     } else {
-      return Object.newChildOf(this.resetter, "set final loc", function(morph) {morph.setPositionAndDoMotionBlurIfNecessary(destinationPt, animation.timePerStep);});
+      return Object.newChildOf(this.instantaneous, "set final loc", function(morph) {morph.setPositionAndDoMotionBlurIfNecessary(destinationPt, animation.timePerStep);});
     }
 
   });
@@ -127,8 +127,8 @@ thisModule.addSlots(animation, function(add) {
     var m = Object.newChildOf(this.sequential, "mover steps", timePerStep);
     m.path = path;
     var pathMover = Object.newChildOf(this.pathMover, m.path, speederizer.speedHolder());
-    m.timeSegments().push(Object.newChildOf(this.timeSegment, "main arc",      timePerStep, speederizer.totalDuration() / timePerStep, pathMover));
-    m.timeSegments().push(Object.newChildOf(this.resetter,    "set final loc", function(morph) {morph.setPositionAndDoMotionBlurIfNecessary(path.destination(), animation.timePerStep);}));
+    m.timeSegments().push(Object.newChildOf(this.timeSegment,   "main arc",      timePerStep, speederizer.totalDuration() / timePerStep, pathMover));
+    m.timeSegments().push(Object.newChildOf(this.instantaneous, "set final loc", function(morph) {morph.setPositionAndDoMotionBlurIfNecessary(path.destination(), animation.timePerStep);}));
     return Object.newChildOf(this.simultaneous, "moverizer", timePerStep, [speederizer, m]);
   });
 
@@ -137,7 +137,7 @@ thisModule.addSlots(animation, function(add) {
     var w = morph.world();
     var isStartingOnScreen = w && w.bounds().containsPoint(morph.getPosition());
     if (! isStartingOnScreen) {
-      return Object.newChildOf(this.resetter, "set final size", function(morph) {morph.setExtent(endingSize);});
+      return Object.newChildOf(this.instantaneous, "set final size", function(morph) {morph.setExtent(endingSize);});
     }
 
     var timePerStep = animation.timePerStep;
@@ -148,8 +148,8 @@ thisModule.addSlots(animation, function(add) {
     var s = this.speederizer(timePerStep, accelOrDecelDuration, mainResizingDuration, true);
     var morphResizer = Object.newChildOf(this.morphResizer, startingSize, endingSize, s.speedHolder());
     var r = Object.newChildOf(this.sequential, "resizer steps", timePerStep);
-    r.timeSegments().push(Object.newChildOf(this.timeSegment, "resizing",       timePerStep, mainResizingDuration / timePerStep, morphResizer));
-    r.timeSegments().push(Object.newChildOf(this.resetter,    "set final size", function(morph) {morph.setExtent(endingSize);}));
+    r.timeSegments().push(Object.newChildOf(this.timeSegment,   "resizing",       timePerStep, mainResizingDuration / timePerStep, morphResizer));
+    r.timeSegments().push(Object.newChildOf(this.instantaneous, "set final size", function(morph) {morph.setExtent(endingSize);}));
     return Object.newChildOf(this.simultaneous, "resizer", timePerStep, [s, r]);
   });
 
@@ -269,7 +269,7 @@ thisModule.addSlots(animation.timeSegment, function(add) {
 });
 
 
-thisModule.addSlots(animation.resetter, function(add) {
+thisModule.addSlots(animation.instantaneous, function(add) {
 
   add.method('initialize', function ($super, name, functionToRun) {
     $super(name);
@@ -281,6 +281,7 @@ thisModule.addSlots(animation.resetter, function(add) {
   });
 
   add.method('doOneStep', function (morph) {
+    // console.log("About to run instantaneous action " + this._name);
     this._functionToRun(morph);
     this.done();
     return false;
@@ -388,8 +389,9 @@ thisModule.addSlots(animation.straightPath, function(add) {
     if (difference < 0.1) {return curPos;}
 
     var distanceToMove = Math.min(difference, speed * this._totalDistance);
-    //console.log("speed: " + speed + ", distanceToMove: " + distanceToMove + ", curPos: " + curPos);
-    return curPos.addPt(vector.normalized().scaleBy(distanceToMove));
+    var vectorToMove = vector.normalized().scaleBy(distanceToMove);
+    // console.log("speed: " + speed + ", distanceToMove: " + distanceToMove + ", vectorToMove: " + vectorToMove + ", curPos: " + curPos);
+    return curPos.addPt(vectorToMove);
   });
 
 });
@@ -442,26 +444,29 @@ thisModule.addSlots(Morph.prototype, function(add) {
   add.method('startZoomingOuttaHere', function() {
     var w = this.world();
     if (w) {
-      this.startZoomingTo(pt(w.getExtent().x + 300, -300), true, false, function() {this.remove();}.bind(this));
+      return this.startZoomingTo(pt(w.getExtent().x + 300, -300), true, false, function() {this.remove();}.bind(this));
+    } else {
+      return null;
     }
   }, {category: 'zooming around'});
 
   add.method('startZoomingTo', function(loc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
-    this.startAnimating(animation.newMovement(this, animation.arcPath, loc, 3, shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), functionToCallWhenDone);
+    return this.startAnimating(animation.newMovement(this, animation.arcPath, loc, 3, shouldAnticipateAtStart, shouldWiggleAtEnd, !shouldWiggleAtEnd), functionToCallWhenDone);
   }, {category: 'zooming around'});
 
   add.method('startZoomingInAStraightLineTo', function(loc, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd, functionToCallWhenDone) {
-    this.startAnimating(animation.newMovement(this, animation.straightPath, loc, 3, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), functionToCallWhenDone);
+    return this.startAnimating(animation.newMovement(this, animation.straightPath, loc, 2, shouldAnticipateAtStart, shouldWiggleAtEnd, shouldDecelerateAtEnd), functionToCallWhenDone);
   }, {category: 'zooming around'});
 
   add.method('startAnimating', function(animator, functionToCallWhenDone) {
     animator.stopAnimating();
     animator.whenDoneCall(functionToCallWhenDone);
     animator.startAnimating(this);
+    return animator;
   }, {category: 'zooming around'});
 
   add.method('wiggle', function(duration) {
-    this.startAnimating(animation.newWiggler(this, null, duration));
+    return this.startAnimating(animation.newWiggler(this, null, duration));
   }, {category: 'wiggling'});
 
   add.method('setPositionAndDoMotionBlurIfNecessary', function(newPos, blurTime) {
@@ -484,6 +489,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
       }
     }
     this.setPosition(newPos);
+    if (this.justDidAnimatedPositionChange) { this.justDidAnimatedPositionChange(); }
   }, {category: 'motion blur'});
 
 
@@ -494,12 +500,12 @@ thisModule.addSlots(Morph.prototype, function(add) {
     if (owner !== w) {
       var initialLoc = (!owner || this.world() !== w) ? pt(-50,-20) : owner.worldPoint(this.getPosition());
       w.addMorphAt(this, initialLoc);
-      if (desiredLoc) {
-        this.startZoomingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
-      }
+      this.startZoomingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
     } else {
-      if (desiredLoc && shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
+      if (shouldMoveToDesiredLocEvenIfAlreadyInWorld) {
         this.startZoomingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
+      } else {
+        functionToCallWhenDone();
       }
     }
   }, {category: 'adding and removing'});
