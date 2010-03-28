@@ -66,6 +66,7 @@ Morph.subclass("ArrowMorph", {
       this.endpoint1.noLongerNeedsToBeVisibleAsArrowEndpoint(finalCallback());
       this.endpoint2.noLongerNeedsToBeVisibleAsArrowEndpoint(finalCallback());
     }.bind(this), function() {
+      this.noLongerNeedsToBeUpdated = true;
       if (this.owner) {
         this.remove();
         this.tickSlowly();

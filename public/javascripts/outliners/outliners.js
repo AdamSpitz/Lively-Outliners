@@ -332,7 +332,9 @@ thisModule.addSlots(livelyOutliners, function(add) {
       var outliner = world.morphFor(reflect({}));
       outliner.setScale(0.01);
       outliner.grabMeWithoutZoomingAroundFirst(evt);
-      outliner.stayCenteredAndSmoothlyScaleTo(1, pt(0,0));
+      outliner.stayCenteredAndSmoothlyScaleTo(1, pt(0,0), function() {
+        evt.hand.showAsGrabbed(outliner); // to make the drop shadow look right
+      });
     }]);
 
     cmdList.addItem(["get the Global object", function(evt) {
