@@ -137,9 +137,7 @@ thisModule.addSlots(animation, function(add) {
   // aaa - duplication between the resizer and the scaler
   add.method('newResizer', function (morph, endingSize) {
     // Don't bother if the morph is off-screen - it just feels like nothing's happening.
-    var w = morph.world();
-    var isStartingOnScreen = w && w.bounds().containsPoint(morph.getPosition());
-    if (! isStartingOnScreen) {
+    if (! morph.isOnScreen()) {
       return Object.newChildOf(this.instantaneous, "set final size", function(morph) {morph.setExtent(endingSize);});
     }
 
@@ -158,9 +156,7 @@ thisModule.addSlots(animation, function(add) {
 
   add.method('newScaler', function (morph, endingScale) {
     // Don't bother if the morph is off-screen - it just feels like nothing's happening.
-    var w = morph.world();
-    var isStartingOnScreen = w && w.bounds().containsPoint(morph.getPosition());
-    if (! isStartingOnScreen) {
+    if (! morph.isOnScreen()) {
       return Object.newChildOf(this.instantaneous, "set final scale", function(morph) {morph.setExtent(endingScale);});
     }
 
@@ -485,7 +481,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
 
   add.method('isOnScreen', function () {
     var w = this.world();
-    return w && w.bounds().containsPoint(this.getPosition());
+    return w && w.bounds().containsPoint(this.owner.worldPoint(this.getPosition()));
   }, {category: 'testing'});
 
   add.method('startZoomingOuttaHere', function() {
