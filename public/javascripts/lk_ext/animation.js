@@ -165,7 +165,7 @@ thisModule.addSlots(animation, function(add) {
     }
 
     var timePerStep = animation.timePerStep;
-    var accelOrDecelDuration = 40;
+    var accelOrDecelDuration = 80;
     var mainScalingDuration = 200;
     var startingScale = morph.getScale();
 
