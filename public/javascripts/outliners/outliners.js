@@ -330,9 +330,9 @@ thisModule.addSlots(livelyOutliners, function(add) {
     cmdList.addItem(["create new object", function(evt) {
       var world = evt.hand.world();
       var outliner = world.morphFor(reflect({}));
-      outliner.setScale(0);
+      outliner.setScale(0.01);
       outliner.grabMeWithoutZoomingAroundFirst(evt);
-      outliner.smoothlyScaleTo(1);
+      outliner.stayCenteredAndSmoothlyScaleTo(1, pt(0,0));
     }]);
 
     cmdList.addItem(["get the Global object", function(evt) {

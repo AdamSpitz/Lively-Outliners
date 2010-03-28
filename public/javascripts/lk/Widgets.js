@@ -1946,7 +1946,7 @@ Morph.subclass("MenuMorph", {
         this.stayUp = remainOnScreen; // set true to keep on screen
 
         parentMorph.addMorphAt(this, loc);
-        this.smoothlyScaleTo(1, 0); // Added by Adam
+        this.setScale(0.01); this.smoothlyScaleTo(1); // Added by Adam
 
                 var textList = this.items.pluck('name');
         this.listMorph = new TextListMorph(pt(this.estimateListWidth(TextMorph.prototype), 0).extentAsRectangle(),

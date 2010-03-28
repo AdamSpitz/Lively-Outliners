@@ -85,9 +85,13 @@ Morph.addMethods({
 
   grabMeWithoutZoomingAroundFirst: function(evt) {
     // Had to do this to make the morph be right under the hand, and to get the drop shadows right.
-    var desiredPos = evt.hand.position().subPt(this.getExtent().scaleBy(0.5));
-    evt.hand.world().addMorphAt(this, desiredPos);
+    this.addCenteredAt(evt.hand.position(), evt.hand.world());
     evt.hand.grabMorph(this, evt);
+  },
+
+  addCenteredAt: function(centerPos, newOwner) {
+    var desiredPos = centerPos.subPt(this.getExtent().scaleBy(this.getScale() * 0.5));
+    newOwner.addMorphAt(this, desiredPos);
   }
 
 });

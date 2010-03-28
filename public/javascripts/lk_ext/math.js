@@ -1,4 +1,11 @@
 Object.extend(Number.prototype, {
+  plus: function(n) { return this + n; },
+  minus: function(n) { return this - n; },
+  scaleBy: function(n) { return this * n; },
+  divideBy: function(n) { return this / n; },
+  equals: function(n) { return this === n; },
+  isZero: function() { return this === 0; },
+
   closerToZeroBy: function(n) {
     if (this < 0) {
       return (this > -n) ? 0 : this + n;
@@ -15,6 +22,11 @@ Object.extend(Number.prototype, {
 });
 
 Object.extend(Point.prototype, {
+  plus: function(p) { return this.addPt(p); },
+  minus: function(p) { return this.subPt(p); },
+  divideBy: function(n) { return this.scaleBy(1.0 / n); },
+  isZero: function() { return this.x.isZero() && this.y.isZero(); },
+
   closerToZeroBy: function(p) {
     return new Point(this.x.closerToZeroBy(p.x), this.y.closerToZeroBy(p.y));
   },

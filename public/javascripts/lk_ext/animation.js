@@ -35,9 +35,7 @@ thisModule.addSlots(animation, function(add) {
 
   add.creator('pathMover', {});
 
-  add.creator('morphResizer', {});
-
-  add.creator('morphScaler', {});
+  add.creator('speedStepper', {});
 
   add.creator('wiggler', {});
 
@@ -134,43 +132,31 @@ thisModule.addSlots(animation, function(add) {
     return Object.newChildOf(this.simultaneous, "moverizer", timePerStep, [speederizer, m]);
   });
 
-  // aaa - duplication between the resizer and the scaler
   add.method('newResizer', function (morph, endingSize) {
-    // Don't bother if the morph is off-screen - it just feels like nothing's happening.
-    if (! morph.isOnScreen()) {
-      return Object.newChildOf(this.instantaneous, "set final size", function(morph) {morph.setExtent(endingSize);});
-    }
-
-    var timePerStep = animation.timePerStep;
-    var accelOrDecelDuration = 40;
-    var mainResizingDuration = 100;
-    var startingSize = morph.getExtent();
-
-    var s = this.speederizer(timePerStep, accelOrDecelDuration, mainResizingDuration, true);
-    var morphResizer = Object.newChildOf(this.morphResizer, startingSize, endingSize, s.speedHolder());
-    var r = Object.newChildOf(this.sequential, "resizer steps", timePerStep);
-    r.timeSegments().push(Object.newChildOf(this.timeSegment,   "resizing",       timePerStep, mainResizingDuration / timePerStep, morphResizer));
-    r.timeSegments().push(Object.newChildOf(this.instantaneous, "set final size", function(morph) {morph.setExtent(endingSize);}));
-    return Object.newChildOf(this.simultaneous, "resizer", timePerStep, [s, r]);
+    var extentAccessor = { getValue: function(m) {return m.getExtent();}, setValue: function(m, v) {m.setExtent(v);} };
+    return this.newSpeedStepper(morph, endingSize, extentAccessor, 100, 40);
   });
 
   add.method('newScaler', function (morph, endingScale) {
+    var scaleAccessor = { getValue: function(m) {return m.getScale();}, setValue: function(m, v) {m.setScale(v);} };
+    return this.newSpeedStepper(morph, endingScale, scaleAccessor, 200, 80);
+  });
+
+  add.method('newSpeedStepper', function (morph, endingValue, valueAccessor, mainDuration, accelOrDecelDuration) {
     // Don't bother if the morph is off-screen - it just feels like nothing's happening.
     if (! morph.isOnScreen()) {
-      return Object.newChildOf(this.instantaneous, "set final scale", function(morph) {morph.setExtent(endingScale);});
+      return Object.newChildOf(this.instantaneous, "set final value", function(m) {valueAccessor.setValue(m, endingValue);});
     }
 
     var timePerStep = animation.timePerStep;
-    var accelOrDecelDuration = 80;
-    var mainScalingDuration = 200;
-    var startingScale = morph.getScale();
+    var startingValue = valueAccessor.getValue(morph);
 
-    var s = this.speederizer(timePerStep, accelOrDecelDuration, mainScalingDuration, true);
-    var morphScaler = Object.newChildOf(this.morphScaler, startingScale, endingScale, s.speedHolder());
-    var r = Object.newChildOf(this.sequential, "scaler steps", timePerStep);
-    r.timeSegments().push(Object.newChildOf(this.timeSegment,   "scaling",         timePerStep, mainScalingDuration / timePerStep, morphScaler));
-    r.timeSegments().push(Object.newChildOf(this.instantaneous, "set final scale", function(morph) {morph.setScale(endingScale);}));
-    return Object.newChildOf(this.simultaneous, "scaler", timePerStep, [s, r]);
+    var s = this.speederizer(timePerStep, accelOrDecelDuration, mainDuration, true);
+    var speedStepper = Object.newChildOf(this.speedStepper, startingValue, endingValue, s.speedHolder(), valueAccessor);
+    var r = Object.newChildOf(this.sequential, "speed steps", timePerStep);
+    r.timeSegments().push(Object.newChildOf(this.timeSegment,   "changing",        timePerStep, mainDuration / timePerStep, speedStepper));
+    r.timeSegments().push(Object.newChildOf(this.instantaneous, "set final value", function(m) {valueAccessor.setValue(m, endingValue);}));
+    return Object.newChildOf(this.simultaneous, "speed stepper", timePerStep, [s, r]);
   });
 
 });
@@ -346,48 +332,23 @@ thisModule.addSlots(animation.pathMover, function(add) {
 });
 
 
-thisModule.addSlots(animation.morphResizer, function(add) {
+thisModule.addSlots(animation.speedStepper, function(add) {
 
-  add.method('initialize', function (from, to, speedHolder) {
-    this._endingSize = to;
-    this._totalSizeDifference = to.subPt(from);
+  add.method('initialize', function (from, to, speedHolder, valueAccessor) {
+    this._endingValue = to;
+    this._totalDifference = to.minus(from);
     this._speedHolder = speedHolder;
+    this._valueAccessor = valueAccessor;
   });
 
   add.method('doOneStep', function (morph) {
     var speed = this._speedHolder.speed;
-    var currentSize = morph.getExtent();
-    var difference = this._endingSize.subPt(currentSize);
-    if (difference.x === 0 && difference.y === 0) {return;}
-    var amountToChange = this._totalSizeDifference.scaleBy(speed);
-    var newSize = currentSize.addPt(amountToChange);
-    var newDifference = this._endingSize.subPt(newSize);
-    if (newDifference.x.sign() !== difference.x.sign()) {newSize = newSize.withX(this._endingSize.x);} // don't go past it
-    if (newDifference.y.sign() !== difference.y.sign()) {newSize = newSize.withY(this._endingSize.y);} // don't go past it
-    morph.setExtent(newSize);
-  });
-
-});
-
-
-thisModule.addSlots(animation.morphScaler, function(add) {
-
-  add.method('initialize', function (from, to, speedHolder) {
-    this._endingScale = to;
-    this._totalScaleDifference = to - from;
-    this._speedHolder = speedHolder;
-  });
-
-  add.method('doOneStep', function (morph) {
-    var speed = this._speedHolder.speed;
-    var currentScale = morph.getScale();
-    var difference = this._endingScale - currentScale;
-    if (difference === 0) {return;}
-    var amountToChange = this._totalScaleDifference * speed;
-    var newScale = currentScale + amountToChange;
-    var newDifference = this._endingScale - newScale;
-    if (newDifference.sign() !== difference.sign()) {newScale = this._endingScale;} // don't go past it
-    morph.setScale(newScale);
+    var currentValue = this._valueAccessor.getValue(morph);
+    if (currentValue.equals(this._endingValue)) {return;}
+    var amountToChange = this._totalDifference.scaleBy(speed);
+    var newValue = currentValue.plus(amountToChange);
+    newValue = newValue.doNotGoPast(this._endingValue, currentValue);
+    this._valueAccessor.setValue(morph, newValue);
   });
 
 });
@@ -567,9 +528,20 @@ thisModule.addSlots(Morph.prototype, function(add) {
     this.startAnimating(animation.newResizer(this, desiredSize), functionToCallWhenDone);
   }, {category: 'resizing'});
 
-  add.method('smoothlyScaleTo', function(desiredScale, startingScale, functionToCallWhenDone) {
-    if (startingScale !== undefined) { this.setScale(startingScale); }
+  add.method('smoothlyScaleTo', function(desiredScale, functionToCallWhenDone) {
     this.startAnimating(animation.newScaler(this, desiredScale), functionToCallWhenDone);
+  }, {category: 'scaling'});
+
+  add.method('stayCenteredAndSmoothlyScaleTo', function(desiredScale, centerPos, functionToCallWhenDone) {
+    var accessor = {
+      getValue: function(m) {return m.getScale();},
+      setValue: function(m, v) {
+        m.setScale(v);
+        m.setPosition(centerPos.subPt(m.getExtent().scaleBy(m.getScale() * 0.5)));
+      }
+    };
+    var animator = animation.newSpeedStepper(this, desiredScale, accessor, 200, 80);
+    this.startAnimating(animator, functionToCallWhenDone);
   }, {category: 'scaling'});
 
 });
@@ -595,5 +567,33 @@ thisModule.addSlots(SelectionMorph.prototype, function(add) {
 
 });
 
+
+thisModule.addSlots(Number.prototype, function(add) {
+
+  add.method('doNotGoPast', function(targetValue, originalValue) {
+    var originalDifference = targetValue - originalValue;
+    var      newDifference = targetValue - this;
+    if (newDifference.sign() !== originalDifference.sign()) {return targetValue;}
+    return this;
+  });
+
+});
+
+
+thisModule.addSlots(Point.prototype, function(add) {
+
+  add.method('doNotGoPast', function(targetValue, originalValue) {
+    var originalDifference = targetValue.minus(originalValue);
+    var      newDifference = targetValue.minus(this);
+    if (newDifference.sign() !== originalDifference.sign()) {return targetValue;}
+    var xIsDifferent = newDifference.x.sign() !== originalDifference.x.sign();
+    var yIsDifferent = newDifference.y.sign() !== originalDifference.y.sign();
+    if (xIsDifferent && yIsDifferent) { return targetValue; }
+    if (xIsDifferent) { return this.withX(targetValue.x); }
+    if (yIsDifferent) { return this.withY(targetValue.y); }
+    return this;
+  });
+
+});
 
 });
