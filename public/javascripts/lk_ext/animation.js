@@ -37,6 +37,8 @@ thisModule.addSlots(animation, function(add) {
 
   add.creator('morphResizer', {});
 
+  add.creator('morphScaler', {});
+
   add.creator('wiggler', {});
 
   add.creator('straightPath', {});
@@ -132,6 +134,7 @@ thisModule.addSlots(animation, function(add) {
     return Object.newChildOf(this.simultaneous, "moverizer", timePerStep, [speederizer, m]);
   });
 
+  // aaa - duplication between the resizer and the scaler
   add.method('newResizer', function (morph, endingSize) {
     // Don't bother if the morph is off-screen - it just feels like nothing's happening.
     var w = morph.world();
@@ -151,6 +154,27 @@ thisModule.addSlots(animation, function(add) {
     r.timeSegments().push(Object.newChildOf(this.timeSegment,   "resizing",       timePerStep, mainResizingDuration / timePerStep, morphResizer));
     r.timeSegments().push(Object.newChildOf(this.instantaneous, "set final size", function(morph) {morph.setExtent(endingSize);}));
     return Object.newChildOf(this.simultaneous, "resizer", timePerStep, [s, r]);
+  });
+
+  add.method('newScaler', function (morph, endingScale) {
+    // Don't bother if the morph is off-screen - it just feels like nothing's happening.
+    var w = morph.world();
+    var isStartingOnScreen = w && w.bounds().containsPoint(morph.getPosition());
+    if (! isStartingOnScreen) {
+      return Object.newChildOf(this.instantaneous, "set final scale", function(morph) {morph.setExtent(endingScale);});
+    }
+
+    var timePerStep = animation.timePerStep;
+    var accelOrDecelDuration = 40;
+    var mainScalingDuration = 200;
+    var startingScale = morph.getScale();
+
+    var s = this.speederizer(timePerStep, accelOrDecelDuration, mainScalingDuration, true);
+    var morphScaler = Object.newChildOf(this.morphScaler, startingScale, endingScale, s.speedHolder());
+    var r = Object.newChildOf(this.sequential, "scaler steps", timePerStep);
+    r.timeSegments().push(Object.newChildOf(this.timeSegment,   "scaling",         timePerStep, mainScalingDuration / timePerStep, morphScaler));
+    r.timeSegments().push(Object.newChildOf(this.instantaneous, "set final scale", function(morph) {morph.setScale(endingScale);}));
+    return Object.newChildOf(this.simultaneous, "scaler", timePerStep, [s, r]);
   });
 
 });
@@ -350,6 +374,29 @@ thisModule.addSlots(animation.morphResizer, function(add) {
 });
 
 
+thisModule.addSlots(animation.morphScaler, function(add) {
+
+  add.method('initialize', function (from, to, speedHolder) {
+    this._endingScale = to;
+    this._totalScaleDifference = to - from;
+    this._speedHolder = speedHolder;
+  });
+
+  add.method('doOneStep', function (morph) {
+    var speed = this._speedHolder.speed;
+    var currentScale = morph.getScale();
+    var difference = this._endingScale - currentScale;
+    if (difference === 0) {return;}
+    var amountToChange = this._totalScaleDifference * speed;
+    var newScale = currentScale + amountToChange;
+    var newDifference = this._endingScale - newScale;
+    if (newDifference.sign() !== difference.sign()) {newScale = this._endingScale;} // don't go past it
+    morph.setScale(newScale);
+  });
+
+});
+
+
 thisModule.addSlots(animation.wiggler, function(add) {
 
   add.method('initialize', function (loc) {
@@ -523,6 +570,11 @@ thisModule.addSlots(Morph.prototype, function(add) {
   add.method('smoothlyResizeTo', function(desiredSize, functionToCallWhenDone) {
     this.startAnimating(animation.newResizer(this, desiredSize), functionToCallWhenDone);
   }, {category: 'resizing'});
+
+  add.method('smoothlyScaleTo', function(desiredScale, startingScale, functionToCallWhenDone) {
+    if (startingScale !== undefined) { this.setScale(startingScale); }
+    this.startAnimating(animation.newScaler(this, desiredScale), functionToCallWhenDone);
+  }, {category: 'scaling'});
 
 });
 
