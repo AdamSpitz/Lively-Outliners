@@ -102,7 +102,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     arrow = m.arrow = new ArrowMorph(slot, m, null);
     arrow.noLongerNeedsToBeUpdated = true;
 
-    this.topmostOwnerBesidesTheWorldAndTheHand().changeNotifier().add_observer(arrow.notificationFunction);
+    this.outliner().changeNotifier().add_observer(arrow.notificationFunction);
 
 
     arrow.endpoint2.wasJustDroppedOnOutliner = function(outliner) {
