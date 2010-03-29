@@ -335,15 +335,14 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     this.initializeCategoryUI();
 
     var categoryMorph = this;
-    this.titleLabel = new TwoModeTextMorph(pt(5, 10).extent(pt(20, 20)), category.lastPart());
+    this.titleLabel = new TwoModeTextMorph(pt(5, 10).extent(pt(20, 20)),
+                                           category.lastPart(), 
+                                           function( ) { return category.lastPart(); },
+                                           function(n) { categoryMorph.rename(n, createFakeEvent()); });
     this.titleLabel.setEmphasis({style: 'italic'});
     this.titleLabel.nameOfEditCommand = "rename";
-    this.titleLabel.setFill(null);
     this.titleLabel.backgroundColorWhenWritable = null;
     this.titleLabel.ignoreEvents();
-    this.titleLabel.getSavedText = function( ) { return category.lastPart(); };
-    this.titleLabel.setSavedText = function(n) { categoryMorph.rename(n, createFakeEvent()); };
-    this.titleLabel.refreshText();
 
     this._headerRow = RowMorph.createSpaceFilling([this._expander, this.titleLabel],
                                                   {top: 0, bottom: 0, left: 0, right: 0, between: 3});

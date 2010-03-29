@@ -1,15 +1,19 @@
 TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
-  initialize: function($super, rect, textString, modelPlugSpec) {
+  initialize: function($super, rect, textString, getFunction, setFunction) {
     $super(rect, textString);
     this.dontNotifyUntilTheActualModelChanges = true;
-    this.connectModel(modelPlugSpec || {model: this, getText: "getSavedText", setText: "setSavedText"});
+    this.connectModel({model: this, getText: "getSavedText", setText: "setSavedText"});
     this.acceptInput = true;
-    this.setFill(this.backgroundColorWhenWritable || Color.white);
+    this.setFill(this.backgroundColorWhenWritable || null);
+    this.closeDnD();
     this.setWrapStyle(lively.Text.WrapStyle.Shrink);
     this.changed();
     this.beUngrabbable();
     this.setSavedText(textString);
     this.justAcceptedOrCancelled();
+    this.getSavedText = getFunction;
+    this.setSavedText = setFunction;
+    this.refreshText();
   },
 
   getSavedText: function( )  {

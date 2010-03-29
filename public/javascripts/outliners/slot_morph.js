@@ -50,13 +50,12 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this._annotationToggler = Object.newChildOf(toggler, this.updateAppearance.bind(this), slot.annotation ? this.createRow(function() {return this.annotationMorph();}.bind(this)) : null);
 
     var slotMorph = this;
-    this.labelMorph = new TwoModeTextMorph(pt(5, 10).extent(pt(140, 20)), slotMorph.slot().name());
+    this.labelMorph = new TwoModeTextMorph(pt(5, 10).extent(pt(140, 20)),
+                                           slotMorph.slot().name(),
+                                           function() { return slotMorph.slot().name(); },
+                                           function(newName) { slotMorph.rename(newName, createFakeEvent()); });
     this.labelMorph.nameOfEditCommand = "rename";
-    this.labelMorph.setFill(null);
     this.labelMorph.ignoreEvents(); // so that the menu request passes through, though this breaks double-clicking-to-edit
-    this.labelMorph.getSavedText = function() { return slotMorph.slot().name(); };
-    this.labelMorph.setSavedText = function(newName) { slotMorph.rename(newName, createFakeEvent()); };
-    this.labelMorph.refreshText();
 
     this.commentButton = createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
 

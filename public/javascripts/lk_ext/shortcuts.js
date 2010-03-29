@@ -31,13 +31,7 @@ function createButton(contents, f, padding) {
 }
 
 function createInputBox(getFunction, setFunction) {
-  var m = new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 20)), "");
-  m.closeDnD();
-  m.setFill(null);
-  m.getSavedText = getFunction;
-  m.setSavedText = setFunction;
-  m.refreshText();
-  return m;
+  return new TextMorphRequiringExplicitAcceptance(pt(5, 10).extent(pt(140, 20)), "", getFunction, setFunction);
 }
 
 function createEitherOrMorph(m1, m2, condition) {
@@ -63,11 +57,7 @@ function createOptionalMorph(m, condition, layoutModes) {
 }
 
 function createSpacer() {
-  var spacer = new RowMorph().beInvisible();
-  spacer.inspect = function() { return "a spacer"; };
-  spacer.horizontalLayoutMode = LayoutModes.SpaceFill;
-  spacer.  verticalLayoutMode = LayoutModes.SpaceFill;
-  return spacer;
+  return new RowMorph().beInvisible().beSpaceFilling();
 }
 
 function createFakeEvent(hand) {

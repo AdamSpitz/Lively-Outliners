@@ -53,8 +53,13 @@ Morph.addMethods({
     } else {
       o.forceLayoutRejiggering();
     }
-  }
+  },
 
+  beSpaceFilling: function() {
+    this.horizontalLayoutMode = LayoutModes.SpaceFill;
+    this.  verticalLayoutMode = LayoutModes.SpaceFill;
+    return this;
+  }
 });
 
 TextMorph.addMethods({
