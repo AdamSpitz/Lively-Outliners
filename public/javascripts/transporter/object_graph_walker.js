@@ -90,11 +90,11 @@ thisModule.addSlots(CreatorSlotMarker.prototype, function(add) {
     if (contentsAnno.hasOwnProperty('creatorSlotName')) {
       if (annotator.creatorChainLength(holder) < annotator.creatorChainLength(contentsAnno.creatorSlotHolder)) {
         // This one's shorter, so probably better; use it instead.
-        annotator.setCreatorSlot(contentsAnno, slotName, holder);
+        contentsAnno.setCreatorSlot(slotName, holder);
       }
       return false;
     } else {
-      annotator.setCreatorSlot(contentsAnno, slotName, holder);
+      contentsAnno.setCreatorSlot(slotName, holder);
       return true;
     }
   });
@@ -105,7 +105,7 @@ thisModule.addSlots(CreatorSlotMarker.prototype, function(add) {
     var slotAnno = existingSlotAnno || {};
     if (slotAnno.module) { return; }
     slotAnno.module = this.moduleForExpatriateSlots;
-    annotator.setSlotAnnotation(holder, slotName, slotAnno);
+    annotator.annotationOf(holder).setSlotAnnotation(slotName, slotAnno);
   });
 
 });

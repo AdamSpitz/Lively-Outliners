@@ -33,39 +33,95 @@ Object.extend = function extend(destination, source) {
 };
 
 var annotator = {
+  objectAnnotationPrototype: {
+    annotationNameForSlotNamed: function(name) {
+      // can't just use the name because it leads to conflicts with stuff inherited from Object.prototype
+      return "anno_" + name;
+    },
+
+    existingSlotAnnotation: function(name) {
+      if (! this.slotAnnotations) { return null; }
+      return this.slotAnnotations[this.annotationNameForSlotNamed(name)];
+    },
+
+    setSlotAnnotation: function(name, slotAnno) {
+      var realSlotAnno = annotator.asSlotAnnotation(slotAnno);
+      this.slotAnnotations[this.annotationNameForSlotNamed(name)] = realSlotAnno;
+      return realSlotAnno;
+    },
+
+    slotAnnotation: function(name) {
+      return this.existingSlotAnnotation(name) || this.setSlotAnnotation(name, {});
+    },
+
+    removeSlotAnnotation: function(name) {
+      delete this.slotAnnotations[this.annotationNameForSlotNamed(name)];
+    },
+
+    setCreatorSlot: function(name, holder) {
+      this.creatorSlotName   = name;
+      this.creatorSlotHolder = holder;
+    },
+
+    copyDownSlots: function(dst, src, rawSlotsToOmit) {
+      var slotsToOmit = annotator.adjustSlotsToOmit(rawSlotsToOmit);
+      for (var name in src) {
+        if (src.hasOwnProperty(name)) {
+          if (! slotsToOmit.include(name)) {
+            dst[name] = src[name];
+            
+            // Copy down the category (and maybe other stuff?).
+            var srcSlotAnno = annotator.existingSlotAnnotation(src, name);
+            if (srcSlotAnno && srcSlotAnno.category) {
+              var dstSlotAnno = this.setSlotAnnotation(name, {});
+              dstSlotAnno.category = srcSlotAnno.category;
+            }
+          }
+        }
+      }
+    }
+  },
+
+  slotAnnotationPrototype: {
+  },
+
   annotationOf: function(o) {
-    if (o.hasOwnProperty('__annotation__')) { return o.__annotation__; }
-    var a = {slotAnnotations: {}};
+    var a = this.existingAnnotationOf(o);
+    if (!a) { a = this.asObjectAnnotation({slotAnnotations: {}}); }
     o.__annotation__ = a;
     return a;
   },
 
-  annotationNameForSlotNamed: function(slotName) {
-    // can't just use slotName because it leads to conflicts with stuff inherited from Object.prototype
-    return "anno_" + slotName;
+  existingAnnotationOf: function(o) {
+    if (o.hasOwnProperty('__annotation__')) { return o.__annotation__; }
+    return null;
+  },
+
+  asObjectAnnotation: function(anno) {
+    // aaa - In browsers that don't allow you to set __proto__, create a new
+    // object and copy over the slots.
+    anno['__proto__'] = this.objectAnnotationPrototype;
+    return anno;
+  },
+
+  asSlotAnnotation: function(slotAnno) {
+    // aaa - In browsers that don't allow you to set __proto__, create a new
+    // object and copy over the slots.
+    slotAnno['__proto__'] = this.slotAnnotationPrototype;
+    return slotAnno;
   },
 
   existingSlotAnnotation: function(holder, name) {
-    if (! holder.hasOwnProperty('__annotation__')) { return null; }
-    var holderAnno = holder.__annotation__;
-    if (! holderAnno.slotAnnotations) { return null; }
-    return holderAnno.slotAnnotations[annotator.annotationNameForSlotNamed(name)];
-  },
-
-  setSlotAnnotation: function(holder, name, slotAnnotation) {
-    var holderAnno = annotator.annotationOf(holder);
-    holderAnno.slotAnnotations[annotator.annotationNameForSlotNamed(name)] = slotAnnotation;
-  },
-
-  setCreatorSlot: function(annotation, name, holder) {
-    annotation.creatorSlotName   = name;
-    annotation.creatorSlotHolder = holder;
+    var anno = existingAnnotationOf(holder);
+    if (!anno) { return null; }
+    return anno.existingSlotAnnotation(name);
   },
 
   creatorChainLength: function(o) {
     if (o === lobby) { return 0; }
-    if (! o.hasOwnProperty('__annotation__')) { return null; }
-    var creatorSlotHolder = o.__annotation__.creatorSlotHolder;
+    var anno = this.existingAnnotationOf(o);
+    if (!anno) { return null; }
+    var creatorSlotHolder = anno.creatorSlotHolder;
     if (creatorSlotHolder === undefined) { return null; }
     return annotator.creatorChainLength(creatorSlotHolder) + 1;
   },
@@ -77,25 +133,6 @@ var annotator = {
     }
     slotsToOmit.push('__annotation__');
     return slotsToOmit;
-  },
-
-  copyDownSlots: function(dst, src, rawSlotsToOmit) {
-    var slotsToOmit = annotator.adjustSlotsToOmit(rawSlotsToOmit);
-    var dstAnno = annotator.annotationOf(dst);
-    for (var name in src) {
-      if (src.hasOwnProperty(name)) {
-        if (! slotsToOmit.include(name)) {
-          dst[name] = src[name];
-          
-          // Copy down the category (and maybe other stuff?).
-          var srcSlotAnno = annotator.existingSlotAnnotation(src, name);
-          if (srcSlotAnno && srcSlotAnno.category) {
-            var dstSlotAnno = dstAnno.slotAnnotations[annotator.annotationNameForSlotNamed(name)] = {};
-            dstSlotAnno.category = srcSlotAnno.category;
-          }
-        }
-      }
-    }
   }
 };
 
@@ -169,17 +206,17 @@ function waitForAllCallbacks(functionThatYieldsCallbacks, functionToRunWhenDone,
 var lobby = window; // still not sure whether I want this to be window, or Object.create(window), or {}
 
 lobby.modules = {};
-annotator.setCreatorSlot(annotator.annotationOf(lobby.modules), 'modules', lobby);
-annotator.setSlotAnnotation(lobby, 'modules', {category: ['transporter']});
+annotator.annotationOf(lobby.modules).setCreatorSlot('modules', lobby);
+annotator.annotationOf(lobby).setSlotAnnotation('modules', {category: ['transporter']});
 
 lobby.transporter = {};
-annotator.setCreatorSlot(annotator.annotationOf(lobby.transporter), 'transporter', lobby);
-annotator.setSlotAnnotation(lobby, 'transporter', {category: ['transporter']});
+annotator.annotationOf(lobby.transporter).setCreatorSlot('transporter', lobby);
+annotator.annotationOf(lobby).setSlotAnnotation('transporter', {category: ['transporter']});
 
 lobby.transporter.loadedURLs = {};
 
 lobby.transporter.module = {};
-annotator.setCreatorSlot(annotator.annotationOf(lobby.transporter.module), 'module', lobby.transporter);
+annotator.annotationOf(lobby.transporter.module).setCreatorSlot('module', lobby.transporter);
 
 lobby.transporter.module.cache = {};
 
@@ -191,7 +228,7 @@ lobby.transporter.module.named = function(n) {
   //console.log("Creating module named " + n);
   m = lobby.modules[n] = Object.create(this);
   m._name = n;
-  annotator.setCreatorSlot(annotator.annotationOf(m), n, lobby.modules);
+  annotator.annotationOf(m).setCreatorSlot(n, lobby.modules);
   lobby.transporter.module.cache[n] = [];
   return m;
 };
@@ -251,7 +288,7 @@ lobby.transporter.module.slotAdder = {
     if (! slotAnnotation) { slotAnnotation = {}; }
     this.holder[name] = contents;
     slotAnnotation.module = this.module;
-    annotator.setSlotAnnotation(this.holder, name, slotAnnotation);
+    annotator.annotationOf(this.holder).setSlotAnnotation(name, slotAnnotation);
     if (contentsAnnotation) { // used for creator slots
       var a = annotator.annotationOf(contents);
       a.creatorSlotName   = name;
@@ -266,7 +303,7 @@ lobby.transporter.module.slotAdder = {
       if (contentsAnnotation.copyDownParents) {
         for (var i = 0; i < contentsAnnotation.copyDownParents.length; i += 1) {
           var cdp = contentsAnnotation.copyDownParents[i];
-          annotator.copyDownSlots(contents, cdp.parent, cdp.slotsToOmit);
+          annotator.annotationOf(contents).copyDownSlots(contents, cdp.parent, cdp.slotsToOmit);
         }
       }
     }

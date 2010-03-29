@@ -92,7 +92,7 @@ thisModule.addSlots(Snapshotter.prototype, function(add) {
   add.method('reachedSlot', function (holder, slotName, contents) {
     var slotAnno = annotator.existingSlotAnnotation(holder, slotName);
     if (slotAnno && slotAnno.module === modules.init) {
-      return; // aaa - meh, the below stuff gave me grief
+      return; // aaa - meh, the stuff below gave me grief
       //if (reflect(contents).isWellKnown()) { return; }
       //console.log("Keeping init-module slot: " + reflect(holder).name() + "." + slotName);
     }

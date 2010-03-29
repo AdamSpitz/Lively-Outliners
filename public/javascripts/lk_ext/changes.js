@@ -137,7 +137,7 @@ Class.newInitializer = function(name) {
   var c = eval(Class.initializerTemplate.replace(/CLASS/g, name) + ";" + name);
   
   // Put it in a category so that it doesn't clutter up the Global object. -- Adam
-  if (Global.annotator && name.startsWith('anonymous_')) { annotator.setSlotAnnotation(Global, name, {category: ['anonymous classes']}); }
+  if (Global.annotator && name.startsWith('anonymous_')) { annotator.annotationOf(Global).setSlotAnnotation(name, {category: ['anonymous classes']}); }
 
   return c;
 };
