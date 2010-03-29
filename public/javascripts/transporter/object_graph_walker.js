@@ -86,26 +86,26 @@ thisModule.addSlots(CreatorSlotMarker.prototype, function(add) {
 
   add.method('markContents', function (holder, slotName, contents) {
     var contentsAnno;
-    try { contentsAnno = annotationOf(contents); } catch (ex) { return false; } // stupid FireFox bug
+    try { contentsAnno = annotator.annotationOf(contents); } catch (ex) { return false; } // stupid FireFox bug
     if (contentsAnno.hasOwnProperty('creatorSlotName')) {
-      if (creatorChainLength(holder) < creatorChainLength(contentsAnno.creatorSlotHolder)) {
+      if (annotator.creatorChainLength(holder) < annotator.creatorChainLength(contentsAnno.creatorSlotHolder)) {
         // This one's shorter, so probably better; use it instead.
-        setCreatorSlot(contentsAnno, slotName, holder);
+        annotator.setCreatorSlot(contentsAnno, slotName, holder);
       }
       return false;
     } else {
-      setCreatorSlot(contentsAnno, slotName, holder);
+      annotator.setCreatorSlot(contentsAnno, slotName, holder);
       return true;
     }
   });
 
   add.method('reachedSlot', function (holder, slotName, contents) {
     if (! this.moduleForExpatriateSlots) { return; }
-    var existingSlotAnno = existingSlotAnnotation(holder, slotName);
+    var existingSlotAnno = annotator.existingSlotAnnotation(holder, slotName);
     var slotAnno = existingSlotAnno || {};
     if (slotAnno.module) { return; }
     slotAnno.module = this.moduleForExpatriateSlots;
-    setSlotAnnotation(holder, slotName, slotAnno);
+    annotator.setSlotAnnotation(holder, slotName, slotAnno);
   });
 
 });
@@ -249,7 +249,7 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
     // Would use an identity dictionary here, if JavaScript could do one. As it is, we'll
     // have to mark the annotation and then come by again and unmark it.
     var contentsAnno;
-    try { contentsAnno = annotationOf(contents); } catch (ex) { return false; } // stupid FireFox bug
+    try { contentsAnno = annotator.annotationOf(contents); } catch (ex) { return false; } // stupid FireFox bug
     var walkers = contentsAnno.walkers = contentsAnno.walkers || Object.newChildOf(set, hashTable.identityComparator);
     if (walkers.include(this)) { return false; }
     walkers.add(this);

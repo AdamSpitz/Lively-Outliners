@@ -424,7 +424,7 @@ thisModule.addSlots(mirror, function(add) {
     this.annotationForWriting().copyDownParents = cdps;
     for (var i = 0; i < cdps.length; ++i) {
       if (cdps[i].parent === undefined) { throw "Each element of the array must contain a 'parent' slot pointing to the desired copy-down parent; e.g. [{parent: Enumerable}]"; }
-      copyDownSlots(this.reflectee(), cdps[i].parent, cdps[i].slotsToOmit);
+      annotator.copyDownSlots(this.reflectee(), cdps[i].parent, cdps[i].slotsToOmit);
     }
   }, {category: ['annotations', 'copy-down parents']});
 
@@ -634,33 +634,33 @@ thisModule.addSlots(slots.plain, function(add) {
   }, {category: ['accessing']});
 
   add.method('hasAnnotation', function () {
-    return this.holder().hasAnnotation() && this.holder().annotation().slotAnnotations[annotationNameForSlotNamed(this.name())];
+    return this.holder().hasAnnotation() && this.holder().annotation().slotAnnotations[annotator.annotationNameForSlotNamed(this.name())];
   }, {category: ['accessing annotation']});
 
   add.method('annotation', function () {
     var oa = this.holder().annotationForWriting();
-    var sa = oa.slotAnnotations[annotationNameForSlotNamed(this.name())];
+    var sa = oa.slotAnnotations[annotator.annotationNameForSlotNamed(this.name())];
     if (sa) {return sa;}
     sa = {};
-    oa.slotAnnotations[annotationNameForSlotNamed(this.name())] = sa;
+    oa.slotAnnotations[annotator.annotationNameForSlotNamed(this.name())] = sa;
     return sa;
   }, {category: ['accessing annotation']});
 
   add.method('setAnnotation', function (a) {
     var oa = this.holder().annotationForWriting();
-    oa.slotAnnotations[annotationNameForSlotNamed(this.name())] = a;
+    oa.slotAnnotations[annotator.annotationNameForSlotNamed(this.name())] = a;
     return a;
   }, {category: ['accessing annotation']});
 
   add.method('removeAnnotation', function () {
     var oa = this.holder().annotationForWriting();
-    delete oa.slotAnnotations[annotationNameForSlotNamed(this.name())];
+    delete oa.slotAnnotations[annotator.annotationNameForSlotNamed(this.name())];
   }, {category: ['accessing annotation']});
 
   add.method('annotationIfAny', function () {
     if (! this.holder().hasAnnotation()) { return null; }
     var oa = this.holder().annotationForWriting();
-    return oa.slotAnnotations[annotationNameForSlotNamed(this.name())];
+    return oa.slotAnnotations[annotator.annotationNameForSlotNamed(this.name())];
   }, {category: ['accessing annotation']});
 
   add.method('beCreator', function () {

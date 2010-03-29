@@ -66,7 +66,7 @@ thisModule.addSlots(transporter.module, function(add) {
             var cdps = contents.copyDownParents();
             cdps.each(function(cdp) {
               var copyDownParent = reflect(cdp.parent);
-              var slotsToOmit = adjustSlotsToOmit(cdp.slotsToOmit);
+              var slotsToOmit = annotator.adjustSlotsToOmit(cdp.slotsToOmit);
               var copyDownParentCreatorSlot = copyDownParent.creatorSlot();
               if (copyDownParentCreatorSlot && copyDownParentCreatorSlot.module() === this) {
                 deps.addDependency(s, copyDownParentCreatorSlot);

@@ -90,7 +90,7 @@ thisModule.addSlots(Snapshotter.prototype, function(add) {
   });
 
   add.method('reachedSlot', function (holder, slotName, contents) {
-    var slotAnno = existingSlotAnnotation(holder, slotName);
+    var slotAnno = annotator.existingSlotAnnotation(holder, slotName);
     if (slotAnno && slotAnno.module === modules.init) {
       return; // aaa - meh, the below stuff gave me grief
       //if (reflect(contents).isWellKnown()) { return; }
