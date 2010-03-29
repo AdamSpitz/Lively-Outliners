@@ -106,6 +106,8 @@ thisModule.addSlots(transporter, function(add) {
   add.method('addMenuItemsTo', function(menu, evt) {
     menu.addLine();
 
+    var snapshottingWorks = false; // aaa - turn this on once it works.
+    if (snapshottingWorks) {
     menu.addItem(["save snapshot", function(evt) {
       var snapshotter = new Snapshotter();
       snapshotter.walk(lobby);
@@ -119,6 +121,7 @@ thisModule.addSlots(transporter, function(add) {
         throw "failed to write " + fileName + ", status is " + status.code();
       }
     }]);
+    }
 
     menu.addItem(["all modules", function(evt) {
       var world = evt.hand.world();
