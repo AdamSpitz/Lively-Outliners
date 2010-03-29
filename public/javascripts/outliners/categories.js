@@ -139,9 +139,9 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
 
     this._expander = new ExpanderMorph(this);
 
-    this._modulesLabel = createLabel(function() {return this.modulesSummaryString();}.bind(this));
+    this._modulesLabel = TextMorph.createLabel(function() {return this.modulesSummaryString();}.bind(this));
     // this._modulesLabel.setFontSize(this._modulesLabel.getFontSize() - 1); // aaa - why does this create a little space at the beginning of the label?
-    this._modulesLabelRow = createSpaceFillingRow([this._modulesLabel], {left: 0, right: 0, top: 0, bottom: 2, between: 0});
+    this._modulesLabelRow = RowMorph.createSpaceFilling([this._modulesLabel], {left: 0, right: 0, top: 0, bottom: 2, between: 0});
     this._modulesLabelRow.updateAppearance = function() {this._modulesLabel.refreshText();}.bind(this);
   }, {category: ['initializing']});
 
@@ -345,8 +345,8 @@ thisModule.addSlots(CategoryMorph.prototype, function(add) {
     this.titleLabel.setSavedText = function(n) { categoryMorph.rename(n, createFakeEvent()); };
     this.titleLabel.refreshText();
 
-    this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel],
-                                            {top: 0, bottom: 0, left: 0, right: 0, between: 3});
+    this._headerRow = RowMorph.createSpaceFilling([this._expander, this.titleLabel],
+                                                  {top: 0, bottom: 0, left: 0, right: 0, between: 3});
     this.replaceThingiesWith([this._headerRow]);
   }, {category: ['creating']});
 

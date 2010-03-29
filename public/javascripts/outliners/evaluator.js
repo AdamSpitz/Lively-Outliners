@@ -42,8 +42,11 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
     this.horizontalLayoutMode = LayoutModes.SpaceFill;
     this.ignoreEvents(); // so we can drag through it, since it doesn't need a menu
 
-    var tm = this._textMorph = createTextField();
-    tm.setExtent(pt(150,60));
+    var tm = this._textMorph = new TextMorph(pt(5, 10).extent(pt(150, 60)), "");
+    tm.closeDnD();
+    tm.setBorderWidth(0);
+    tm.setFill(Color.white);
+
     // tm.horizontalLayoutMode = LayoutModes.SpaceFill; // doesn't work yet
     tm.setFontFamily('monospace');
     var thisEvaluator = this;
@@ -60,7 +63,7 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
                    createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)),
                    createButton("Close",  function(evt) {this.remove(  );}.bind(this))];
 
-    this.setRows([createSpaceFillingRow([tm]), createSpaceFillingRow(buttons)]);
+    this.setRows([RowMorph.createSpaceFilling([tm]), RowMorph.createSpaceFilling(buttons)]);
   }, {category: ['creating']});
 
   add.method('outliner', function () { return this._outliner;  }, {category: ['accessing']});

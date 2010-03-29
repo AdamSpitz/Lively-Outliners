@@ -46,12 +46,12 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
     this._slotsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
 
     this._expander = new ExpanderMorph(this);
-    this.titleLabel = createLabel(function() {return searcher.inspect();});
+    this.titleLabel = TextMorph.createLabel(function() {return searcher.inspect();});
     this.redoButton = createButton("Redo", function(evt) { this.redo(evt); }.bind(this), 1);
     this.dismissButton = this.createDismissButton();
 
-    this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel, createSpacer(), this.redoButton, this.dismissButton],
-                                            {top: 0, bottom: 0, left: 3, right: 3, between: 3});
+    this._headerRow = RowMorph.createSpaceFilling([this._expander, this.titleLabel, createSpacer(), this.redoButton, this.dismissButton],
+                                                  {top: 0, bottom: 0, left: 3, right: 3, between: 3});
 
     this.setPotentialContent([this._headerRow, createOptionalMorph(this._slotsPanel, function() {return this.expander().isExpanded();}.bind(this))]);
     this.refreshContent();
@@ -92,8 +92,8 @@ thisModule.addSlots(SliceMorph.prototype, function(add) {
 
   add.method('createRowForSlot', function (s) {
     var inSituButton = createButton("in situ", function() { this.showInSitu(s, inSituButton); }.bind(this), 2);
-    return createSpaceFillingRow([createLabel(s.holder().name()), createSpacer(), new SlotMorph(s), inSituButton],
-                                 {top: 0, bottom: 0, left: 3, right: 3, between: 3});
+    return RowMorph.createSpaceFilling([TextMorph.createLabel(s.holder().name()), createSpacer(), new SlotMorph(s), inSituButton],
+                                       {top: 0, bottom: 0, left: 3, right: 3, between: 3});
   });
 
   add.method('showInSitu', function (s, inSituButton) {

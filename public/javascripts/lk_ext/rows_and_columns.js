@@ -204,6 +204,26 @@ RowOrColumnMorph.subclass("RowMorph", {
   setColumns: function(ms) {this.replaceThingiesWith(ms);}
 });
 
+Object.extend(RowMorph, {
+  createSpaceFilling: function(content, padding) {
+    var m = new this().beInvisible();
+    if (padding !== undefined) { m.setPadding(padding); }
+    m.direction.setForwardLayoutModeOf(m, LayoutModes.SpaceFill);
+    
+    if (typeof(content) === 'function') {
+      m.potentialContent = content;
+    } else {
+      // default to left-justifying the contents
+      if (content.all(function(c) {return m.direction.forwardLayoutModeOf(c) !== LayoutModes.SpaceFill;})) {
+        content = content.concat([createSpacer()]);
+      }
+    }
+    
+    m.replaceThingiesWith(content);
+    return m;
+  }
+});
+
 var VerticalDirection = {
   externallySpecifiedFreeSpaceSideways: function(m) {return m.externallySpecifiedFreeWidth;},
   specifyFreeSpaceSideways: function(m, s) {m.externallySpecifiedFreeWidth = s;},
@@ -219,7 +239,8 @@ var VerticalDirection = {
   sidewaysPadding1: function(padding) {return padding.left;},
   sidewaysPadding2: function(padding) {return padding.right;},
   point: function(f, s) {return pt(s, f);},
-  forwardLayoutModeOf: function(m) {return m.verticalLayoutMode;}
+  forwardLayoutModeOf: function(m) {return m.verticalLayoutMode;},
+  setForwardLayoutModeOf: function(m, mode) {m.verticalLayoutMode = mode;}
 };
 
 var HorizontalDirection = {
@@ -237,7 +258,8 @@ var HorizontalDirection = {
   sidewaysPadding1: function(padding) {return padding.top;},
   sidewaysPadding2: function(padding) {return padding.bottom;},
   point: function(f, s) {return pt(f, s);},
-  forwardLayoutModeOf: function(m) {return m.horizontalLayoutMode;}
+  forwardLayoutModeOf: function(m) {return m.horizontalLayoutMode;},
+  setForwardLayoutModeOf: function(m, mode) {m.horizontalLayoutMode = mode;}
 };
 
 Morph.addMethods({

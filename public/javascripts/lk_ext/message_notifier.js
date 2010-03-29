@@ -47,7 +47,7 @@ thisModule.addSlots(MessageNotifierMorph.prototype, function(add) {
     this.shape.roundEdgesBy(10);
     this._message = msg.toString();
     this.setFill(defaultFillWithColor(color || Color.red));
-    this.setRows([createLabel(this._message)]);
+    this.setRows([TextMorph.createLabel(this._message)]);
   });
 
   add.method('wasJustDroppedOnWorld', function(world) {

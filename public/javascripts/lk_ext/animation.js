@@ -502,7 +502,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   add.method('ensureIsInWorld', function(w, desiredLoc, shouldMoveToDesiredLocEvenIfAlreadyInWorld, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone) {
     var owner = this.owner;
     if (owner !== w) {
-      var initialLoc = (!owner || this.world() !== w) ? pt(-50,-20) : owner.worldPoint(this.getPosition());
+      var initialLoc = (!owner || this.world() !== w) ? this.getExtent().negated() : owner.worldPoint(this.getPosition());
       w.addMorphAt(this, initialLoc);
       this.startZoomingTo(desiredLoc, shouldAnticipateAtStart, shouldWiggleAtEnd, functionToCallWhenDone);
     } else {

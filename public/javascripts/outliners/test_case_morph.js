@@ -47,7 +47,7 @@ thisModule.addSlots(TestCase.prototype.Morph.prototype, function(add) {
     this.setFill(defaultFillWithColor(Color.purple.darker()));
     this.shape.roundEdgesBy(10);
 
-    this._nameLabel = createLabel(function() { return this._testCaseProto.name(); }.bind(this));
+    this._nameLabel = TextMorph.createLabel(function() { return this._testCaseProto.name(); }.bind(this));
     this._runButton = createButton('Run', this.runAll.bind(this), 2);
 
     this.setColumns([this._nameLabel, this._runButton, this.createDismissButton()]);
@@ -115,7 +115,7 @@ thisModule.addSlots(TestResult.prototype.Morph.prototype, function(add) {
     this.shape.roundEdgesBy(10);
 
     var timeToRun = Object.newChildOf(enumerator, reflect(this._testResult.timeToRun), "eachNormalSlot").inject(0, function(sum, ea) {return sum + ea.contents().reflectee();});
-    this._nameLabel = createLabel(this._testCase.name() + "(" + timeToRun + " ms)");
+    this._nameLabel = TextMorph.createLabel(this._testCase.name() + "(" + timeToRun + " ms)");
 
     var rows = [this._nameLabel];
     testResult.failed.each(function(f) {rows.push(this.createFailureRow(f));}.bind(this));
@@ -123,7 +123,7 @@ thisModule.addSlots(TestResult.prototype.Morph.prototype, function(add) {
   }, {category: 'creating'});
 
   add.method('createFailureRow', function (failure) {
-    return createSpaceFillingRow([createLabel(failure.selector + " failed: " + (failure.err.message !== undefined ? failure.err.message : failure.err))]);
+    return RowMorph.createSpaceFilling([TextMorph.createLabel(failure.selector + " failed: " + (failure.err.message !== undefined ? failure.err.message : failure.err))]);
   }, {category: ['creating']});
 
   add.method('inspect', function () { return this._testCase.constructor.type; }, {category: ['printing']});

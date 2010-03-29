@@ -47,10 +47,10 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
     this.setFill(defaultFillWithColor(Color.red.lighter()));
     this.shape.roundEdgesBy(10);
 
-    this._nameLabel = createLabel(function() { return module.name(); });
+    this._nameLabel = TextMorph.createLabel(function() { return module.name(); });
     this._fileOutButton = createButton('File out', this.fileOut.bind(this), 2);
 
-    this._changeIndicator = createLabel(function() { return this._module.hasChangedSinceLastFileOut() ? ' has changed ' : ''; }.bind(this));
+    this._changeIndicator = TextMorph.createLabel(function() { return this._module.hasChangedSinceLastFileOut() ? ' has changed ' : ''; }.bind(this));
     this._changeIndicator.setTextColor(Color.green.darker());
 
     this.setColumns([this._nameLabel, this._changeIndicator, this._fileOutButton, this.createDismissButton()]);

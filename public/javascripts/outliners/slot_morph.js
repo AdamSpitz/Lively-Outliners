@@ -65,8 +65,8 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.optionalCommentButtonMorph = createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.slot().comment && this.slot().comment()); }.bind(this));
 
     var signatureRowContent = [this.labelMorph, this.optionalCommentButtonMorph, createSpacer(), this.buttonChooserMorph];
-    this.signatureRow = createSpaceFillingRow(function () { return signatureRowContent; },
-                                              {left: 0, right: 2, top: 0, bottom: 0, between: 0});
+    this.signatureRow = RowMorph.createSpaceFilling(function () { return signatureRowContent; },
+                                                    {left: 0, right: 2, top: 0, bottom: 0, between: 0});
 
     this.updateAppearance();
   }, {category: ['creating']});
@@ -148,7 +148,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
 
   add.method('createRow', function (getOrCreateContent) {
     var spacer = createSpacer();
-    var r = createSpaceFillingRow(function() {return [getOrCreateContent(), spacer];}, {left: 15, right: 2, top: 2, bottom: 2, between: 0});
+    var r = RowMorph.createSpaceFilling(function() {return [getOrCreateContent(), spacer];}, {left: 15, right: 2, top: 2, bottom: 2, between: 0});
     r.wasJustShown = function(evt) { getOrCreateContent().requestKeyboardFocus(evt.hand); };
     return r;
   }, {category: ['creating']});
@@ -194,8 +194,8 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     m.setPadding({left: 0, right: 0, top: 0, bottom: 0, between: 2});
     this._moduleMorph      = createInputBox(this.moduleName.bind(this), this.setModuleName.bind(this));
     this._initializerMorph = createInputBox(this.initializationExpression.bind(this), this.setInitializationExpression.bind(this));
-    m.setRows([createLabelledNode("Module",        this._moduleMorph     ),
-               createLabelledNode("Initialize to", this._initializerMorph)]);
+    m.setRows([RowMorph.createSpaceFilling([TextMorph.createLabel("Module:"       ), this._moduleMorph     ]),
+               RowMorph.createSpaceFilling([TextMorph.createLabel("Initialize to:"), this._initializerMorph])]);
     return m;
   }, {category: ['annotation']});
 

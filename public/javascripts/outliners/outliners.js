@@ -52,7 +52,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this._evaluatorsPanel = new ColumnMorph().beInvisible();
     this._evaluatorsPanel.horizontalLayoutMode = LayoutModes.SpaceFill;
 
-    this.titleLabel = createLabel(function() {return m.inspect();});
+    this.titleLabel = TextMorph.createLabel(function() {return m.inspect();});
     // this.titleLabel.setFontFamily('serif'); // not sure I like it
     // this.titleLabel.setEmphasis({style: 'bold'}); // I like it, except that the layout gets messed up
 
@@ -67,7 +67,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     var optionalParentButtonMorph  = createOptionalMorph(this.parentButton,  function() { return this.mirror().hasAccessibleParent(); }.bind(this));
     var optionalCommentButtonMorph = createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));
     
-    this._headerRow = createSpaceFillingRow([this._expander, this.titleLabel, optionalCommentButtonMorph, createSpacer(), optionalParentButtonMorph, this.evaluatorButton, this.dismissButton],
+    this._headerRow = RowMorph.createSpaceFilling([this._expander, this.titleLabel, optionalCommentButtonMorph, createSpacer(), optionalParentButtonMorph, this.evaluatorButton, this.dismissButton],
                                             {top: 0, bottom: 0, left: 0, right: 0, between: 3});
     this._headerRow.refreshContentOfMeAndSubmorphs();
 
@@ -89,7 +89,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
   add.method('category', function () { return Category.root(); }, {category: ['accessing']});
 
   add.method('createRow', function (m) {
-    var r = createSpaceFillingRow([m], {left: 15, right: 2, top: 2, bottom: 2, between: 0});
+    var r = RowMorph.createSpaceFilling([m], {left: 15, right: 2, top: 2, bottom: 2, between: 0});
     r.wasJustShown = function(evt) { m.requestKeyboardFocus(evt.hand); };
     return r;
   }, {category: ['creating']});
@@ -102,7 +102,7 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
 
     // aaa - shouldn't really be a string; do something nicer, some way of specifying a list
     this._copyDownParentsLabel = createInputBox(this.copyDownParentsString.bind(this), this.setCopyDownParentsString.bind(this));
-    m.setRows([createLabelledNode("Copy-down parents", this._copyDownParentsLabel)]);
+    m.setRows([RowMorph.createSpaceFilling([TextMorph.createLabel("Copy-down parents:"), this._copyDownParentsLabel])]);
     return m;
   }, {category: ['annotation']});
 

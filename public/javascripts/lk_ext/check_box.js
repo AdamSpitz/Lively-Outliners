@@ -17,7 +17,7 @@ ButtonMorph.subclass("CheckBoxMorph", {
   toggle: true,
 
   createXShapedMorph: function(extent) {
-    var x = createLabel("X", pt(0,0), extent);
+    var x = TextMorph.createLabel("X", pt(0,0), extent);
     // aaa: No longer works now that we've upgraded LK: x.setInset(pt(4,1));
     return x;
   },
@@ -35,5 +35,15 @@ ButtonMorph.subclass("CheckBoxMorph", {
         this.removeMorph(this.checkedMorph);
       }
     }
+  }
+});
+
+Object.extend(CheckBoxMorph, {
+  createWithImage: function(imageURL, size) {
+    var image = new ImageMorph(size.extentAsRectangle(), imageURL);
+    image.setFill(null);
+    var button = new this(size, image);
+    button.setFill(null);
+    return button;
   }
 });

@@ -433,7 +433,7 @@ thisModule.addSlots(mirror, function(add) {
   }, {category: ['annotations']});
 
   add.method('hasAnnotation', function () {
-    return this.canHaveAnnotation() && this.reflectee().hasOwnProperty("__annotation__");
+    return this.canHaveAnnotation() && annotator.alreadyHasAnnotation(this.reflectee());
   }, {category: ['annotations']});
 
   add.method('annotation', function () {

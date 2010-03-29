@@ -92,8 +92,12 @@ var annotator = {
     return a;
   },
 
+  alreadyHasAnnotation: function(o) {
+    return o.hasOwnProperty('__annotation__');
+  },
+
   existingAnnotationOf: function(o) {
-    if (o.hasOwnProperty('__annotation__')) { return o.__annotation__; }
+    if (this.alreadyHasAnnotation(o)) { return o.__annotation__; }
     return null;
   },
 
@@ -112,7 +116,7 @@ var annotator = {
   },
 
   existingSlotAnnotation: function(holder, name) {
-    var anno = existingAnnotationOf(holder);
+    var anno = this.existingAnnotationOf(holder);
     if (!anno) { return null; }
     return anno.existingSlotAnnotation(name);
   },
