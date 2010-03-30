@@ -225,17 +225,16 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
 
   add.method('isDOMNode', function (o) {
     // http://stackoverflow.com/questions/384286/javascript-isdom-how-do-you-check-if-a-javascript-object-is-a-dom-object
-    return (
-      typeof Node === "object" ? o instanceof Node : 
-      typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName === "string"
-    );
+    if (typeof Node === "object" && o instanceof Node) { return true; }
+    if (typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName === "string") { return true; }
+    return false;
   });
 
   add.method('isDOMElement', function (o) {
-    return (
-      typeof HTMLElement === "object" ? o instanceof HTMLElement : // DOM2
-      typeof o === "object" && o.nodeType === 1 && typeof o.nodeName === "string"
-    );
+    if (typeof HTMLElement       === "object" && o instanceof HTMLElement          ) { return true; }
+    if (typeof HTMLIFrameElement === "object" && o instanceof HTMLIFrameElement    ) { return true; }
+    if (typeof o === "object" && o.nodeType === 1 && typeof o.nodeName === "string") { return true; }
+    return false;
   });
 
   add.method('shouldIgnoreObject', function (o) {

@@ -32,6 +32,12 @@ thisModule.addSlots(transporter.module.Morph, function(add) {
 
   add.data('type', 'transporter.module.Morph');
 
+  add.method('doneUpload', function(directory, name) {
+    if (name.substr(-3) === '.js') { name = name.substr(0, name.length - 3); }
+    transporter.module.fileIn(directory, name, function() {
+      new MessageNotifierMorph(name + " has been loaded.", Color.green).showInCenterOfWorld(WorldMorph.current());
+    });
+  });
 });
 
 
@@ -133,8 +139,18 @@ thisModule.addSlots(transporter, function(add) {
       world.assumePose(world.listPoseOfMorphsFor(transporter.module.changedOnes(), "all modules"));
     }]);
 
+    /* Not working yet.
+      menu.addItem(["aaa upload file...", function(evt) {
+        var form = document.getElementById('uploadForm');
+        var fileInput = form.fileToUpload;
+        fileInput.click();
+      }.bind(this)]);
+    */
+
     // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
-    if (! URL.source.hostname.include("adamspitz.com")) {
+    if (URL.source.hostname.include("adamspitz.com")) {
+
+    } else {
 
       menu.addItem(["file in...", function(evt) {
         var world = evt.hand.world();
