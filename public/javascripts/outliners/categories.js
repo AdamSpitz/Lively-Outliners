@@ -172,7 +172,13 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
 
     var sms = [];
     this.eachSlot(function(s) { sms.push(outliner.slotMorphFor(s)); });
-    sms.sort(function(sm1, sm2) {var n1 = sm1.slot().name(), n2 = sm2.slot().name(); return n1 < n2 ? -1 : n1 === n2 ? 0 : 1;});
+    sms.sort(function(sm1, sm2) {
+      var n1 = sm1.slot().name();
+      if (n1 === '__proto__') return -1;
+      var n2 = sm2.slot().name();
+      if (n2 === '__proto__') return  1;
+      return n1 < n2 ? -1 : n1 === n2 ? 0 : 1;
+    });
 
     var scms = this.immediateSubcategoryMorphs();
     scms = scms.concat(this._slotsPanel.submorphs.select(function(m) {return m.isNewCategory && ! this.outliner().existingCategoryMorphFor(m.category());}.bind(this)));

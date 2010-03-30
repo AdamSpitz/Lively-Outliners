@@ -43,7 +43,7 @@ TextMorph.subclass("TextMorphRequiringExplicitAcceptance", {
       return true;
     }
 
-    if (this.hasChangedFromSavedText() && evt.getKeyCode() == Event.KEY_RETURN && (this.returnKeyShouldAccept() || evt.isMetaDown() || evt.isCtrlDown())) {
+    if (this.hasChangedFromSavedText() && evt.getKeyCode() == Event.KEY_RETURN && (this.returnKeyShouldAccept() || evt.isMetaDown() || evt.isAltDown() || evt.isCtrlDown())) {
       this.acceptChanges();
       evt.stop();
       return true;

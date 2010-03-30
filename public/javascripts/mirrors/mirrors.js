@@ -723,7 +723,6 @@ thisModule.addSlots(slots.plain, function(add) {
     var array = null;
     var isCreator = false;
     var initializer = this.initializationExpression();
-    if (this.name() === '_requirements') { try { throw "aaaaa"; } catch (ex) {} }
     if (initializer) {
       contentsExpr = initializer;
     } else {
@@ -761,9 +760,9 @@ thisModule.addSlots(slots.plain, function(add) {
 
     var slotAnnoToStringify = {};
     var slotAnno = this.annotation();
-    if (slotAnno.comment     ) { slotAnnoToStringify.comment      = slotAnno.comment;      }
-    if (slotAnno.category    ) { slotAnnoToStringify.category     = slotAnno.category;     }
-    if (slotAnno.initializeTo) { slotAnnoToStringify.initializeTo = slotAnno.initializeTo; }
+    if (slotAnno.comment                                      ) { slotAnnoToStringify.comment      = slotAnno.comment;      }
+    if (slotAnno.category      && slotAnno.category.length > 0) { slotAnnoToStringify.category     = slotAnno.category;     }
+    if (slotAnno.initializeTo                                 ) { slotAnnoToStringify.initializeTo = slotAnno.initializeTo; }
     var slotAnnoExpr = reflect(slotAnnoToStringify).expressionEvaluatingToMe();
 
     var objectAnnoExpr;
