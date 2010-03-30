@@ -273,8 +273,8 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
     // children can override;
   });
 
-  add.method('walk', function (currentObj, nesting) {
-    nesting = nesting || 0;
+  add.method('walk', function (currentObj, howDidWeGetHere) {
+    howDidWeGetHere = howDidWeGetHere || [];
     this._objectCount += 1;
     this.reachedObject(currentObj);
 
@@ -289,7 +289,7 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
             if (contents.constructor !== Array || this.shouldWalkIndexables) { // aaa - this isn't right. But I don't wanna walk all the indexables.
               if (! this.shouldIgnoreObject(contents)) {
                 if (this.markContents(currentObj, name, contents)) {
-                  this.walk(contents, nesting + 1);
+                  this.walk(contents, howDidWeGetHere.concat([name]));
                 }
               }
             }
