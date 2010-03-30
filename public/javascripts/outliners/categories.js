@@ -201,9 +201,9 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
     this._slotsPanel.submorphs.each(function(m) { if (m.constructor === CategoryMorph) { m.populateSlotsPanelInMeAndExistingSubcategoryMorphs(); } });
   }, {category: ['updating']});
 
-  add.method('addSlot', function (evt) {
+  add.method('addSlot', function (initialContents, evt) {
     var name = this.mirror().findUnusedSlotName("slot");
-    this.mirror().reflectee()[name] = null;
+    this.mirror().reflectee()[name] = initialContents;
     var s = this.mirror().slotAt(name);
     s.setCategory(this.category());
     this.outliner().updateAppearance();
@@ -285,8 +285,9 @@ thisModule.addSlots(CategoryMorphMixin, function(add) {
 
   add.method('addCategoryCommandsTo', function (cmdList) {
     if (this.mirror().canHaveSlots()) {
-      cmdList.addSection([{ label: "add slot",     go: function(evt) { this.addSlot    (evt); }.bind(this) }]);
-      cmdList.addSection([{ label: "add category", go: function(evt) { this.addCategory(evt); }.bind(this) }]);
+      cmdList.addSection([{ label: "add attribute", go: function(evt) { this.addSlot    (null,          evt); }.bind(this) },
+                          { label: "add function",  go: function(evt) { this.addSlot    (function() {}, evt); }.bind(this) }]);
+      cmdList.addSection([{ label: "add category",  go: function(evt) { this.addCategory(               evt); }.bind(this) }]);
 
       if (!this.category().isRoot()) {
         cmdList.addLine();
