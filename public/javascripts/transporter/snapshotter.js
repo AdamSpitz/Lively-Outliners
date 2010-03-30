@@ -90,16 +90,25 @@ thisModule.addSlots(Snapshotter.prototype, function(add) {
   });
 
   add.method('reachedSlot', function (holder, slotName, contents) {
-    var slotAnno = annotator.existingSlotAnnotation(holder, slotName);
-    if (slotAnno && slotAnno.module === modules.init) {
-      return; // aaa - meh, the stuff below gave me grief
-      //if (reflect(contents).isWellKnown()) { return; }
-      //console.log("Keeping init-module slot: " + reflect(holder).name() + "." + slotName);
+    var holderAnno = annotator.existingAnnotationOf(holder);
+    if (holderAnno) {
+      var slotAnno = holderAnno.existingSlotAnnotation(slotName);
+      if (slotAnno && slotAnno.module === modules.init) { return; }
+    }
+    if (slotName === 'currentWorld') { return; } // aaa hack
+    if (contents && contents.hasOwnProperty('rawNode') && contents !== contents.constructor.prototype) {
+      throw "Hey, what's this thing with a rawNode getting snapshotted for? " + slotName;
     }
     this._buffer.append(this.referenceTo(holder)).append('[').append(slotName.inspect()).append('] = ').append(this.referenceTo(contents)).append(';\n');
   });
 
   add.method('creationStringFor', function (o) {
+    if (o.storeString) {
+      if (!o.storeStringNeeds || o !== o.storeStringNeeds()) {
+        return o.storeString();
+      }
+    }
+
     var mir = reflect(o);
     var cs = mir.creatorSlot();
     if (cs && cs.module() === modules.init /* && cs.contents().equals(mir) */) { return mir.creatorSlotChainExpression(); }
@@ -134,6 +143,19 @@ thisModule.addSlots(Snapshotter.prototype, function(add) {
     tearDownBuf.append('})();\n');
 
     return setupBuf.concat(this._buffer, tearDownBuf).toString();
+  });
+
+});
+
+
+thisModule.addSlots(Morph.prototype, function(add) {
+
+  add.method('storeString', function () {
+    return 'null'; // aaa - Is there a way to file out a morph?
+  });
+
+  add.method('storeStringNeeds', function () {
+    return this.constructor.prototype;
   });
 
 });

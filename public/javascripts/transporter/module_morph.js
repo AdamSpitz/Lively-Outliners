@@ -106,7 +106,7 @@ thisModule.addSlots(transporter, function(add) {
   add.method('addMenuItemsTo', function(menu, evt) {
     menu.addLine();
 
-    var snapshottingWorks = true; // aaa - turn this on once it works.
+    var snapshottingWorks = false; // aaa - turn this on once it works.
     if (snapshottingWorks) {
     menu.addItem(["save snapshot", function(evt) {
       var snapshotter = new Snapshotter();
