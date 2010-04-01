@@ -286,7 +286,8 @@ thisModule.addSlots(CreatorSlotMarker.prototype, function(add) {
   });
 
   add.method('reachedObject', function (contents, howDidWeGetHere) {
-    if (!howDidWeGetHere) { return; }
+    if (! this.shouldMakeCreatorSlots) { return; }
+    if (! howDidWeGetHere) { return; }
     if (contents === Global) { return; }
     var contentsAnno;
     var slotHolder = howDidWeGetHere.slotHolder;
