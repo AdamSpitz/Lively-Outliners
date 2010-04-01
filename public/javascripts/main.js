@@ -1,3 +1,7 @@
+// Later on could do something nicer with dependencies and stuff. For now,
+// let's just try dynamically loading the LK files in the same order we
+// loaded them when we were doing it statically in the .xhtml file.
+
 transporter.module.fileIn("prototype", "prototype", function() {
   transporter.module.fileIn("lk", "JSON", function() {
     transporter.module.fileIn("lk", "defaultconfig", function() {
