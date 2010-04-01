@@ -1957,6 +1957,15 @@ BoxMorph.subclass('TextMorph', {
 					evt.stop(); // do not use for browser navigation
 					return true;
 			}
+                        // aaa - Added by Adam.
+			case Event.KEY_DELETE: {
+                          // Delete deletes current selection or next character
+					if (this.hasNullSelection()) this.selectionRange[1] = Math.max(0, this.selectionRange[0]);
+					this.replaceSelectionfromKeyboard("");
+				if (this.charsTyped.length > 0) this.charsTyped = this.charsTyped.substring(0, this.charsTyped.length-1); 
+					evt.stop(); // do not use for browser navigation
+					return true;
+                        }
 			case Event.KEY_ESC: {
 				this.relinquishKeyboardFocus(this.world().firstHand());
 				return true;
