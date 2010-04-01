@@ -1946,7 +1946,6 @@ Morph.subclass("MenuMorph", {
         this.stayUp = remainOnScreen; // set true to keep on screen
 
         parentMorph.addMorphAt(this, loc);
-        this.setScale(0.01); this.smoothlyScaleTo(1); // Added by Adam
 
                 var textList = this.items.pluck('name');
         this.listMorph = new TextListMorph(pt(this.estimateListWidth(TextMorph.prototype), 0).extentAsRectangle(),
@@ -1992,6 +1991,8 @@ Morph.subclass("MenuMorph", {
         var delta = visibleRect.topLeft().subPt(menuRect.topLeft());  // delta to fix topLeft off screen
         delta = delta.addPt(visibleRect.bottomRight().subPt(menuRect.bottomRight()));  // same for bottomRight
         if (delta.dist(pt(0, 0)) > 1) this.moveBy(delta);  // move if significant
+
+        this.setScale(0.01); this.smoothlyScaleTo(1); // Added by Adam; must be down here so that the bounds calculations use the full size
 
         this.listMorph.relayMouseEvents(this);
         // Note menu gets mouse focus by default if pop-up.  If you don't want it, you'll have to null it
