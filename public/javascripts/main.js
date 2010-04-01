@@ -15,21 +15,22 @@ transporter.module.fileIn("prototype", "prototype", function() {
                     transporter.module.fileIn("lk", "Data", function() {
                       transporter.module.fileIn("lk", "Storage", function() {
                         transporter.module.fileIn("lk", "Tools", function() {
-                          transporter.module.fileIn("lk", "Examples", function() {
-                            transporter.module.fileIn("lk", "TestFramework", function() {
-                              transporter.module.fileIn("lk", "jslint", function() {
-                                transporter.module.fileIn("transporter", "object_graph_walker", function() {
-                                  CreatorSlotMarker.annotateExternalObjects(true, transporter.module.named('init'));
+                          transporter.module.fileIn("lk", "TestFramework", function() {
+                            transporter.module.fileIn("lk", "jslint", function() {
+                              transporter.module.fileIn("transporter", "object_graph_walker", function() {
+                                CreatorSlotMarker.annotateExternalObjects(true, transporter.module.named('init'));
                                   
-                                  transporter.module.fileIn("", "everything", function() {
-                                    CreatorSlotMarker.annotateExternalObjects(true);
-                                    Morph.suppressAllHandlesForever(); // those things are annoying
-                                    reflect(window).categorizeUncategorizedSlotsAlphabetically(); // make the lobby outliner less unwieldy
+                                transporter.module.fileIn("", "everything", function() {
+                                  CreatorSlotMarker.annotateExternalObjects(true);
+                                  Morph.suppressAllHandlesForever(); // those things are annoying
+                                  reflect(window).categorizeUncategorizedSlotsAlphabetically(); // make the lobby outliner less unwieldy
 
-                                    transporter.module.fileIn("lk", "Main", function() {
-                                      window.onload();
-                                    });
-                                  });
+                                  var canvas = Global.document.getElementById("canvas");
+                                  var world = new WorldMorph(canvas);
+                                  world.displayOnCanvas(canvas);
+                                  if (Global.navigator.appName == 'Opera') { window.onresize(); }
+                                  world._application = livelyOutliners;
+                                  new MessageNotifierMorph("Right-click the background to start", Color.green).ignoreEvents().showInCenterOfWorld(world);
                                 });
                               });
                             });
