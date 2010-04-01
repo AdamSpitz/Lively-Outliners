@@ -60,62 +60,6 @@ thisModule.addSlots(ChildFinder.prototype, function(add) {
 });
 
 
-thisModule.addSlots(CreatorSlotMarker, function(add) {
-
-  add.data('superclass', ObjectGraphWalker);
-
-  add.creator('prototype', Object.create(ObjectGraphWalker.prototype));
-
-  add.data('type', 'CreatorSlotMarker');
-
-  add.method('annotateExternalObjects', function (shouldMakeCreatorSlots, moduleForExpatriateSlots) {
-  var marker = new this();
-  marker.moduleForExpatriateSlots = moduleForExpatriateSlots;
-  marker.shouldMakeCreatorSlots = shouldMakeCreatorSlots;
-  marker.walk(lobby);
-  // aaa - WTFJS, damned for loops don't seem to see String and Number and Array and their 'prototype' slots.
-  ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function'].each(function(typeName) {
-    var type = window[typeName];
-    marker.markContents(window, typeName, type);
-    marker.markContents(type, 'prototype', type.prototype);
-    marker.walk(type.prototype);
-  });
-});
-
-});
-
-
-thisModule.addSlots(CreatorSlotMarker.prototype, function(add) {
-
-  add.data('constructor', CreatorSlotMarker);
-
-  add.method('markContents', function (holder, slotName, contents) {
-    var contentsAnno;
-    try { contentsAnno = annotator.annotationOf(contents); } catch (ex) { return false; } // stupid FireFox bug
-    if (contentsAnno.hasOwnProperty('creatorSlotName')) {
-      if (annotator.creatorChainLength(holder) < annotator.creatorChainLength(contentsAnno.creatorSlotHolder)) {
-        // This one's shorter, so probably better; use it instead.
-        contentsAnno.setCreatorSlot(slotName, holder);
-      }
-      return false;
-    } else {
-      contentsAnno.setCreatorSlot(slotName, holder);
-      return true;
-    }
-  });
-
-  add.method('reachedSlot', function (holder, slotName, contents) {
-    if (! this.moduleForExpatriateSlots) { return; }
-    var existingSlotAnno = annotator.existingSlotAnnotation(holder, slotName);
-    var slotAnno = existingSlotAnno || {};
-    if (slotAnno.module) { return; }
-    slotAnno.module = this.moduleForExpatriateSlots;
-    annotator.annotationOf(holder).setSlotAnnotation(slotName, slotAnno);
-  });
-
-});
-
-
 thisModule.addSlots(ImplementorsFinder, function(add) {
 
   add.data('superclass', ObjectGraphWalker);
@@ -247,17 +191,17 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
     return false;
   });
 
-  add.method('markContents', function (holder, slotName, contents) {
+  add.method('markObject', function (object, howDidWeGetHere) {
     // Return false if this object has already been marked; otherwise mark it and return true.
     //
     // Would use an identity dictionary here, if JavaScript could do one. As it is, we'll
     // have to mark the annotation and then come by again and unmark it.
-    var contentsAnno;
-    try { contentsAnno = annotator.annotationOf(contents); } catch (ex) { return false; } // stupid FireFox bug
-    var walkers = contentsAnno.walkers = contentsAnno.walkers || Object.newChildOf(set, hashTable.identityComparator);
+    var objectAnno;
+    try { objectAnno = annotator.annotationOf(object); } catch (ex) { return false; } // stupid FireFox bug
+    var walkers = objectAnno.walkers = objectAnno.walkers || (Global.set && Object.newChildOf(set, hashTable.identityComparator)) || [];
     if (walkers.include(this)) { return false; }
-    walkers.add(this);
-    this._marked.push(contentsAnno);
+    walkers.push(this);
+    this._marked.push(objectAnno);
     return true;
   });
 
@@ -278,9 +222,11 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
   });
 
   add.method('walk', function (currentObj, howDidWeGetHere) {
-    howDidWeGetHere = howDidWeGetHere || [];
+    if (this.shouldIgnoreObject(currentObj, howDidWeGetHere)) { return; }
+    if (! this.markObject(currentObj, howDidWeGetHere)) { return; }
+
     this._objectCount += 1;
-    this.reachedObject(currentObj);
+    this.reachedObject(currentObj, howDidWeGetHere);
 
     for (var name in currentObj) {
       if (currentObj.hasOwnProperty(name) && ! this.namesToIgnore.include(name)) {
@@ -291,16 +237,78 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
           this.reachedSlot(currentObj, name, contents);
           if (this.canHaveSlots(contents)) {
             if (contents.constructor !== Array || this.shouldWalkIndexables) { // aaa - this isn't right. But I don't wanna walk all the indexables.
-              if (! this.shouldIgnoreObject(contents)) {
-                if (this.markContents(currentObj, name, contents)) {
-                  this.walk(contents, howDidWeGetHere.concat([name]));
-                }
-              }
+              this.walk(contents, {previous: howDidWeGetHere, slotHolder: currentObj, slotName: name});
             }
           }
         }
       }
     }
+  });
+
+});
+
+
+thisModule.addSlots(CreatorSlotMarker, function(add) {
+
+  add.data('superclass', ObjectGraphWalker);
+
+  add.creator('prototype', Object.create(ObjectGraphWalker.prototype));
+
+  add.data('type', 'CreatorSlotMarker');
+
+  add.method('annotateExternalObjects', function (shouldMakeCreatorSlots, moduleForExpatriateSlots) {
+  var marker = new this();
+  marker.moduleForExpatriateSlots = moduleForExpatriateSlots;
+  marker.shouldMakeCreatorSlots = shouldMakeCreatorSlots;
+  marker.reset();
+  marker.walk(lobby);
+  // aaa - WTFJS, damned for loops don't seem to see String and Number and Array and their 'prototype' slots.
+  ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function'].each(function(typeName) {
+    var type = window[typeName];
+    var pathToType          = {                       slotHolder: window, slotName:  typeName   };
+    var pathToTypePrototype = { previous: pathToType, slotHolder:   type, slotName: 'prototype' };
+    marker.markObject(type, pathToType);
+    marker.markObject(type.prototype, pathToTypePrototype);
+    marker.walk(type.prototype);
+  });
+});
+
+});
+
+
+thisModule.addSlots(CreatorSlotMarker.prototype, function(add) {
+
+  add.data('constructor', CreatorSlotMarker);
+
+  add.method('markObject', function ($super, contents, howDidWeGetHere) {
+    this.reachedObject(contents, howDidWeGetHere); // in case this is a shorter path
+    return $super(contents, howDidWeGetHere);
+  });
+
+  add.method('reachedObject', function (contents, howDidWeGetHere) {
+    if (!howDidWeGetHere) { return; }
+    if (contents === Global) { return; }
+    var contentsAnno;
+    var slotHolder = howDidWeGetHere.slotHolder;
+    var slotName   = howDidWeGetHere.slotName;
+    try { contentsAnno = annotator.annotationOf(contents); } catch (ex) { return false; } // stupid FireFox bug
+    if (contentsAnno.hasOwnProperty('creatorSlotName')) {
+      if (annotator.creatorChainLength(slotHolder) < annotator.creatorChainLength(contentsAnno.creatorSlotHolder)) {
+        // This one's shorter, so probably better; use it instead.
+        contentsAnno.setCreatorSlot(slotName, slotHolder);
+      }
+    } else {
+      contentsAnno.setCreatorSlot(slotName, slotHolder);
+    }
+  });
+
+  add.method('reachedSlot', function (holder, slotName, contents) {
+    if (! this.moduleForExpatriateSlots) { return; }
+    var existingSlotAnno = annotator.existingSlotAnnotation(holder, slotName);
+    var slotAnno = existingSlotAnno || {};
+    if (slotAnno.module) { return; }
+    slotAnno.module = this.moduleForExpatriateSlots;
+    annotator.annotationOf(holder).setSlotAnnotation(slotName, slotAnno);
   });
 
 });
@@ -362,15 +370,16 @@ thisModule.addSlots(ObjectGraphWalker.Tests.prototype, function(add) {
 
   add.data('constructor', ObjectGraphWalker.Tests);
 
-  add.method('testWalking', function () {
+  add.method('testIncremental', function () {
     var w1 = new TestingObjectGraphWalker();
     w1.go();
-    var n = 'ObjectGraphWalker_Tests___test_slot_name_thingy';
+    var n = 'ObjectGraphWalker_Tests___extraSlotThatIAmAdding';
     var o = {};
     Global[n] = o;
     var w2 = new TestingObjectGraphWalker();
     w2.go();
     this.assertEqual(w1.objectCount() + 1, w2.objectCount());
+    delete Global[n];
   });
 
 });

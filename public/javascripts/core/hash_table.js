@@ -345,6 +345,10 @@ thisModule.addSlots(set, function(add) {
 
   add.method('typeName', function () { return "set"; }, {category: ['printing']});
 
+  add.method('push', function (v) {
+    return this.add(v);
+  }, {category: ['compatibility with arrays']});
+
   add.method('add', function (v) {
     return this.put(v, v);
   }, {category: ['accessing']});

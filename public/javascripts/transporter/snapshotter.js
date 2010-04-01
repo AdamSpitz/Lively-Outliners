@@ -66,10 +66,6 @@ thisModule.addSlots(Snapshotter.prototype, function(add) {
     return true;
   });
 
-  add.method('markContents', function (holder, slotName, contents) {
-    return this.markObject(contents);
-  });
-
   add.method('referenceTo', function (o) {
     if (o ===      null) { return 'null';      }
     if (o === undefined) { return 'undefined'; }
