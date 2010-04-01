@@ -346,7 +346,7 @@ thisModule.addSlots(livelyOutliners, function(add) {
     cmdList.addLine();
 
     cmdList.addItem(["get tests", function(evt) {
-      var testCaseClasses = [dictionary.Tests, set.Tests, mirror.Tests];
+      var testCaseClasses = [dictionary.Tests, set.Tests, mirror.Tests, ObjectGraphWalker.Tests];
       var testCases = testCaseClasses.map(function(c) {return c.prototype;});
       var world = evt.hand.world();
       world.assumePose(world.listPoseOfMorphsFor(testCases, "test cases for the outliner stuff"));

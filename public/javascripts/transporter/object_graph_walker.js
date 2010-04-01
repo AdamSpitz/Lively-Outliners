@@ -13,6 +13,8 @@ thisModule.addSlots(lobby, function(add) {
 
   add.method('ChildFinder', function ChildFinder() { Class.initializer.apply(this, arguments); }, {category: ['transporter']});
 
+  add.method('TestingObjectGraphWalker', function TestingObjectGraphWalker() { Class.initializer.apply(this, arguments); }, {category: ['transporter']});
+
 });
 
 
@@ -23,6 +25,8 @@ thisModule.addSlots(ObjectGraphWalker, function(add) {
   add.creator('prototype', {});
 
   add.data('type', 'ObjectGraphWalker');
+
+  add.method('Tests', function Tests() { Class.initializer.apply(this, arguments); }, {category: ['tests']});
 
 });
 
@@ -64,9 +68,10 @@ thisModule.addSlots(CreatorSlotMarker, function(add) {
 
   add.data('type', 'CreatorSlotMarker');
 
-  add.method('annotateExternalObjects', function (moduleForExpatriateSlots) {
+  add.method('annotateExternalObjects', function (shouldMakeCreatorSlots, moduleForExpatriateSlots) {
   var marker = new this();
   marker.moduleForExpatriateSlots = moduleForExpatriateSlots;
+  marker.shouldMakeCreatorSlots = shouldMakeCreatorSlots;
   marker.walk(lobby);
   // aaa - WTFJS, damned for loops don't seem to see String and Number and Array and their 'prototype' slots.
   ['Object', 'String', 'Number', 'Boolean', 'Array', 'Function'].each(function(typeName) {
@@ -296,6 +301,76 @@ thisModule.addSlots(ObjectGraphWalker.prototype, function(add) {
         }
       }
     }
+  });
+
+});
+
+
+thisModule.addSlots(TestingObjectGraphWalker, function(add) {
+
+  add.data('superclass', ObjectGraphWalker);
+
+  add.creator('prototype', Object.create(ObjectGraphWalker.prototype));
+
+  add.data('type', 'TestingObjectGraphWalker');
+
+});
+
+
+thisModule.addSlots(TestingObjectGraphWalker.prototype, function(add) {
+
+  add.data('constructor', TestingObjectGraphWalker);
+
+  add.method('initialize', function ($super) {
+    $super();
+  });
+
+  add.method('reset', function ($super) {
+    $super();
+    this._objectsReached = [];
+    this._slotsReached = [];
+  });
+
+  add.method('reachedObject', function (o) {
+    this._objectsReached.push(o);
+  });
+
+  add.method('reachedSlot', function (holder, slotName, contents) {
+    var slot = reflect(holder).slotAt(slotName);
+    this._slotsReached.push(slot);
+  });
+
+  add.method('undoAllMarkings', function () {
+    // Don't undo them, so that the tests can examine the _marked list.
+  });
+
+});
+
+
+thisModule.addSlots(ObjectGraphWalker.Tests, function(add) {
+
+  add.data('superclass', TestCase);
+
+  add.creator('prototype', Object.create(TestCase.prototype));
+
+  add.data('type', 'ObjectGraphWalker.Tests');
+
+});
+
+
+thisModule.addSlots(ObjectGraphWalker.Tests.prototype, function(add) {
+
+  add.data('constructor', ObjectGraphWalker.Tests);
+
+  add.method('testWalking', function () {
+    var w1 = new TestingObjectGraphWalker();
+    w1.go();
+    var n = 'ObjectGraphWalker_Tests___test_slot_name_thingy';
+    var o = {};
+    Global[n] = o;
+    var w2 = new TestingObjectGraphWalker();
+    w2.go();
+    this.assertEqual(w1.objectCount() + 1, w2.objectCount());
   });
 
 });
