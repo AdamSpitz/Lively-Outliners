@@ -521,6 +521,7 @@ thisModule.addSlots(Morph.prototype, function(add) {
   add.method('createDismissButton', function() {
     var b = new WindowControlMorph(new Rectangle(0, 0, 22, 22), 3, Color.primary.orange);
     b.relayToModel(this, {Trigger: "=ensureIsNotInWorld"});
+    b.setHelpText('Dismiss me');
     return b;
   }, {category: 'adding and removing'});
 

@@ -59,8 +59,8 @@ thisModule.addSlots(EvaluatorMorph.prototype, function(add) {
       return TextMorph.prototype.onKeyPress.call(this, evt);
     };
     
-    var buttons = [createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)),
-                   createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)),
+    var buttons = [createButton("Do it",  function(evt) {this. doIt(evt);}.bind(this)).setHelpText('Run the code in the box'),
+                   createButton("Get it", function(evt) {this.getIt(evt);}.bind(this)).setHelpText('Run the code in the box and get the result'),
                    createButton("Close",  function(evt) {this.remove(  );}.bind(this))];
 
     this.setRows([RowMorph.createSpaceFilling([tm]), RowMorph.createSpaceFilling(buttons)]);

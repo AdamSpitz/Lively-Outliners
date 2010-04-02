@@ -12,6 +12,8 @@ ButtonMorph.subclass("ExpanderMorph", {
 
   focusHaloBorderWidth: 0, // I don't like the halo
 
+  getHelpText: function() { return (this.isExpanded() ? 'Collapse' : 'Expand') + ' me'; },
+
   verticesForValue: function(value) {
     return value ? [pt(0,0),pt(12,0),pt(6,12),pt(0,0)] : [pt(0,0),pt(12,6),pt(0,12),pt(0,0)];
   },

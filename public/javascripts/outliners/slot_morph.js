@@ -58,6 +58,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     this.labelMorph.ignoreEvents(); // so that the menu request passes through, though this breaks double-clicking-to-edit
 
     this.commentButton = createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
+    this.commentButton.getHelpText = function() { return (this._commentToggler.isOn() ? 'Hide' : 'Show') + ' my comment'; }.bind(this);
 
     this.buttonChooserMorph = createEitherOrMorph(this.sourceButton(), this.contentsPointer(), function() { return this.isMethodThatShouldBeShownAsPartOfTheBox(); }.bind(this));
 
@@ -118,6 +119,14 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
 
     m.inspect = function() { return slot.name() + " contents"; };
 
+    m.getHelpText = function() {
+      if (arrow.noLongerNeedsToBeUpdated) {
+        return "Show my contents"
+      } else {
+        return "Hide arrow"
+      }
+    };
+
     return m;
   }, {category: ['contents']});
 
@@ -126,6 +135,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
     if (m) { return m; }
     var icon = this.createIconForButton("images/icon-method-slot.gif");
     m = this._sourceButton = createButton(icon, function(evt) {this._sourceToggler.toggle(evt);}.bind(this), 1);
+    m.getHelpText = function() { return (this._sourceToggler.isOn() ? 'Hide' : 'Show') + ' code'; }.bind(this);
     return m;
   }, {category: ['source']});
 

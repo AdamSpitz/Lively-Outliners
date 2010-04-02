@@ -60,9 +60,11 @@ thisModule.addSlots(OutlinerMorph.prototype, function(add) {
     this._annotationToggler = Object.newChildOf(toggler, this.updateExpandedness.bind(this), this.mirror().canHaveAnnotation() ?                this.annotationMorph()  : null);
 
     this.commentButton   = createButton("'...'", function(evt) { this._commentToggler.toggle(evt); }.bind(this), 1);
-    this.parentButton    = createButton("^",     function(evt) { this.getParent(evt); }.bind(this), 1);
-    this.evaluatorButton = createButton("E",     function(evt) { this.openEvaluator(evt); }.bind(this), 1);
+    this.parentButton    = createButton("^",     function(evt) { this.getParent(evt);              }.bind(this), 1).setHelpText('Get my parent');
+    this.evaluatorButton = createButton("E",     function(evt) { this.openEvaluator(evt);          }.bind(this), 1).setHelpText('Show an evaluator box');
     this.dismissButton   = this.createDismissButton();
+
+    this.commentButton.getHelpText = function() { return (this._commentToggler.isOn() ? 'Hide' : 'Show') + ' my comment'; }.bind(this);
 
     var optionalParentButtonMorph  = createOptionalMorph(this.parentButton,  function() { return this.mirror().hasAccessibleParent(); }.bind(this));
     var optionalCommentButtonMorph = createOptionalMorph(this.commentButton, function() { return this._commentToggler.isOn() || (this.mirror().comment && this.mirror().comment()); }.bind(this));

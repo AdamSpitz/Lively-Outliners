@@ -54,7 +54,7 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
     this.shape.roundEdgesBy(10);
 
     this._nameLabel = TextMorph.createLabel(function() { return module.name(); });
-    this._fileOutButton = createButton('File out', this.fileOut.bind(this), 2);
+    this._fileOutButton = createButton('Save .js file', this.fileOut.bind(this), 2);
 
     this._changeIndicator = TextMorph.createLabel(function() { return this._module.hasChangedSinceLastFileOut() ? ' has changed ' : ''; }.bind(this));
     this._changeIndicator.setTextColor(Color.green.darker());
@@ -91,7 +91,7 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
   }, {category: ['commands']});
 
   add.method('addCommandsTo', function (cmdList) {
-    cmdList.addItem({label: 'file out', pluralLabel: 'file out modules', go: this.fileOut.bind(this)});
+    cmdList.addItem({label: 'save .js file', pluralLabel: 'save .js files for modules', go: this.fileOut.bind(this)});
 
     cmdList.addItem({label: 'forget I was changed', go: this.forgetIWasChanged.bind(this)});
 

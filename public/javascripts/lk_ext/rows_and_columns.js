@@ -53,10 +53,10 @@ Morph.subclass("RowOrColumnMorph", {
     if (this.horizontalLayoutMode === LayoutModes.Rigid     ) { availableSpaceToUse.x = Math.max(this._cachedMinimumExtent.x, thisExtent.x); }
     if (this.  verticalLayoutMode === LayoutModes.ShrinkWrap) { availableSpaceToUse.y =          this._cachedMinimumExtent.y;                }
     if (this.  verticalLayoutMode === LayoutModes.Rigid     ) { availableSpaceToUse.y = Math.max(this._cachedMinimumExtent.y, thisExtent.y); }
-    if (this.aaaDebugMe) { console.log("availableSpace: " + availableSpace + ", availableSpaceToUse: " + availableSpaceToUse); }
+    if (this.debugMyLayout) { console.log("availableSpace: " + availableSpace + ", availableSpaceToUse: " + availableSpaceToUse); }
 
     if (this._layoutIsStillValid && this._spaceUsedLastTime && this._spaceUsedLastTime.eqPt(availableSpaceToUse)) {
-      if (this.aaaDebugMe) { console.log("Not gonna lay out " + this.inspect() + ", since it's already laid out in the appropriate amount of space."); }
+      if (this.debugMyLayout) { console.log("Not gonna lay out " + this.inspect() + ", since it's already laid out in the appropriate amount of space."); }
       return thisExtent;
     }
     this._spaceUsedLastTime = availableSpaceToUse;
@@ -88,7 +88,7 @@ Morph.subclass("RowOrColumnMorph", {
     var forward = direction.forwardCoordinateOfPoint(topLeft);
     var sidewaysOrigin = direction.sidewaysCoordinateOfPoint(topLeft);
 
-    if (this.aaaDebugMe) { console.log("Starting off, availableSpace: " + availableSpace); }
+    if (this.debugMyLayout) { console.log("Starting off, availableSpace: " + availableSpace); }
     this.eachThingy(function(m) {
       var availableSpaceToPassOnToThisChild = direction.point(direction. forwardCoordinateOfPoint(m._cachedMinimumExtent),
                                                               direction.sidewaysCoordinateOfPoint(availableSpaceToPassOn));
@@ -99,23 +99,23 @@ Morph.subclass("RowOrColumnMorph", {
       var mExtent = m.rejiggerTheLayout(availableSpaceToPassOnToThisChild);
       
       var f = direction.forwardCoordinateOfPoint(mExtent);
-      if (this.aaaDebugMe) { console.log("f is: " + f + ", m.extent is " + mExtent); }
+      if (this.debugMyLayout) { console.log("f is: " + f + ", m.extent is " + mExtent); }
       var unusedSidewaysSpace = direction.sidewaysCoordinateOfPoint(availableSpaceToPassOnToThisChild) - direction.sidewaysCoordinateOfPoint(mExtent);
       forward += paddingBeforeNextMorph;
       var p = direction.point(forward, sidewaysOrigin + direction.sidewaysPadding1(padding) + (unusedSidewaysSpace / 2));
       forward += f;
       m.setPosition(p);
-      if (this.aaaDebugMe) { console.log("Added " + m.inspect() + " at " + p + ", forward is now: " + forward); }
+      if (this.debugMyLayout) { console.log("Added " + m.inspect() + " at " + p + ", forward is now: " + forward); }
       paddingBeforeNextMorph = f === 0 ? 0 : padding.between;
     }.bind(this));
     forward += direction.forwardPadding2(padding);
 
-    if (this.aaaDebugMe) { console.log("Gonna set newExtent to availableSpaceToUse: " + availableSpaceToUse); }
+    if (this.debugMyLayout) { console.log("Gonna set newExtent to availableSpaceToUse: " + availableSpaceToUse); }
     var newExtent = availableSpaceToUse.scaleBy(this.getScale());
     if (! newExtent.eqPt(this.getExtent())) {
       this.setExtent(newExtent);
       //this.smoothlyResizeTo(newExtent); // aaa - doesn't quite work right yet
-      if (this.aaaDebugMe) { console.log("Setting bounds to " + b); }
+      if (this.debugMyLayout) { console.log("Setting bounds to " + b); }
     }
     this._layoutIsStillValid = true;
     return newExtent;
