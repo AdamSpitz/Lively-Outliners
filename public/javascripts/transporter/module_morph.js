@@ -54,7 +54,7 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
     this.shape.roundEdgesBy(10);
 
     this._nameLabel = TextMorph.createLabel(function() { return module.name(); });
-    this._fileOutButton = createButton('Save .js file', this.fileOut.bind(this), 2);
+    this._fileOutButton = createButton('Save as .js file', this.fileOut.bind(this), 2);
 
     this._changeIndicator = TextMorph.createLabel(function() { return this._module.hasChangedSinceLastFileOut() ? ' has changed ' : ''; }.bind(this));
     this._changeIndicator.setTextColor(Color.green.darker());
@@ -87,11 +87,13 @@ thisModule.addSlots(transporter.module.Morph.prototype, function(add) {
 
   add.method('getAllObjects', function (evt) {
     var w = evt.hand.world();
-    w.assumePose(w.listPoseOfMorphsFor(this._module.objectsThatMightContainSlotsInMe().map(function(o) { return reflect(o); }), "objects in module " + this._module.name()));
+    var objectsInPose = this._module.objectsThatMightContainSlotsInMe().map(function(o) { return reflect(o); });
+    objectsInPose.unshift(this._module); // aaa - should really put it in a special place on the screen
+    w.assumePose(w.listPoseOfMorphsFor(objectsInPose, "objects in module " + this._module.name()));
   }, {category: ['commands']});
 
   add.method('addCommandsTo', function (cmdList) {
-    cmdList.addItem({label: 'save .js file', pluralLabel: 'save .js files for modules', go: this.fileOut.bind(this)});
+    cmdList.addItem({label: 'save as .js file', pluralLabel: 'save modules as .js files', go: this.fileOut.bind(this)});
 
     cmdList.addItem({label: 'forget I was changed', go: this.forgetIWasChanged.bind(this)});
 
