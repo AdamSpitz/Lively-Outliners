@@ -433,4 +433,89 @@ thisModule.addSlots(transporter.module, function(add) {
 
 });
 
+
+
+
+
+thisModule.addSlots(transporter, function(add) {
+
+  add.method('loadExternal', function(fileSpecs, callWhenDone) {
+    if (fileSpecs.length === 0) { return callWhenDone(); }
+    var dirAndName = fileSpecs.shift();
+    transporter.module.fileIn(dirAndName[0], dirAndName[1], function() {
+      transporter.loadExternal(fileSpecs, callWhenDone);
+    });
+  }, {category: ['bootstrapping']});
+
+  add.method('createCanvasIfNone', function() {
+    var canvas = document.getElementById("canvas");
+    if (! canvas) {
+      canvas = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
+      canvas.setAttribute('id', 'canvas');
+      canvas.setAttribute('width',  '800');
+      canvas.setAttribute('height', '600');
+      canvas.setAttribute('xmlns', "http://www.w3.org/2000/svg");
+      canvas.setAttribute('xmlns:lively', "http://www.experimentalstuff.com/Lively");
+      canvas.setAttribute('xmlns:xlink', "http://www.w3.org/1999/xlink");
+      canvas.setAttribute('xmlns:xhtml', "http://www.w3.org/1999/xhtml");
+      canvas.setAttribute('xml:space', "preserve");
+      canvas.setAttribute('zoomAndPan', "disable");
+      var title = document.createElement('title');
+      title.appendChild(document.createTextNode('Lively canvas'));
+      canvas.appendChild(title);
+      document.body.appendChild(canvas);
+    }
+    return canvas;
+  }, {category: ['bootstrapping']});
+
+  add.method('loadLivelyKernel', function(callWhenDone) {
+    if (document.body) { this.createCanvasIfNone(); } else { window.onload = this.createCanvasIfNone; }
+
+    // Later on could do something nicer with dependencies and stuff. For now,
+    // let's just try dynamically loading the LK files in the same order we
+    // loaded them when we were doing it statically in the .xhtml file.
+    this.loadExternal([["prototype", "prototype"],
+                       ["lk", "JSON"],
+                       ["lk", "defaultconfig"],
+                       ["", "local-LK-config"],
+                       ["lk", "EmuDom"],
+                       ["lk", "Base"],
+                       ["lk", "scene"],
+                       ["lk", "Core"],
+                       ["lk", "Text"],
+                       ["lk", "Widgets"],
+                       ["lk", "Network"],
+                       ["lk", "Data"],
+                       ["lk", "Storage"],
+                       ["lk", "Tools"],
+                       ["lk", "TestFramework"],
+                       ["lk", "jslint"]
+                      ], callWhenDone);
+  }, {category: ['bootstrapping']});
+
+  add.method('startLivelyOutliners', function(callWhenDone) {
+    transporter.loadLivelyKernel(function() {
+      transporter.module.fileIn("transporter", "object_graph_walker", function() {
+        CreatorSlotMarker.annotateExternalObjects(true, transporter.module.named('init'));
+        
+        transporter.module.fileIn("", "everything", function() {
+          CreatorSlotMarker.annotateExternalObjects(true);
+          Morph.suppressAllHandlesForever(); // those things are annoying
+          reflect(window).categorizeUncategorizedSlotsAlphabetically(); // make the lobby outliner less unwieldy
+          
+          var canvas = document.getElementById("canvas");
+          var world = new WorldMorph(canvas);
+          world.displayOnCanvas(canvas);
+          if (Global.navigator.appName == 'Opera') { window.onresize(); }
+          world._application = livelyOutliners;
+          new MessageNotifierMorph("Right-click the background to start", Color.green).ignoreEvents().showInCenterOfWorld(world);
+          if (callWhenDone) { callWhenDone(); }
+        });
+      });
+    });
+  }, {category: ['bootstrapping']});
+
+});
+
+
 });
