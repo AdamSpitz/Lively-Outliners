@@ -130,7 +130,7 @@ thisModule.addSlots(SlotMorph.prototype, function(add) {
   }, {category: ['source']});
 
   add.method('createIconForButton', function (path) {
-    var icon = new ImageMorph(pt(10,10).extentAsRectangle(), path);
+    var icon = new ImageMorph(pt(10,10).extentAsRectangle(), (window.livelyBaseURL || "") + path);
     icon.setFill(null);
     icon.beUngrabbable();
     icon.ignoreEvents();

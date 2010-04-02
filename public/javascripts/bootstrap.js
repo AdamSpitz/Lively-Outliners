@@ -342,7 +342,7 @@ thisModule.addSlots(transporter.module, function(add) {
   add.method('urlForModuleDirectory', function (directory) {
     if (! directory) { directory = ""; }
     if (directory && directory[directory.length] !== '/') { directory += '/'; }
-    var docURL = document.documentURI;
+    var docURL = window.livelyBaseURL || document.documentURI;
     var baseDirURL = docURL.substring(0, docURL.lastIndexOf("/")) + "/javascripts/";
     return baseDirURL + directory;
   }, {category: ['saving to WebDAV']});
@@ -478,7 +478,6 @@ thisModule.addSlots(transporter, function(add) {
                        ["lk", "JSON"],
                        ["lk", "defaultconfig"],
                        ["", "local-LK-config"],
-                       ["lk", "EmuDom"],
                        ["lk", "Base"],
                        ["lk", "scene"],
                        ["lk", "Core"],
