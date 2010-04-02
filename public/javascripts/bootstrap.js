@@ -452,7 +452,7 @@ thisModule.addSlots(transporter, function(add) {
     if (! canvas) {
       canvas = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
       canvas.setAttribute('id', 'canvas');
-      canvas.setAttribute('width',  '800');
+      canvas.setAttribute('width',  '100%');
       canvas.setAttribute('height', '600');
       canvas.setAttribute('xmlns', "http://www.w3.org/2000/svg");
       canvas.setAttribute('xmlns:lively', "http://www.experimentalstuff.com/Lively");
