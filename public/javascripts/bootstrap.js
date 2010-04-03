@@ -219,6 +219,20 @@ annotator.annotationOf(lobby).setSlotAnnotation('transporter', {category: ['tran
 
 lobby.transporter.loadedURLs = {};
 
+lobby.transporter.repositories = {};
+annotator.annotationOf(lobby.transporter.repositories).setCreatorSlot('repositories', lobby.transporter);
+
+lobby.transporter.repositories.http = {};
+annotator.annotationOf(lobby.transporter.repositories.http).setCreatorSlot('http', lobby.transporter.repositories);
+
+lobby.transporter.repositories.httpWithWebDAV = Object.create(lobby.transporter.repositories.http);
+annotator.annotationOf(lobby.transporter.repositories.httpWithWebDAV).setCreatorSlot('httpWithWebDAV', lobby.transporter.repositories);
+
+lobby.transporter.repositories.httpWithSavingScript = Object.create(lobby.transporter.repositories.http);
+annotator.annotationOf(lobby.transporter.repositories.httpWithSavingScript).setCreatorSlot('httpWithSavingScript', lobby.transporter.repositories);
+
+lobby.transporter.availableRepositories = [];
+
 lobby.transporter.module = {};
 annotator.annotationOf(lobby.transporter.module).setCreatorSlot('module', lobby.transporter);
 
@@ -333,19 +347,27 @@ lobby.transporter.module.addSlots = function(holder, block) {
 transporter.module.callWhenDoneLoadingModuleNamed('bootstrap', function() {});
 lobby.transporter.module.create('bootstrap', function(requires) {}, function(thisModule) {
 
-thisModule.addSlots(transporter.module, function(add) {
 
-  add.method('existingOneNamed', function (n) {
-    return lobby.modules[n];
-  }, {category: ['accessing']});
+thisModule.addSlots(transporter.repositories.http, function(add) {
+
+  add.method('initialize', function (url) {
+    this._url = url;
+  }, {category: ['creating']});
+
+  add.method('toString', function () {
+    return this._url;
+  }, {category: ['printing']});
 
   add.method('urlForModuleName', function (name) {
-    var docURL = window.livelyBaseURL || document.documentURI;
-    var repoURL = docURL.substring(0, docURL.lastIndexOf("/")) + "/javascripts/";
-    return repoURL + name + ".js";
+    return this._url + name + ".js";
   }, {category: ['saving to WebDAV']});
 
-  add.method('loadJSFile', function (url, scriptLoadedCallback) {
+  add.method('loadModuleNamed', function (name, callWhenDone) {
+    var url = this.urlForModuleName(name);
+    this.loadURL(url, callWhenDone);
+  }, {category: ['loading']});
+
+  add.method('loadURL', function (url, scriptLoadedCallback) {
     scriptLoadedCallback = scriptLoadedCallback || function() {};
 
     // Don't load the same JS file more than once.
@@ -362,6 +384,7 @@ thisModule.addSlots(transporter.module, function(add) {
       throw "Wait, it's not a callback function and it's not 'done'; what is it?"
     }
 
+    // aaa - don't use this global loadedURLs thing, use something repo-specific.
     transporter.loadedURLs[url] = scriptLoadedCallback;
 
     // Intentionally using primitive mechanisms (either XHR or script tags), so
@@ -392,24 +415,52 @@ thisModule.addSlots(transporter.module, function(add) {
       script.src = url;
       head.appendChild(script);
     }
-  }, {category: ['transporting']});
+  }, {category: ['loading']});
 
-  add.method('fileIn', function (name, moduleLoadedCallback) {
-    var url = this.urlForModuleName(name);
-    
-    if (transporter.module.callWhenDoneLoadingModuleNamed(name, moduleLoadedCallback)) { return; }
+});
 
-    console.log("Filing in URL " + url);
-    this.loadJSFile(url, function() {
-      var module = modules[name];
-      if (!module) {
-        // Must just be some external Javascript library - not one of our
-        // modules. So we consider the module to be loaded now, since the
-        // file is loaded.
-        transporter.module.doneLoadingModuleNamed(name);
-      }
+
+thisModule.addSlots(transporter.repositories.httpWithWebDAV, function(add) {
+
+  add.method('fileOutModule', function (m, codeToFileOut, callWhenDone) {
+    var url = new URL(this.urlForModuleName("non-core/" + m.name())); // aaa - take out "non-core/"
+    var status = new Resource(Record.newPlainInstance({URL: url})).store(codeToFileOut, true).getStatus();
+    if (! status.isSuccess()) {
+      throw "failed to file out " + m + ", status is " + status.code();
+    }
+    callWhenDone();
+  }, {category: ['saving']});
+
+});
+
+
+thisModule.addSlots(transporter.repositories.httpWithSavingScript, function(add) {
+
+  add.method('initialize', function ($super, url, savingScriptURL) {
+    $super(url);
+    this._savingScriptURL = savingScriptURL;
+  }, {category: ['creating']});
+
+  add.method('fileOutModule', function (m, codeToFileOut, callWhenDone) {
+    var req = new Ajax.Request(this._savingScriptURL, {
+      method: 'post',
+      contentType: 'text/plain',
+      parameters: {fileName: m.name() + ".js", fileContents: codeToFileOut},
+      asynchronous: true,
+      onSuccess:   function(transport) { var urlToDownload = transport.responseText; window.open(urlToDownload); callWhenDone(); }.bind(this),
+      onFailure:   function(         ) {alert("Failure. :(");},
+      onException: function(r,      e) {alert("Exception. :(");}
     });
-  }, {category: ['transporting']});
+  }, {category: ['saving']});
+
+});
+
+
+thisModule.addSlots(transporter.module, function(add) {
+
+  add.method('existingOneNamed', function (n) {
+    return lobby.modules[n];
+  }, {category: ['accessing']});
 
   add.method('requires', function(moduleName, reqLoadedCallback) {
     if (! this._requirements) { this._requirements = []; }
@@ -421,7 +472,7 @@ thisModule.addSlots(transporter.module, function(add) {
     if (module) {
       transporter.module.callWhenDoneLoadingModuleNamed(moduleName, reqLoadedCallback);
     } else {
-      transporter.module.fileIn(moduleName, reqLoadedCallback);
+      transporter.fileIn(moduleName, reqLoadedCallback);
     }
   }, {category: ['requirements']});
 
@@ -429,14 +480,37 @@ thisModule.addSlots(transporter.module, function(add) {
 
 
 
-
-
 thisModule.addSlots(transporter, function(add) {
+
+  add.method('repositoryContainingModuleNamed', function (name) {
+    // aaa fix once I want to allow multiple repositories
+    return this.availableRepositories[0];
+  }, {category: ['loading']});
+
+  add.method('fileIn', function (name, moduleLoadedCallback) {
+    if (transporter.module.callWhenDoneLoadingModuleNamed(name, moduleLoadedCallback)) { return; }
+
+    var repo = this.repositoryContainingModuleNamed(name);
+    repo.loadModuleNamed(name, function() {
+      var module = modules[name];
+      if (!module) {
+        // Must just be some external Javascript library - not one of our
+        // modules. So we consider the module to be loaded now, since the
+        // file is loaded.
+        transporter.module.doneLoadingModuleNamed(name);
+      }
+    });
+  }, {category: ['loading']});
+
+  add.method('fileOut', function(m, codeToFileOut, callWhenDone) {
+    var repo = this.repositoryContainingModuleNamed(m.name());
+    repo.fileOutModule(m, codeToFileOut, callWhenDone);
+  }, {category: ['saving']});
 
   add.method('loadExternal', function(names, callWhenDone) {
     if (names.length === 0) { return callWhenDone(); }
     var name = names.shift();
-    transporter.module.fileIn(name, function() {
+    transporter.fileIn(name, function() {
       transporter.loadExternal(names, callWhenDone);
     });
   }, {category: ['bootstrapping']});
@@ -486,12 +560,26 @@ thisModule.addSlots(transporter, function(add) {
                       ], callWhenDone);
   }, {category: ['bootstrapping']});
 
+  add.method('initializeRepositories', function() {
+    var baseURL = window.livelyBaseURL || document.documentURI;
+    var repoURL = baseURL.substring(0, baseURL.lastIndexOf("/")) + "/javascripts/";
+    // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
+    if (repoURL.include("adamspitz.com")) {
+      var savingScriptURL = "http://adamspitz.com/cgi-bin/savefile.cgi";
+      transporter.availableRepositories.push(Object.newChildOf(transporter.repositories.httpWithSavingScript, repoURL, savingScriptURL));
+    } else {
+      transporter.availableRepositories.push(Object.newChildOf(transporter.repositories.httpWithWebDAV,       repoURL                 ));
+    }
+  }, {category: ['bootstrapping']});
+
   add.method('startLivelyOutliners', function(callWhenDone) {
+    this.initializeRepositories();
+
     transporter.loadLivelyKernel(function() {
-      transporter.module.fileIn("transporter/object_graph_walker", function() {
+      transporter.fileIn("transporter/object_graph_walker", function() {
         CreatorSlotMarker.annotateExternalObjects(true, transporter.module.named('init'));
         
-        transporter.module.fileIn("everything", function() {
+        transporter.fileIn("everything", function() {
           CreatorSlotMarker.annotateExternalObjects(true);
           Morph.suppressAllHandlesForever(); // those things are annoying
           reflect(window).categorizeUncategorizedSlotsAlphabetically(); // make the lobby outliner less unwieldy

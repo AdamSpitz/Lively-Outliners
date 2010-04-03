@@ -109,29 +109,8 @@ thisModule.addSlots(transporter.module, function(add) {
   }, {category: ['transporting']});
 
   add.method('fileOut', function (filerOuter) {
-    var doc = this.codeToFileOut(filerOuter || Object.newChildOf(this.filerOuter)).toString();
-
-    // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
-    if (URL.source.hostname.include("adamspitz.com")) {
-      var uploadScriptURL = "http://adamspitz.com/cgi-bin/savefile.cgi";
-      var req = new Ajax.Request(uploadScriptURL, {
-        method: 'post',
-        contentType: 'text/plain',
-        parameters: {fileName: this.name() + ".js", fileContents: doc},
-        asynchronous: true,
-        onSuccess:   function(transport) { var urlToDownload = transport.responseText; window.open(urlToDownload); this.markAsUnchanged();  }.bind(this),
-        onFailure:   function(         ) {alert("Failure. :(");}.bind(this),
-        onException: function(r,      e) {alert("Exception. :(");}.bind(this)
-      });
-    } else {
-      
-      var url = new URL(this.urlForModuleName("non-core/" + this.name()));
-      var status = new Resource(Record.newPlainInstance({URL: url})).store(doc, true).getStatus();
-      if (! status.isSuccess()) {
-        throw "failed to file out " + this + ", status is " + status.code();
-      }
-      this.markAsUnchanged();
-    }
+    var codeToFileOut = this.codeToFileOut(filerOuter || Object.newChildOf(this.filerOuter)).toString();
+    transporter.fileOut(this, codeToFileOut, function() {this.markAsUnchanged();}.bind(this));
   }, {category: ['transporting']});
 
   add.creator('slotOrderizer', {}, {category: ['transporting']});

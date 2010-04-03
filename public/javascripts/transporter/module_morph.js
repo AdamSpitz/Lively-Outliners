@@ -26,7 +26,7 @@ thisModule.addSlots(transporter.module.Morph, function(add) {
 
   add.method('doneUpload', function(name) {
     if (name.substr(-3) === '.js') { name = name.substr(0, name.length - 3); }
-    transporter.module.fileIn(name, function() {
+    transporter.fileIn(name, function() {
       new MessageNotifierMorph(name + " has been loaded.", Color.green).showInCenterOfWorld(WorldMorph.current());
     });
   });
@@ -172,7 +172,7 @@ thisModule.addSlots(transporter, function(add) {
       menuItems.push([n, function(evt) {
         var moduleName = n.substring(0, n.length - 3);
         MessageNotifierMorph.showIfErrorDuring(function() {
-          lobby.transporter.module.fileIn(pathFromModuleSystemRootDir + '/' + moduleName);
+          lobby.transporter.fileIn(pathFromModuleSystemRootDir + '/' + moduleName);
         }, evt);
       }]);
     });
