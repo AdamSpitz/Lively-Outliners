@@ -119,14 +119,6 @@ thisModule.addSlots(transporter.module, function(add) {
     Object.newChildOf(this.slotOrderizer, this).determineOrder().each(f);
   }, {category: ['transporting']});
 
-  add.method('urlForCoreModulesDirectory', function () {
-    return URL.source.getDirectory().withRelativePath("javascripts/");
-  }, {category: ['saving to WebDAV']});
-
-  add.method('urlForNonCoreModulesDirectory', function () {
-    return URL.source.getDirectory().withRelativePath("javascripts/non-core/");
-  }, {category: ['saving to WebDAV']});
-
   add.method('eachModule', function (f) {
     reflect(lobby.modules).eachNormalSlot(function(s) { f(s.contents().reflectee()); });
   }, {category: ['iterating']});
@@ -303,8 +295,8 @@ thisModule.addSlots(transporter.module.slotOrderizer, function(add) {
     this._slotDeps.removeDependee(s);
     if (shouldUpdateObjDeps) { this.recalculateObjectDependencies(); }
   }, {category: ['transporting']});
-});
 
+});
 
 
 });

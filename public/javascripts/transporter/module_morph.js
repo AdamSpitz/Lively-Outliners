@@ -146,25 +146,36 @@ thisModule.addSlots(transporter, function(add) {
 
     } else {
 
-      menu.addItem(["file in...", function(evt) {
+      menu.addItem(["load JS file...", function(evt) {
         var world = evt.hand.world();
-        var baseDir = new FileDirectory(lobby.transporter.module.urlForCoreModulesDirectory());
-        var modulesMenu = new MenuMorph(this.moduleMenuItemsForDir(baseDir, ""), world);
-        modulesMenu.openIn(world, evt.point());
+        var modulesMenu = new MenuMorph([], world);
+        transporter.availableRepositories.each(function(repo) {
+          modulesMenu.addItem([repo.toString(), repo.menuItemsForLoadMenu()]);
+        });
+        modulesMenu.openIn(world, evt.point(), false, "From where?");
       }.bind(this)]);
 
     }
 
   }, {category: ['menu']});
 
-  add.method('moduleMenuItemsForDir', function(dir, pathFromModuleSystemRootDir) {
+});
+
+
+thisModule.addSlots(transporter.repositories.http, function(add) {
+
+  add.method('menuItemsForLoadMenu', function() {
+      return this.menuItemsForLoadMenuForDir(new FileDirectory(new URL(this._url)), "");
+  }, {category: ['menu']});
+
+  add.method('menuItemsForLoadMenuForDir', function(dir, pathFromModuleSystemRootDir) {
     var menuItems = [];
 
     var subdirURLs = dir.subdirectories();
     subdirURLs.each(function(subdirURL) {
       var subdir = new FileDirectory(subdirURL);
       var subdirName = subdirURL.filename();
-      menuItems.push([subdirName, this.moduleMenuItemsForDir(subdir, pathFromModuleSystemRootDir + "/" + subdirName)]);
+      menuItems.push([subdirName, this.menuItemsForLoadMenuForDir(subdir, pathFromModuleSystemRootDir + "/" + subdirName)]);
     }.bind(this));
         
     var jsFileNames = dir.filenames().select(function(n) {return n.endsWith(".js");});
