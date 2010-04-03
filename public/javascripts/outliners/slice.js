@@ -1,15 +1,8 @@
-lobby.transporter.module.create('slice', function(requires) {
+lobby.transporter.module.create('outliners/slice', function(requires) {
 
-requires('lk_ext', 'rows_and_columns');
+requires('lk_ext/rows_and_columns');
 
 }, function(thisModule) {
-
-
-thisModule.addSlots(modules.slice, function(add) {
-    
-    add.data('_directory', 'outliners');
-
-});
 
 
 thisModule.addSlots(lobby, function(add) {

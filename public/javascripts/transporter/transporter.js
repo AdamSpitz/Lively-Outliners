@@ -1,22 +1,9 @@
-lobby.transporter.module.create('transporter', function(requires) {}, function(thisModule) {
-
-
-thisModule.addSlots(modules.transporter, function(add) {
-    
-    add.data('_directory', 'transporter');
-
-});
+lobby.transporter.module.create('transporter/transporter', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(transporter.module, function(add) {
 
-  add.data('_directory', '', {category: ['accessing']});
-
   add.method('name', function () { return this._name; }, {category: ['accessing']});
-
-  add.method('directory', function () { return this._directory; }, {category: ['accessing']});
-
-  add.method('setDirectory', function (d) { this._directory = d; }, {category: ['accessing']});
 
   add.method('toString', function () { return this.name(); }, {category: ['printing']});
 
@@ -138,9 +125,7 @@ thisModule.addSlots(transporter.module, function(add) {
       });
     } else {
       
-      var baseDirURL = URL.source.getDirectory().withRelativePath("javascripts/");
-      var moduleDirURL = new URL(this.urlForModuleDirectory("non-core/" + this.directory() + "/"));
-      var url = moduleDirURL.withFilename(this.name() + ".js");
+      var url = new URL(this.urlForModuleName("non-core/" + this.name()));
       var status = new Resource(Record.newPlainInstance({URL: url})).store(doc, true).getStatus();
       if (! status.isSuccess()) {
         throw "failed to file out " + this + ", status is " + status.code();
@@ -210,8 +195,8 @@ thisModule.addSlots(transporter.module.filerOuter, function(add) {
     
     if (reqs && reqs.length > 0) {
       this._buffer.append("\n\n");
-      reqs.each(function(dirAndName) {
-        this._buffer.append("requires(").append(dirAndName[0].inspect()).append(", ").append(dirAndName[1]).append(");\n");
+      reqs.each(function(req) {
+        this._buffer.append("requires(").append(req.inspect()).append(");\n");
       }.bind(this));
       this._buffer.append("\n");
     }

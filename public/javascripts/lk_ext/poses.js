@@ -1,11 +1,4 @@
-lobby.transporter.module.create('poses', function(requires) {}, function(thisModule) {
-
-
-thisModule.addSlots(modules.poses, function(add) {
-    
-    add.data('_directory', 'lk_ext');
-
-});
+lobby.transporter.module.create('lk_ext/poses', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(lobby, function(add) {

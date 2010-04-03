@@ -1,14 +1,4 @@
-// 
-
-
-lobby.transporter.module.create('quickhull', function(requires) {}, function(thisModule) {
-
-
-thisModule.addSlots(modules.quickhull, function(add) {
-    
-    add.data('_directory', 'lk_ext');
-
-});
+lobby.transporter.module.create('lk_ext/quickhull', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(lobby, function(add) {

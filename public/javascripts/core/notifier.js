@@ -1,15 +1,8 @@
-lobby.transporter.module.create('notifier', function(requires) {
+lobby.transporter.module.create('core/notifier', function(requires) {
 
-requires('core', 'hash_table');
+requires('core/hash_table');
 
 }, function(thisModule) {
-
-
-thisModule.addSlots(modules.notifier, function(add) {
-    
-    add.data('_directory', 'core');
-
-});
 
 
 thisModule.addSlots(lobby, function(add) {

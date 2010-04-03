@@ -1,15 +1,8 @@
-lobby.transporter.module.create('slot_morph', function(requires) {
+lobby.transporter.module.create('outliners/slot_morph', function(requires) {
 
-requires('lk_ext', 'rows_and_columns');
+requires('lk_ext/rows_and_columns');
 
 }, function(thisModule) {
-
-
-thisModule.addSlots(modules.slot_morph, function(add) {
-    
-    add.data('_directory', 'outliners');
-
-});
 
 
 thisModule.addSlots(lobby, function(add) {

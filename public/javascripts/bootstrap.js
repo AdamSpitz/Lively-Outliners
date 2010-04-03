@@ -241,8 +241,8 @@ lobby.transporter.module.create = function(n, reqBlock, contentsBlock) {
   if (lobby.modules[n]) { throw 'The ' + n + ' module is already loaded.'; }
   var newModule = this.named(n);
   waitForAllCallbacks(function(finalCallback) {
-    reqBlock(function(reqDir, reqName) {
-      newModule.requires(reqDir, reqName, Object.extend(finalCallback(), {aaa_name: reqName}));
+    reqBlock(function(reqName) {
+      newModule.requires(reqName, Object.extend(finalCallback(), {aaa_name: reqName}));
     });
   }, function() {
     contentsBlock(newModule);
@@ -339,17 +339,10 @@ thisModule.addSlots(transporter.module, function(add) {
     return lobby.modules[n];
   }, {category: ['accessing']});
 
-  add.method('urlForModuleDirectory', function (directory) {
-    if (! directory) { directory = ""; }
-    if (directory && directory[directory.length] !== '/') { directory += '/'; }
+  add.method('urlForModuleName', function (name) {
     var docURL = window.livelyBaseURL || document.documentURI;
-    var baseDirURL = docURL.substring(0, docURL.lastIndexOf("/")) + "/javascripts/";
-    return baseDirURL + directory;
-  }, {category: ['saving to WebDAV']});
-
-  add.method('urlForModuleName', function (name, directory) {
-    var moduleDirURL = this.urlForModuleDirectory(directory);
-    return moduleDirURL + name + ".js";
+    var repoURL = docURL.substring(0, docURL.lastIndexOf("/")) + "/javascripts/";
+    return repoURL + name + ".js";
   }, {category: ['saving to WebDAV']});
 
   add.method('loadJSFile', function (url, scriptLoadedCallback) {
@@ -401,11 +394,12 @@ thisModule.addSlots(transporter.module, function(add) {
     }
   }, {category: ['transporting']});
 
-  add.method('fileIn', function (directory, name, moduleLoadedCallback) {
-    var url = this.urlForModuleName(name, directory);
+  add.method('fileIn', function (name, moduleLoadedCallback) {
+    var url = this.urlForModuleName(name);
     
     if (transporter.module.callWhenDoneLoadingModuleNamed(name, moduleLoadedCallback)) { return; }
 
+    console.log("Filing in URL " + url);
     this.loadJSFile(url, function() {
       var module = modules[name];
       if (!module) {
@@ -417,9 +411,9 @@ thisModule.addSlots(transporter.module, function(add) {
     });
   }, {category: ['transporting']});
 
-  add.method('requires', function(moduleDir, moduleName, reqLoadedCallback) {
+  add.method('requires', function(moduleName, reqLoadedCallback) {
     if (! this._requirements) { this._requirements = []; }
-    this._requirements.push([moduleDir, moduleName]);
+    this._requirements.push(moduleName);
 
     reqLoadedCallback = reqLoadedCallback || function() {};
 
@@ -427,7 +421,7 @@ thisModule.addSlots(transporter.module, function(add) {
     if (module) {
       transporter.module.callWhenDoneLoadingModuleNamed(moduleName, reqLoadedCallback);
     } else {
-      transporter.module.fileIn(moduleDir, moduleName, reqLoadedCallback);
+      transporter.module.fileIn(moduleName, reqLoadedCallback);
     }
   }, {category: ['requirements']});
 
@@ -439,11 +433,11 @@ thisModule.addSlots(transporter.module, function(add) {
 
 thisModule.addSlots(transporter, function(add) {
 
-  add.method('loadExternal', function(fileSpecs, callWhenDone) {
-    if (fileSpecs.length === 0) { return callWhenDone(); }
-    var dirAndName = fileSpecs.shift();
-    transporter.module.fileIn(dirAndName[0], dirAndName[1], function() {
-      transporter.loadExternal(fileSpecs, callWhenDone);
+  add.method('loadExternal', function(names, callWhenDone) {
+    if (names.length === 0) { return callWhenDone(); }
+    var name = names.shift();
+    transporter.module.fileIn(name, function() {
+      transporter.loadExternal(names, callWhenDone);
     });
   }, {category: ['bootstrapping']});
 
@@ -474,30 +468,30 @@ thisModule.addSlots(transporter, function(add) {
     // Later on could do something nicer with dependencies and stuff. For now,
     // let's just try dynamically loading the LK files in the same order we
     // loaded them when we were doing it statically in the .xhtml file.
-    this.loadExternal([["prototype", "prototype"],
-                       ["lk", "JSON"],
-                       ["lk", "defaultconfig"],
-                       ["", "local-LK-config"],
-                       ["lk", "Base"],
-                       ["lk", "scene"],
-                       ["lk", "Core"],
-                       ["lk", "Text"],
-                       ["lk", "Widgets"],
-                       ["lk", "Network"],
-                       ["lk", "Data"],
-                       ["lk", "Storage"],
-                       ["lk", "Tools"],
-                       ["lk", "TestFramework"],
-                       ["lk", "jslint"]
+    this.loadExternal([["prototype/prototype"],
+                       ["lk/JSON"],
+                       ["lk/defaultconfig"],
+                       ["/local-LK-config"],
+                       ["lk/Base"],
+                       ["lk/scene"],
+                       ["lk/Core"],
+                       ["lk/Text"],
+                       ["lk/Widgets"],
+                       ["lk/Network"],
+                       ["lk/Data"],
+                       ["lk/Storage"],
+                       ["lk/Tools"],
+                       ["lk/TestFramework"],
+                       ["lk/jslint"]
                       ], callWhenDone);
   }, {category: ['bootstrapping']});
 
   add.method('startLivelyOutliners', function(callWhenDone) {
     transporter.loadLivelyKernel(function() {
-      transporter.module.fileIn("transporter", "object_graph_walker", function() {
+      transporter.module.fileIn("transporter/object_graph_walker", function() {
         CreatorSlotMarker.annotateExternalObjects(true, transporter.module.named('init'));
         
-        transporter.module.fileIn("", "everything", function() {
+        transporter.module.fileIn("everything", function() {
           CreatorSlotMarker.annotateExternalObjects(true);
           Morph.suppressAllHandlesForever(); // those things are annoying
           reflect(window).categorizeUncategorizedSlotsAlphabetically(); // make the lobby outliner less unwieldy

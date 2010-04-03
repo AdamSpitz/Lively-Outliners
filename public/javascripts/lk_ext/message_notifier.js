@@ -1,15 +1,8 @@
-lobby.transporter.module.create('message_notifier', function(requires) {
+lobby.transporter.module.create('lk_ext/message_notifier', function(requires) {
 
-requires('lk_ext', 'rows_and_columns');
+requires('lk_ext/rows_and_columns');
 
 }, function(thisModule) {
-
-
-thisModule.addSlots(modules.message_notifier, function(add) {
-    
-  add.data('_directory', 'lk_ext');
-
-});
 
 
 thisModule.addSlots(lobby, function(add) {

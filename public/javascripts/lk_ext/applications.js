@@ -1,11 +1,4 @@
-lobby.transporter.module.create('applications', function(requires) {}, function(thisModule) {
-
-
-thisModule.addSlots(modules.applications, function(add) {
-    
-    add.data('_directory', 'lk_ext');
-
-});
+lobby.transporter.module.create('lk_ext/applications', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(WorldMorph.prototype, function(add) {

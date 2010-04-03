@@ -1,11 +1,4 @@
-lobby.transporter.module.create('animation', function(requires) {}, function(thisModule) {
-
-
-thisModule.addSlots(modules.animation, function(add) {
-    
-    add.data('_directory', 'lk_ext');
-
-});
+lobby.transporter.module.create('lk_ext/animation', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(lobby, function(add) {

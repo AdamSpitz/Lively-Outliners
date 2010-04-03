@@ -1,15 +1,8 @@
-lobby.transporter.module.create('snapshotter', function(requires) {
+lobby.transporter.module.create('transporter/snapshotter', function(requires) {
 
-requires('transporter', 'object_graph_walker');
+requires('transporter/object_graph_walker');
 
 }, function(thisModule) {
-
-
-thisModule.addSlots(modules.snapshotter, function(add) {
-
-  add.data('_directory', 'transporter');
-
-});
 
 
 thisModule.addSlots(lobby, function(add) {

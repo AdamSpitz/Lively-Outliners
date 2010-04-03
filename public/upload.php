@@ -13,4 +13,4 @@
    sleep(1);
 ?>
 
-<script type="text/javascript">window.top.window.transporter.module.Morph.doneUpload('<?php echo $module_dir; ?>', '<?php echo $base_file_name; ?>');</script>
+<script type="text/javascript">window.top.window.transporter.module.Morph.doneUpload('<?php echo $module_dir . '/' . $base_file_name; ?>');</script>

@@ -1,4 +1,4 @@
-lobby.transporter.module.create('object_graph_walker', function(requires) {}, function(thisModule) {
+lobby.transporter.module.create('transporter/object_graph_walker', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(lobby, function(add) {
@@ -382,13 +382,6 @@ thisModule.addSlots(ObjectGraphWalker.Tests.prototype, function(add) {
     this.assertEqual(w1.objectCount() + 1, w2.objectCount());
     delete Global[n];
   });
-
-});
-
-
-thisModule.addSlots(modules.object_graph_walker, function(add) {
-
-  add.data('_directory', 'transporter', {category: []});
 
 });
 

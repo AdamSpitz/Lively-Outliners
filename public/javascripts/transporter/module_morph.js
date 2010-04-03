@@ -1,16 +1,8 @@
-lobby.transporter.module.create('module_morph', function(requires) {
+lobby.transporter.module.create('transporter/module_morph', function(requires) {
 
-requires('lk_ext', 'rows_and_columns');
+requires('lk_ext/rows_and_columns');
 
 }, function(thisModule) {
-
-
-
-thisModule.addSlots(modules.module_morph, function(add) {
-    
-    add.data('_directory', 'transporter');
-
-});
 
 
 thisModule.addSlots(transporter.module, function(add) {
@@ -32,9 +24,9 @@ thisModule.addSlots(transporter.module.Morph, function(add) {
 
   add.data('type', 'transporter.module.Morph');
 
-  add.method('doneUpload', function(directory, name) {
+  add.method('doneUpload', function(name) {
     if (name.substr(-3) === '.js') { name = name.substr(0, name.length - 3); }
-    transporter.module.fileIn(directory, name, function() {
+    transporter.module.fileIn(name, function() {
       new MessageNotifierMorph(name + " has been loaded.", Color.green).showInCenterOfWorld(WorldMorph.current());
     });
   });
@@ -180,7 +172,7 @@ thisModule.addSlots(transporter, function(add) {
       menuItems.push([n, function(evt) {
         var moduleName = n.substring(0, n.length - 3);
         MessageNotifierMorph.showIfErrorDuring(function() {
-          lobby.transporter.module.fileIn(pathFromModuleSystemRootDir, moduleName);
+          lobby.transporter.module.fileIn(pathFromModuleSystemRootDir + '/' + moduleName);
         }, evt);
       }]);
     });

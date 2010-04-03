@@ -1,11 +1,4 @@
-lobby.transporter.module.create('one_morph_per_object', function(requires) {}, function(thisModule) {
-
-
-thisModule.addSlots(modules.one_morph_per_object, function(add) {
-    
-  add.data('_directory', 'lk_ext');
-
-});
+lobby.transporter.module.create('lk_ext/one_morph_per_object', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(WorldMorph.prototype, function(add) {

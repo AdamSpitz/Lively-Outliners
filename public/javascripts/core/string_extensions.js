@@ -1,11 +1,4 @@
-lobby.transporter.module.create('string_extensions', function(requires) {}, function(thisModule) {
-
-
-thisModule.addSlots(modules.string_extensions, function(add) {
-    
-    add.data('_directory', 'core');
-
-});
+lobby.transporter.module.create('core/string_extensions', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(lobby.String.prototype, function(add) {

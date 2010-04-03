@@ -1,11 +1,4 @@
-lobby.transporter.module.create('enumerator', function(requires) {}, function(thisModule) {
-
-
-thisModule.addSlots(modules.enumerator, function(add) {
-    
-  add.data('_directory', 'core');
-
-});
+lobby.transporter.module.create('core/enumerator', function(requires) {}, function(thisModule) {
 
 
 thisModule.addSlots(lobby, function(add) {

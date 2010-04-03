@@ -1,15 +1,8 @@
-lobby.transporter.module.create('evaluator', function(requires) {
+lobby.transporter.module.create('outliners/evaluator', function(requires) {
 
-requires('lk_ext', 'rows_and_columns');
+requires('lk_ext/rows_and_columns');
 
 }, function(thisModule) {
-
-
-thisModule.addSlots(modules.evaluator, function(add) {
-    
-    add.data('_directory', 'outliners');
-
-});
 
 
 thisModule.addSlots(lobby, function(add) {

@@ -1,16 +1,9 @@
-lobby.transporter.module.create('outliners', function(requires) {
+lobby.transporter.module.create('outliners/outliners', function(requires) {
 
-requires('mirrors', 'mirrors');
-requires('outliners', 'categories');
+requires('mirrors/mirrors');
+requires('outliners/categories');
 
 }, function(thisModule) {
-
-
-thisModule.addSlots(modules.outliners, function(add) {
-    
-    add.data('_directory', 'outliners');
-
-});
 
 
 thisModule.addSlots(lobby, function(add) {
