@@ -564,12 +564,16 @@ thisModule.addSlots(transporter, function(add) {
     var baseURL = window.livelyBaseURL || document.documentURI;
     var repoURL = baseURL.substring(0, baseURL.lastIndexOf("/")) + "/javascripts/";
     // aaa - hack because I haven't managed to get WebDAV working on adamspitz.com yet
-    if (repoURL.include("adamspitz.com")) {
+    var kernelRepo;
+    if (repoURL.indexOf("adamspitz.com") >= 0) {
       var savingScriptURL = "http://adamspitz.com/cgi-bin/savefile.cgi";
-      transporter.availableRepositories.push(Object.newChildOf(transporter.repositories.httpWithSavingScript, repoURL, savingScriptURL));
+      kernelRepo = Object.create(transporter.repositories.httpWithSavingScript);
+      kernelRepo.initialize(repoURL, savingScriptURL);
     } else {
-      transporter.availableRepositories.push(Object.newChildOf(transporter.repositories.httpWithWebDAV,       repoURL                 ));
+      kernelRepo = Object.create(transporter.repositories.httpWithWebDAV);
+      kernelRepo.initialize(repoURL);
     }
+    transporter.availableRepositories.push(kernelRepo);
   }, {category: ['bootstrapping']});
 
   add.method('startLivelyOutliners', function(callWhenDone) {
